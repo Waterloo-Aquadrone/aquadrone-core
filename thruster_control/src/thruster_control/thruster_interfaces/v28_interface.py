@@ -29,7 +29,7 @@ class V28ThrusterInterface:
 
     def init_thrusters(self, thruster_specs):
         print("Init Thruster PWM")
-        for i in range(0, 6):
+        for i in range(0, 8):
             self.pwm[i] = self.pca.channels[self.motorPins[i]]
             self.pwm[i].duty_cycle = thruster_specs[i].get_zero_signal()
             #self.gpio.setup(self.motorPins[i], self.gpio.OUT)
