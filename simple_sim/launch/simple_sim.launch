@@ -21,4 +21,6 @@
 
 <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
+<node name="thruster_control" pkg="simple_sim" type="sim_controller.py"/>
+
 </launch>

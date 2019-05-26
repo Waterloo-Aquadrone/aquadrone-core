@@ -3,6 +3,7 @@
 import time
 import rospy
 
+from aquadrone_msgs.msg import ThrusterControls
 from geometry_msgs.msg import Wrench
 from gazebo_msgs.srv import ApplyBodyWrench
 
@@ -14,13 +15,19 @@ class FakeThrusterInterface:
 
         self.wrench_service = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
 
-        self.T1 = 1
-        self.T2 = -1
+        self.thruster_controls_sub = rospy.Subscriber("thruster_control", ThrusterControls, self.thruster_control_callback)
+
+        self.T1 = 0
+        self.T2 = 0
 
         self.side_dy = 0.3
 
         self.dt = 0.1
         self.duration = 0.05
+
+    def thruster_control_callback(self, msg):
+        self.T1 = msg.T1
+        self.T2 = msg.T2
 
     def calc_x_thrust(self):
         return self.T1 + self.T2
