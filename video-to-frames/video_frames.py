@@ -4,7 +4,8 @@
 #       1 - Set video variable to the of relative path of the video file
 #       2 - (Optional) Change the name of the directory you want to
 #           save the framse to by changing the 'directory_name'
-    
+#   NOTE:
+#      Need to have cv2 installed
 
 
 import cv2
