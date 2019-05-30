@@ -1,3 +1,7 @@
+
+# UW Aquadrone: Please keep original author credited
+# Felix Duvallet <felixd@gmail.com>
+
 # Generic .travis.yml file for running continuous integration on Travis-CI for
 # any ROS package.
 #
@@ -47,12 +51,12 @@ cache:
 language: generic
 matrix:
   include:
-  - name: "Trusty indigo"
-    dist: trusty
-    env: ROS_DISTRO=indigo
-  - name: "Trusty jade"
-    dist: trusty
-    env: ROS_DISTRO=jade
+#  - name: "Trusty indigo"
+#    dist: trusty
+#    env: ROS_DISTRO=indigo
+#  - name: "Trusty jade"
+#    dist: trusty
+#    env: ROS_DISTRO=jade
   - name: "Xenial kinetic"
     dist: xenial
     env: ROS_DISTRO=kinetic
