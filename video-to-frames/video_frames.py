@@ -1,37 +1,36 @@
 # DOCUMENTATION
 #   Purpose: Break video files into seperate frames
-#   How to Use:
-#       1 - Set video variable to the of relative path of the video file
-#       2 - (Optional) Change the name of the directory you want to
-#           save the framse to by changing the 'directory_name'
-#   NOTE:
-#      Need to have cv2 installed
-
+# Command Line Input:
+#   python video_frames.py [directory path to store frames] [path to video file]
 
 import cv2
 import os
+import sys
 
 def FrameCapture(path, directory):
     vidObj = cv2.VideoCapture(path)
+    vidObj_length = int(vidObj.get(cv2.CAP_PROP_FRAME_COUNT)) + 1
+    print("Number of frames in {}: {}".format(path, vidObj_length))
+
+    padding = len(str(vidObj_length))
     count = 0
     success = True
 
     while success:
         success, image = vidObj.read()
-        cv2.imwrite(directory +'/frame%d.jpg' % count, image)
+        cv2.imwrite(directory +'/frame{}.jpg'.format(str(count).rjust(padding,'0')), image)
         count += 1
 
 if __name__ == '__main__':
-    # Name of the directory storing the frames
-    directory_name = 'frames'
-    # Relative file path of the video
-    video = './video/ros.mp4'
+    directory_name = str(sys.argv[1])
+    video = str(sys.argv[2])
 
     try:
-        # Make sure the directory does not already exist
-        os.mkdir(directory_name)
+        if( not os.path.exists(directory_name)):
+            os.makedirs(directory_name)
         FrameCapture(video, directory_name)
-    except OSError:
-        print('Creation of directory %s failed' % directory_name)
+    except Exception as e:
+        print('Creation of directory {}  failed'.format(directory_name))
+        print(str(e))
     else:
-        print('Successfully created the directory %s ' % directory_name)
+        print('Successfully created the directory {} '.format(directory_name))
