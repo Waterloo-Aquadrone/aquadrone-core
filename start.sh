@@ -42,7 +42,7 @@ ADDITIONAL_FLAGS="$ADDITIONAL_FLAGS --device /dev/dri:/dev/dri --volume=/run/ude
 IMAGE_NAME=aquadrone_latest
 CONTAINER_NAME=${IMAGE_NAME}_${USER}
 
-echo Starting container: $IMAGE_NAME
+echo Using container: $IMAGE_NAME
 
 if ! docker container ps | grep -q ${CONTAINER_NAME}; then
 	echo "Starting new container with name: ${CONTAINER_NAME}"
