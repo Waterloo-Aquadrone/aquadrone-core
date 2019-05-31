@@ -13,6 +13,7 @@ RUN apt-get update && \
       psmisc \
       vim \
       gedit \
+      sudo \
       git-all && \
     rm -rf /var/lib/apt/lists/*
 
@@ -27,3 +28,8 @@ RUN apt-get update && \
 ADD catkin_ws /workspace/catkin_ws
 RUN cd /workspace/catkin_ws && \
     rosdep install --from-paths src --ignore-src -r -y
+
+
+# setup entrypoint
+COPY ./docker_entrypoint.sh /root
+ENTRYPOINT ["/root/docker_entrypoint.sh"]

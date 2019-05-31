@@ -3,3 +3,13 @@
 ./catkin_ws/logs
 
 *.vscode
+
+.bash_history
+.cache
+.config
+.gazebo
+.local
+.nv
+.ros
+.rviz
+.sdformat

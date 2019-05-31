@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
         python \
         libxext-dev \
         libx11-dev \
+        mesa-utils \
         x11proto-gl-dev && \
     rm -rf /var/lib/apt/lists/*
 
