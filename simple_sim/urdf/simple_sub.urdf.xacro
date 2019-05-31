@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<robot name="sub" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:property name="body_width" value="0.4" />
+<xacro:property name="body_length" value="0.6" />
+<xacro:property name="body_height" value="0.3" />
+
+<xacro:property name="thruster_width" value="0.05" />
+<xacro:property name="thruster_length" value="0.15" />
+<xacro:property name="thruster_height" value="0.05" />
+
+<gazebo reference="base_link">
+    <gravity>0</gravity>
+    <turnGravityOff>true</turnGravityOff>
+</gazebo>
+
+<link name="world"/>
+<joint name="float_joint" type="floating">
+    <parent link="world"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <child link="base_link"/>
+</joint>
+
+<link name="base_link">
+    <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <box size="${body_length} ${body_width} ${body_height}"/>
+        </geometry>
+    </visual>
+    <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <box size="${body_length} ${body_width} ${body_height}"/>
+        </geometry>
+    </collision>
+   <inertial>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+     <mass value="1"/>
+     <inertia ixx="10"  ixy="0"  ixz="0" iyy="10" iyz="0" izz="10" />
+     <gravity>0</gravity>
+   </inertial>
+
+   <gravity>0</gravity>
+</link>
+
+
+<xacro:macro name="thruster_macro" params="suffix *offset">
+    <gazebo reference="thruster_${suffix}">
+        <gravity>0</gravity>
+        <turnGravityOff>true</turnGravityOff>
+    </gazebo>
+    <joint name="thruster_${suffix}_joint" type="prismatic">
+        <parent link="base_link"/>
+        <xacro:insert_block name="offset"/>
+        <child link="thruster_${suffix}"/>
+        <limit effort="0" velocity="0" lower="-0.01" upper="0.01" />
+    </joint>
+    <link name="thruster_${suffix}">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${thruster_length} ${thruster_width} ${thruster_height}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${thruster_length} ${thruster_width} ${thruster_height}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.1"/>
+            <inertia ixx="1"  ixy="0"  ixz="0" iyy="1" iyz="0" izz="1" />
+            <gravity>0</gravity>
+        </inertial>
+        <gravity>0</gravity>
+    </link>
+</xacro:macro>
+
+
+<xacro:thruster_macro suffix="1">
+    <origin xyz="0 ${(body_width + thruster_width) / 2} 0" rpy="0 0 0"/>
+</xacro:thruster_macro>
+
+<xacro:thruster_macro suffix="2">
+    <origin xyz="0 ${-(body_width + thruster_width) / 2} 0" rpy="0 0 0"/>
+</xacro:thruster_macro>
+
+</robot>
