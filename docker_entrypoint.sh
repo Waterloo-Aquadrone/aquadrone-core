@@ -69,3 +69,4 @@ else
 fi
 
 source /opt/ros/kinetic/setup.bash
+exec "$@"

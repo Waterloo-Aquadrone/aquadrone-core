@@ -17,17 +17,15 @@ RUN apt-get update && \
       git-all && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Required ROS Packages and Tools
 RUN apt-get update && \
     apt-get install -y \
+      python-catkin-tools \
       ros-kinetic-gazebo-ros-pkgs \
       ros-kinetic-gazebo-ros-control \
       ros-kinetic-rviz && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ROS package dependencies
-ADD catkin_ws /workspace/catkin_ws
-RUN cd /workspace/catkin_ws && \
-    rosdep install --from-paths src --ignore-src -r -y
 
 
 # setup entrypoint
