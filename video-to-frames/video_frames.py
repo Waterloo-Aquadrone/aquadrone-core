@@ -9,16 +9,18 @@ import sys
 
 def FrameCapture(path, directory):
     vidObj = cv2.VideoCapture(path)
-    vidObj_length = int(vidObj.get(cv2.CAP_PROP_FRAME_COUNT)) + 1
-    print("Number of frames in {}: {}".format(path, vidObj_length))
+    vidObj_length = int(vidObj.get(cv2.CAP_PROP_FRAME_COUNT))
+    print("# of Frames: {}".format(vidObj_length))
+    print("FPS: {}".format(vidObj.get(cv2.CAP_PROP_FPS)))
 
     padding = len(str(vidObj_length))
     count = 0
-    success = True
 
-    while success:
+    while(vidObj.isOpened() and count < vidObj_length):
         success, image = vidObj.read()
-        cv2.imwrite(directory +'/frame{}.jpg'.format(str(count).rjust(padding,'0')), image)
+        name = directory +'/frame{}.jpg'.format(str(count).rjust(padding,'0'))
+        cv2.imwrite(name, image)
+        print('Creating...{} -> {}'.format(name,success))
         count += 1
 
 if __name__ == '__main__':
@@ -30,7 +32,6 @@ if __name__ == '__main__':
             os.makedirs(directory_name)
         FrameCapture(video, directory_name)
     except Exception as e:
-        print('Creation of directory {}  failed'.format(directory_name))
-        print(str(e))
+        print("ERROR: ", str(e))
     else:
-        print('Successfully created the directory {} '.format(directory_name))
+        print('Completed processing video {}'.format(video))
