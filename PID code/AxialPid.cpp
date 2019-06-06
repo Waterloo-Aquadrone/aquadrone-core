@@ -1,234 +1,175 @@
-#include <cstdlib>
+#include "AxialPID.h"
 #include <cmath>
-#include <iostream>
-#include <vector>
 
-#include "MiniPID.cpp"
+RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, float newPKp, float newPKi, float newPKd, float newYKp, float newYKi, float newYKd, float rTarget, float pTarget, float yTarget) :
+	//initializing PID constants & targets
+	rollKp(newRKp), rollKi(newRKi), rollKd(newRKd), pitchKp(newPKp), pitchKi(newPKi), pitchKd(newPKd), yawKp(newYKp), yawKi(newYKi), yawKd(newYKd), rollTarget(rTarget), pitchTarget(pTarget), yawTarget(yTarget),
+	//initializing PID controllers
+	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
+{
+	//setting output limits
+	rollControl.setOutputLimits(OUT_LIMIT);
+	pitchControl.setOutputLimits(OUT_LIMIT);
+	yawControl.setOutputLimits(OUT_LIMIT);	
+	//setting pid targets
+	rollControl.setSetpoint(rTarget);
+	pitchControl.setSetpoint(pTarget);
+	yawControl.setSetpoint(yTarget);
+	rollFlip = pitchFlip = yawFlip = false;
+}
 
-using namespace std;
+RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, float newPKp, float newPKi, float newPKd, float newYKp, float newYKi, float newYKd) :
+	//initializing PID constants & targets
+	rollKp(newRKp), rollKi(newRKi), rollKd(newRKd), pitchKp(newPKp), pitchKi(newPKi), pitchKd(newPKd), yawKp(newYKp), yawKi(newYKi), yawKd(newYKd), rollTarget(0), pitchTarget(0), yawTarget(0),
+	//setting PID controllers
+	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
+{
+	//setting pid limits
+	rollControl.setOutputLimits(OUT_LIMIT);
+	pitchControl.setOutputLimits(OUT_LIMIT);
+	yawControl.setOutputLimits(OUT_LIMIT);
 
-class RotPIDController {
-	//pid control objects
-	MiniPID rollControl;
-	MiniPID pitchControl;
-	MiniPID yawControl;
+	//setting pid targets
+	rollControl.setSetpoint(0);
+	pitchControl.setSetpoint(0);
+	yawControl.setSetpoint(0);
 
-	//pid tuning (kp, ki, kd)
-	vector<double> rollTune = { 0,0,0 };
-	vector<double> pitchTune = { 0,0,0 };
-	vector<double> yawTune = { 0,0,0 };
+	rollFlip = pitchFlip = yawFlip = false;
+}
 
-	//pid output limits
-	const int OUT_LIMIT = 1;
+RotPIDController::RotPIDController():
+	//initializing PID constants and targets
+	rollKp(0), rollKi(0), rollKd(0), pitchKp(0), pitchKi(0), pitchKd(0), yawKp(0), yawKi(0), yawKd(0), rollTarget(0), pitchTarget(0), yawTarget(0),
+	//initializing PID controllers
+	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
+{
+	//setting pid limits
+	rollControl.setOutputLimits(OUT_LIMIT);
+	pitchControl.setOutputLimits(OUT_LIMIT);
+	yawControl.setOutputLimits(OUT_LIMIT);
 
-	//pid target closeness constant
-	const int MARGIN = 0.5;
+	//setting pid targets
+	rollControl.setSetpoint(0);
+	pitchControl.setSetpoint(0);
+	yawControl.setSetpoint(0);
 
-	//pid targets
-	float rollTarget;
-	float pitchTarget;
-	float yawTarget;
+	rollFlip = pitchFlip = yawFlip = false;
+}
 
-	//pid reverses (just in case something is messed up)
-	bool rollFlip;
-	bool pitchFlip;
-	bool yawFlip;
-
-public:
-	//constructors
-	RotPIDController(vector<double> newRoll, vector<double> newPitch, vector<double> newYaw, float rTarget, float pTarget, float yTarget) : 
-		//initializing the PIDs for roll, pitch, yaw
-		rollControl(MiniPID(newRoll[0], newRoll[1], newRoll[2])),	
-		pitchControl(MiniPID(newPitch[0], newPitch[1], newPitch[2])),
-		yawControl(MiniPID(newYaw[0], newYaw[1], newYaw[2])),
-		//setting target rotations
-		rollTarget(rTarget), pitchTarget(pTarget), yawTarget(yTarget)
-	{
-		//initializing the tuning arrays
-		rollTune = newRoll;
-		pitchTune = newPitch;
-		yawTune = newYaw;
-
-		//setting pid limits
-		rollControl.setOutputLimits(OUT_LIMIT);
-		pitchControl.setOutputLimits(OUT_LIMIT);
-		yawControl.setOutputLimits(OUT_LIMIT);
-
-		//setting pid targets
-		rollControl.setSetpoint(rTarget);
-		pitchControl.setSetpoint(pTarget);
-		yawControl.setSetpoint(yTarget);
-
-		rollFlip = pitchFlip = yawFlip = false;
-	}
-
-	RotPIDController(vector<double> newRoll, vector<double> newPitch, vector<double> newYaw) :
-		//initializing the PIDs for roll, pitch, yaw
-		rollControl(MiniPID(newRoll[0], newRoll[1], newRoll[2])),
-		pitchControl(MiniPID(newPitch[0], newPitch[1], newPitch[2])),
-		yawControl(MiniPID(newYaw[0], newYaw[1], newYaw[2])),
-		//setting target rotations
-		rollTarget(0), pitchTarget(0), yawTarget(0)
-	{
-		//initializing the tuning arrays
-		rollTune = newRoll;
-		pitchTune = newPitch;
-		yawTune = newYaw;
-
-		//setting pid limits
-		rollControl.setOutputLimits(OUT_LIMIT);
-		pitchControl.setOutputLimits(OUT_LIMIT);
-		yawControl.setOutputLimits(OUT_LIMIT);
-
-		//setting pid targets
-		rollControl.setSetpoint(0);
-		pitchControl.setSetpoint(0);
-		yawControl.setSetpoint(0);
-
-		rollFlip = pitchFlip = yawFlip = false;
-	}
-
-	RotPIDController():
-		//initializing the PIDs for roll, pitch, yaw
-		rollControl({ 0,0,0 }),
-		pitchControl({ 0,0,0 }),
-		yawControl({ 0,0,0 }),
-		//setting target rotations
-		rollTarget(0), pitchTarget(0), yawTarget(0)
-	{
-		//initializing the tuning arrays
-		rollTune = pitchTune = yawTune = { 0,0,0 };
-
-		//setting pid limits
-		rollControl.setOutputLimits(OUT_LIMIT);
-		pitchControl.setOutputLimits(OUT_LIMIT);
-		yawControl.setOutputLimits(OUT_LIMIT);
-
-		//setting pid targets
-		rollControl.setSetpoint(0);
-		pitchControl.setSetpoint(0);
-		yawControl.setSetpoint(0);
-
-		rollFlip = pitchFlip = yawFlip = false;
-	}
-
-	//LOOP FUNCTIONS (TO BE CALLED IN A LOOP THING)
+//LOOP FUNCTIONS (TO BE CALLED IN A LOOP THING)
 	
-	//returns all pid outputs in a vector in this order (roll, pitch, yaw)
-	vector<float> getMotorValues(float rollValue, float pitchValue, float yawValue)
-	{
-		vector<float> result;
-		result.push_back(rollControl.getOutput(rollValue));
-		result.push_back(pitchControl.getOutput(pitchValue));
-		result.push_back(yawControl.getOutput(yawValue));
-		return result;
-	}
+//returns all pid outputs in a vector in this order (roll, pitch, yaw)
+void RotPIDController::getMotorValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut)
+{
+	rollOut = rollControl.getOutput(rollValue);
+	pitchOut = pitchControl.getOutput(pitchValue);
+	yawOut = yawControl.getOutput(yawValue);
+}
 
-	//returns just roll pid output
-	float getRollValue(float rollValue)
-	{
-		return rollControl.getOutput(rollValue);
-	}
+//returns just roll pid output
+float RotPIDController::getRollValue(float rollValue)
+{
+	return rollControl.getOutput(rollValue);
+}
 
-	//returns just pitch pid output
-	float getPitchValue(float pitchValue)
-	{
-		return pitchControl.getOutput(pitchValue);
-	}
+//returns just pitch pid output
+float RotPIDController::getPitchValue(float pitchValue)
+{
+	return pitchControl.getOutput(pitchValue);
+}
 
-	//returns just yaw pid output
-	float getYawValue(float yawValue)
-	{
-		return yawControl.getOutput(yawValue);
-	}
+//returns just yaw pid output
+float RotPIDController::getYawValue(float yawValue)
+{
+	return yawControl.getOutput(yawValue);
+}
 
-	//returns whether the current roll position is at the target (within a certain margin)
-	bool atRollTarget(float rollValue)
-	{
-		return (fabs(rollValue - rollTarget) <= MARGIN);
-	}
+//returns whether the current roll position is at the target (within a certain margin)
+bool RotPIDController::atRollTarget(float rollValue)
+{
+	return (fabs(rollValue - rollTarget) <= MARGIN);
+}
 
-	//returns whether the current pitch position is at the target (within a certain margin)
-	bool atPitchTarget(float pitchValue)
-	{
-		return (fabs(pitchValue - pitchTarget) <= MARGIN);
-	}
+//returns whether the current pitch position is at the target (within a certain margin)
+bool RotPIDController::atPitchTarget(float pitchValue)
+{
+	return (fabs(pitchValue - pitchTarget) <= MARGIN);
+}
 
-	//returns whether the current yaw position is at the target (within a certain margin)
-	bool atYawTarget(float yawValue)
-	{
-		return (fabs(yawValue - yawTarget) <= MARGIN);
-	}
+//returns whether the current yaw position is at the target (within a certain margin)
+bool RotPIDController::atYawTarget(float yawValue)
+{
+	return (fabs(yawValue - yawTarget) <= MARGIN);
+}
 
-	//returns whether the current rotation is at the target (within a certain margin)
-	bool atTarget(float rollValue, float pitchValue, float yawValue)
-	{
-		return atRollTarget(rollValue) && atPitchTarget(pitchValue) && atYawTarget(yawValue);
-	}
+//returns whether the current rotation is at the target (within a certain margin)
+bool RotPIDController::atTarget(float rollValue, float pitchValue, float yawValue)
+{
+	return atRollTarget(rollValue) && atPitchTarget(pitchValue) && atYawTarget(yawValue);
+}
 
-	//SPECIALTY FUNCTIONS (called not in a loop)
+//SPECIALTY FUNCTIONS (called not in a loop)
 
-	//flips pid control (for if the robot is moving away from target instead of towards it)
-	void flipRoll()
-	{
-		rollFlip = !rollFlip;
-		rollControl.setDirection(rollFlip);
-	}
+//flips pid control (for if the robot is moving away from target instead of towards it)
+void RotPIDController::flipRoll()
+{
+	rollFlip = !rollFlip;
+	rollControl.setDirection(rollFlip);
+}
 
-	void flipPitch()
-	{
-		pitchFlip = !pitchFlip;
-		pitchControl.setDirection(pitchFlip);
-	}
+void RotPIDController::flipPitch()
+{
+	pitchFlip = !pitchFlip;
+	pitchControl.setDirection(pitchFlip);
+}
 
-	void flipYaw()
-	{
-		yawFlip = !yawFlip;
-		yawControl.setDirection(yawFlip);
-	}
+void RotPIDController::flipYaw()
+{
+	yawFlip = !yawFlip;
+	yawControl.setDirection(yawFlip);
+}
 
-	//set pid tunings
-	void setRollPID(float kp, float ki, float kd)
-	{
-		rollTune[0] = kp;
-		rollTune[1] = ki;
-		rollTune[2] = kd;
+//set pid tunings
+void RotPIDController::setRollPID(float kp, float ki, float kd)
+{
+	rollKp = kp;
+	rollKi = ki;
+	rollKd = kd;
 
-		rollControl.setPID(kp, ki, kd);
-	}
-	void setPitchPID(float kp, float ki, float kd)
-	{
-		pitchTune[0] = kp;
-		pitchTune[1] = ki;
-		pitchTune[2] = kd;
+	rollControl.setPID(kp, ki, kd);
+}
+void RotPIDController::setPitchPID(float kp, float ki, float kd)
+{
+	pitchKp = kp;
+	pitchKi = ki;
+	pitchKd = kd;
 
-		pitchControl.setPID(kp, ki, kd);
-	}
-	void setYawPID(float kp, float ki, float kd)
-	{
-		yawTune[0] = kp;
-		yawTune[1] = ki;
-		yawTune[2] = kd;
+	pitchControl.setPID(kp, ki, kd);
+}
+void RotPIDController::setYawPID(float kp, float ki, float kd)
+{
+	yawKp = kp;
+	yawKi = ki;
+	yawKd = kd;
 
-		yawControl.setPID(kp, ki, kd);
-	}
+	yawControl.setPID(kp, ki, kd);
+}
 
-	//set pid target values
-	void setRollTarget(float newTarget)
-	{
-		rollTarget = newTarget;
-		rollControl.setSetpoint(newTarget);
-	}
+//set pid target values
+void RotPIDController::setRollTarget(float newTarget)
+{
+	rollTarget = newTarget;
+	rollControl.setSetpoint(newTarget);
+}
 
-	void setPitchTarget(float newTarget)
-	{
-		pitchTarget = newTarget;
-		pitchControl.setSetpoint(newTarget);
-	}
+void RotPIDController::setPitchTarget(float newTarget)
+{
+	pitchTarget = newTarget;
+	pitchControl.setSetpoint(newTarget);
+}
 
-	void setYawTarget(float newTarget)
-	{
-		yawTarget = newTarget;
-		yawControl.setSetpoint(newTarget);
-	}
-};
+void RotPIDController::setYawTarget(float newTarget)
+{
+	yawTarget = newTarget;
+	yawControl.setSetpoint(newTarget);
+}
