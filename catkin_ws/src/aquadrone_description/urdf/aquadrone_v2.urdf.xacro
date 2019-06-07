@@ -1,13 +1,28 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- ORIGINAL SOURCE OF FILES - Modified for UW Aquadrone
+     Copyright (c) 2016 The UUV Simulator Authors.
+     All rights reserved.
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
   <!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
 
-  <!--
-    Vehicle's parameters
-  -->
 
-  <xacro:property name="mass" value="60"/>
-  <xacro:property name="volume" value="0.1"/>
+  
+  
   <!-- Center of gravity -->
   <xacro:property name="cog" value="0 0 0"/>
   <!-- Center of buoyancy -->
@@ -19,6 +34,9 @@
   <xacro:property name="length" value="0.9144"/>
   <xacro:property name="width"  value="0.3048"/>
   <xacro:property name="height" value="0.2"/>
+
+  <xacro:property name="volume" value="${width * length * height}"/>
+  <xacro:property name="mass" value="${width * length * height * rho}"/>
 
   <!-- Vehicle macro -->
   <xacro:macro name="aquadrone_base" params="debug">
@@ -55,36 +73,25 @@
     <selfCollide>false</selfCollide>
   </gazebo>
 
-
-
     <!-- Set up hydrodynamic plugin -->
     <gazebo>
       <plugin name="uuv_plugin" filename="libuuv_underwater_object_plugin.so">
-        <!-- Fluid density to be used in the computation of buoyancy forces
-        for all links specified below -->
         <fluid_density>${rho}</fluid_density>
-
-        <!-- Name of the current velocity topic -->
         <flow_velocity_topic>hydrodynamics/current_velocity</flow_velocity_topic>
-
-        <!-- Debug flag, if set to true, added-mass, damping and restoring
-        forces and moments will be published in separate topics -->
         <debug>${debug}</debug>
 
-        <!-- List of hydrodynamic models this robot's links -->
         <link name="base_link">
           <!-- This flag will make the link neutrally buoyant -->
-          <neutrally_buoyant>1</neutrally_buoyant>
-
-
-          <!-- Center of buoyancy -->
+          
+          <neutrally_buoyant>0</neutrally_buoyant>
           <center_of_buoyancy>${cob}</center_of_buoyancy>
-
-          <!--
-          Reference:
-          Fossen, Thor I. Handbook of marine craft hydrodynamics and motion
-          control. John Wiley & Sons, 2011.
-          -->
+          <volume>${volume*1.005}</volume>
+          <box>
+            <width>${width}</width>
+            <length>${length}</length>
+            <height>${height}</height>
+          </box>
+          
 
           <!-- Fossen's equation of motion -->
           <hydrodynamic_model>
@@ -102,7 +109,7 @@
             or a full matrix (36 coefficients), like the added-mass coefficients above
             -->
             <linear_damping>
-              -1 -1 -1 0 0 0
+              -3 -3 -3 -1 -1 -1
             </linear_damping>
             <!--
             The linear damping coefficients proportional to the forward speed
@@ -121,23 +128,83 @@
               0 0 0 0 0 0
             </quadratic_damping>
 
-                      <!-- Link's bounding box, it is used to recalculate the immersed
+          <!-- Link's bounding box, it is used to recalculate the immersed
           volume when close to the surface.
           This is a workaround the invalid bounding box given by Gazebo-->
-          <volume>${width * length * height}</volume>
-          <box>
-            <width>${width}</width>
-            <length>${length}</length>
-            <height>${height}</height>
-          </box>
-          </hydrodynamic_model>
 
+          </hydrodynamic_model>
 
         </link>
       </plugin>
     </gazebo>
-
-
   </xacro:macro>
 
+
+
+  <xacro:macro name="thruster_macro" params="thruster_id *origin">
+    <link name="thruster_${thruster_id}">
+
+      <visual>
+        <geometry>
+          <box size="0.01 0.01 0.1"/>
+        </geometry>
+      </visual>
+
+      <inertial>
+        <mass value="0.001" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.000000017" ixy="0.0" ixz="0.0"
+               iyy="0.000000017" iyz="0.0"
+               izz="0.000000017" />
+      </inertial>
+    </link>
+
+    <!-- Joint between thruster link and vehicle base link -->
+    <joint name="thruster_${thruster_id}_joint" type="continuous">
+      <xacro:insert_block name="origin" />
+      <axis xyz="1 0 0" />
+      <parent link="base_link" />
+      <child link="thruster_${thruster_id}" />
+    </joint>
+
+    <gazebo>
+      <!-- Thruster ROS plugin -->
+      <plugin name="${thruster_id}_thruster_model" filename="libuuv_thruster_ros_plugin.so">
+        <thrusterID>${thruster_id}</thrusterID>
+        <linkName>thruster_${thruster_id}</linkName>
+
+        <jointName>thruster_${thruster_id}_joint</jointName>
+
+        <thrustTopic>thrusters/${thruster_id}/thrust</thrustTopic>
+
+        <inputTopic>thrusters/${thruster_id}/input</inputTopic>
+
+        <gain>1</gain>
+
+        <clampMax>1</clampMax>
+
+        <clampMin>-1</clampMin>
+
+   
+        <thrust_efficiency>1</thrust_efficiency>
+
+        <propeller_efficiency>1</propeller_efficiency>
+
+        <dynamics>
+          <type>ZeroOrder</type>
+        </dynamics>
+
+        <conversion>
+          <type>Basic</type>
+          <rotorConstant>1.0</rotorConstant>
+        </conversion>
+
+
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="thruster_${thruster_id}">
+      <selfCollide>false</selfCollide>
+    </gazebo>
+  </xacro:macro>
 </robot>

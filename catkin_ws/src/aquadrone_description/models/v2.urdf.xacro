@@ -11,4 +11,14 @@
   <!-- Create the rov_example -->
   <xacro:aquadrone_base debug="$(arg debug)"/>
 
+
+  <xacro:thruster_macro thruster_id="0">
+    <origin xyz="0 0.5 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+
+
+  <xacro:thruster_macro thruster_id="1">
+    <origin xyz="0 -0.5 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+
 </robot>
