@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="aquadrone_v2" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <!-- Input debug flag -->
+  <xacro:arg name="debug" default="0"/>
+
+
+  <!-- Include the ROV macro file -->
+  <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
+
+  <!-- Create the rov_example -->
+  <xacro:aquadrone_base debug="$(arg debug)"/>
+
+</robot>
