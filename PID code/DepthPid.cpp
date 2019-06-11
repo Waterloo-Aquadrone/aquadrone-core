@@ -1,6 +1,7 @@
 #include "DepthPid.h"
 #include <cmath>
-	//Constructors
+	
+//Constructors
 	DepthPIDController::DepthPIDController() : depthControl(0, 0, 0), kp(0), ki(0), kd(0), target(0), depthFlip(false)
 	{
 		depthControl.setSetpoint(target);
@@ -67,4 +68,3 @@
 		depthFlip = !depthFlip;
 		depthControl.setDirection(depthFlip);
 	}
-};

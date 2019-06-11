@@ -16,7 +16,7 @@ private:
 	//pid output limits
 	const int OUT_LIMIT = 1;
 	//pid target closeness constant
-	const int MARGIN = 0.5;
+	const float MARGIN = 0.5;
 	//pid targets
 	float target;
 	//reversal bools just in case
@@ -24,9 +24,9 @@ private:
 
 public:
 	//Constructors
-	DepthPIDController() : depthControl(0, 0, 0), kp(0), ki(0), kd(0), target(0), depthFlip(false);
-	DepthPIDController(float newKp, float newKi, float newKd) : depthControl(newKp, newKi, newKd), kp(newKp), ki(newKi), kd(newKd), target(0), depthFlip(false);
-	DepthPIDController(float newKp, float newKi, float newKd, float newTarget) : depthControl(newKp, newKi, newKd), kp(newKp), ki(newKi), kd(newKd), target(newTarget), depthFlip(false);
+	DepthPIDController();
+	DepthPIDController(float newKp, float newKi, float newKd);
+	DepthPIDController(float newKp, float newKi, float newKd, float newTarget);
 	//LOOP FUNCTIONS
 	float getMotorValues(float input);
 	bool atDepthTarget(float input);
