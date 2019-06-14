@@ -13,7 +13,9 @@ while True:
 	z = roll / 45
 	yaw = (heading - 180) / 45
 	thrust = np.array([x, 0, z, 0, 0, yaw])
-	thrust = fbd.convertThrust(thrust)
+	thrust = fbd.convertThrusts(thrust)
 	for i in range(0, 6):
 		thrust[i] = pwmConverter.getPWMSignalWidth(thrust[i])
 	controller.applyThrusts(thrust)
+	print("x: " + str(x) + ",z:" + str(z) + ",yaw:" + str(yaw))
+	time.sleep(0.05)

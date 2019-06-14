@@ -31,4 +31,4 @@ thrustMatrix = np.column_stack((relativeXThrusts, relativeYThrusts, relativeZThr
 #input is [xThrust, yThrust, zThrust, rollTorque, pitchTorque, yawTorque]
 #all inputs in pounds or pound-inches respectively
 def applyThrusts(vector):
-	return thrustMatrix * vector
+	return thrustMatrix.dot(vector)

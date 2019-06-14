@@ -27,4 +27,4 @@ thrustMatrix = np.column_stack((relativeXThrusts, relativeYThrusts, relativeZThr
 #all inputs in pounds or pound-inches respectively
 #note that with this design, the yThrust is ignored as it is not possible
 def convertThrusts(vector):
-	return thrustMatrix * vector
+	return thrustMatrix.dot(vector)
