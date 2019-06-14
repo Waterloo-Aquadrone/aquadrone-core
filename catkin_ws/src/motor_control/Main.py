@@ -9,12 +9,11 @@ time.sleep(10)
 
 while True:
 	heading, roll, pitch = gyro.read_euler()
-	thrust = np.array([map(pitch, -90, 90, -2, 2), 0, map(roll, -90, 90, -2, 2), 0, 0, map(heading, 90, 270, -2, 2)])
+	x = pitch / 45
+	z = roll / 45
+	yaw = (heading - 180) / 45
+	thrust = np.array([x, 0, z, 0, 0, yaw])
 	thrust = fbd.convertThrust(thrust)
 	for i in range(0, 6):
 		thrust[i] = pwmConverter.getPWMSignalWidth(thrust[i])
 	controller.applyThrusts(thrust)
-
-
-def map(x, xMin, xMax, yMin, yMax):
-	return (x - xMin) / (xMax - xMin) * (yMax - yMin) + yMin
