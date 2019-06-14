@@ -8,7 +8,7 @@ import numpy as np
 
 #inches
 xLength = 36
-ylength = 12
+yLength = 12
 
 #all of these are normalized to produce a net force of 1 pound
 relativeXThrusts = np.array([0, 0, 1, 1, 0, 0]) / 2
@@ -16,7 +16,7 @@ relativeYThrusts = np.array([0, 0, 0, 0, 0, 0]) #not possible
 relativeZThrusts = np.array([-1, -1, 0, 0, -1, -1]) / 4
 
 #all of these are normalized to produce a net torque of 1 pound-inch
-relativeRollThrusts = np.array([-1, 1, 0, 0, -1, 1]) / (ylength * 2)
+relativeRollThrusts = np.array([-1, 1, 0, 0, -1, 1]) / (yLength * 2)
 relativePitchThrusts = np.array([1, 1, 0, 0, -1, -1]) / (xLength * 2)
 relativeYawThrusts = np.array([0, 0, -1, 1, 0, 0]) / yLength
 
