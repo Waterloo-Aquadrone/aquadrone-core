@@ -12,7 +12,7 @@ pwmOffset = 0.3754
 
 for i in range(0, 6):
 	GPIO.setup(motorPins[i], GPIO.OUT)
-	pwm[i] = GPIO.PWM(motorPin[i], 50)
+	pwm[i] = GPIO.PWM(motorPins[i], 50)
 	pwm[i].start(7.5 - pwmOffset)
 
 #wait for motors to initialize
