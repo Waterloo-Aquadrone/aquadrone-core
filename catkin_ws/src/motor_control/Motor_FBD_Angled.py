@@ -25,8 +25,8 @@ relativeRollThrusts = np.array([-1, 1, -rollCorr, rollCorr, -1, 1]) / (ylength *
 relativePitchThrusts = np.array([1, 1, 0, 0, -1, -1]) / (xLength * np.sqrt(2))
 relativeYawThrusts = np.array([0, 0, -1, 1, 0, 0]) / yLength
 
-thrustMatrix = np.column_stack(relativeXThrusts, relativeYThrusts, relativeZThrusts, 
-			relativeRollThrusts, relativePitchThrusts, relativeYawThrusts)
+thrustMatrix = np.column_stack((relativeXThrusts, relativeYThrusts, relativeZThrusts, 
+			relativeRollThrusts, relativePitchThrusts, relativeYawThrusts))
 
 #input is [xThrust, yThrust, zThrust, rollTorque, pitchTorque, yawTorque]
 #all inputs in pounds or pound-inches respectively
