@@ -10,21 +10,21 @@ time.sleep(7)
 
 while True:
 	x = 0
-	if keyboard.is_pressed("w"):
-		x = 1
-	else if keyboard.is_pressed("s"):
-		x = -1
-	
 	z = 0
-	if keyboard.is_pressed("a"):
-		z = 1
-	else if keyboard.is_pressed("d"):
-		z = -1
-
 	yaw = 0
-	if keyboard.is_pressed("i"):
+	
+	control = input("Command:")
+	if control == "w":
+		x = 1
+	elif control == "s":
+		x = -1
+	elif control == "a":
+		yaw = 1
+	elif control == "d":
+		yaw = -1
+	elif control == "i":
 		z = 1
-	else if keyboard.is_pressed("k"):
+	elif contorl == "k":
 		z = -1
 	
 	thrust = np.array([x, 0, z, 0, 0, yaw])
