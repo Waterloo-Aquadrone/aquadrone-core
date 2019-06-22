@@ -1,6 +1,5 @@
 import numpy as np
 import time
-import keyboard
 import Motor_FBD_Linear as fbd
 import Motor_PWM_Converter as pwmConverter
 import Motor_Controller as controller
@@ -13,18 +12,18 @@ while True:
 	z = 0
 	yaw = 0
 	
-	control = input("Command:")
-	if control == "w":
+	ctrl = raw_input("Command:")
+	if ctrl == "w":
 		x = 1
-	elif control == "s":
+	elif ctrl == "s":
 		x = -1
-	elif control == "a":
+	elif ctrl == "a":
 		yaw = 1
-	elif control == "d":
+	elif ctrl == "d":
 		yaw = -1
-	elif control == "i":
+	elif ctrl == "i":
 		z = 1
-	elif contorl == "k":
+	elif ctrl == "k":
 		z = -1
 	
 	thrust = np.array([x, 0, z, 0, 0, yaw])
