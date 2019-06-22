@@ -3,5 +3,9 @@
     <arg name="model_file" value="v2.urdf.xacro"/>
     <arg name="param_name" value="v2_description"/>
   </include>
+  <include file="$(find aquadrone_description)/launch/upload_sub.launch">
+    <arg name="model_file" value="v2_wobbly.urdf.xacro"/>
+    <arg name="param_name" value="v2_wobbly_description"/>
+  </include>
   <test test-name="test_models" pkg="aquadrone_description" type="test_models.py" />
 </launch>
