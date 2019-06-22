@@ -21,12 +21,6 @@
   <!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
 
 
-  
-  
-  <!-- Center of gravity -->
-  <xacro:property name="cog" value="0 0 0"/>
-  <!-- Center of buoyancy -->
-  <xacro:property name="cob" value="0 0 0"/>
   <!-- Fluid density -->
   <xacro:property name="rho" value="1028"/>
 
@@ -39,7 +33,7 @@
   <xacro:property name="mass" value="${width * length * height * rho}"/>
 
   <!-- Vehicle macro -->
-  <xacro:macro name="aquadrone_base" params="debug">
+  <xacro:macro name="aquadrone_base" params="debug cog cob">
 
     <!-- Rigid body description of the base link -->
     <link name="base_link">

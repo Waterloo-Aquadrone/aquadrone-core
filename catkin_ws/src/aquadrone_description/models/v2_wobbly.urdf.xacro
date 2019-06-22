@@ -12,7 +12,7 @@
   <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
 
   <!-- Create the rov_example -->
-  <xacro:aquadrone_base debug="$(arg debug)" cog="0 0 0" cob="0 0 0"/>
+  <xacro:aquadrone_base debug="$(arg debug)" cog="0.02 0.02 0" cob="-0.02 -0.02 0"/>
 
 
     <!-- Pressure  -->
