@@ -53,7 +53,7 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 #COPY --from=glvnd /usr/local/lib/x86_64-linux-gnu /usr/local/lib/x86_64-linux-gnu
 #COPY --from=glvnd /usr/local/lib/i386-linux-gnu /usr/local/lib/i386-linux-gnu
 
-COPY 10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
+COPY docker/10_nvidia.json /usr/local/share/glvnd/egl_vendor.d/10_nvidia.json
 
 # TODO: This and below needs automatic detection of nvidia devices in the system
 RUN echo '/usr/local/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
