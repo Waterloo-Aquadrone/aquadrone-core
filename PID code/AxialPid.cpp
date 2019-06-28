@@ -12,9 +12,9 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	pitchControl.setOutputLimits(OUT_LIMIT);
 	yawControl.setOutputLimits(OUT_LIMIT);	
 	//setting pid targets
-	rollControl.setSetpoint(rTarget);
-	pitchControl.setSetpoint(pTarget);
-	yawControl.setSetpoint(yTarget);
+	rollControl.setSetpoint(0);
+	pitchControl.setSetpoint(0);
+	yawControl.setSetpoint(0);
 	rollFlip = pitchFlip = yawFlip = false;
 }
 
@@ -61,27 +61,27 @@ RotPIDController::RotPIDController():
 //returns all pid outputs in a vector in this order (roll, pitch, yaw)
 void RotPIDController::getMotorValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut)
 {
-	rollOut = rollControl.getOutput(rollValue);
-	pitchOut = pitchControl.getOutput(pitchValue);
-	yawOut = yawControl.getOutput(yawValue);
+	rollOut = rollControl.getOutput(rollValue - rollTarget);
+	pitchOut = pitchControl.getOutput(pitchValue - pitchTarget);
+	yawOut = yawControl.getOutput(yawValue - yawTarget);
 }
 
 //returns just roll pid output
 float RotPIDController::getRollValue(float rollValue)
 {
-	return rollControl.getOutput(rollValue);
+	return rollControl.getOutput(rollValue - rollTarget);
 }
 
 //returns just pitch pid output
 float RotPIDController::getPitchValue(float pitchValue)
 {
-	return pitchControl.getOutput(pitchValue);
+	return pitchControl.getOutput(pitchValue - pitchTarget);
 }
 
 //returns just yaw pid output
 float RotPIDController::getYawValue(float yawValue)
 {
-	return yawControl.getOutput(yawValue);
+	return yawControl.getOutput(yawValue - yawTarget);
 }
 
 //returns whether the current roll position is at the target (within a certain margin)
@@ -159,17 +159,17 @@ void RotPIDController::setYawPID(float kp, float ki, float kd)
 void RotPIDController::setRollTarget(float newTarget)
 {
 	rollTarget = newTarget;
-	rollControl.setSetpoint(newTarget);
+	//rollControl.setSetpoint(newTarget);
 }
 
 void RotPIDController::setPitchTarget(float newTarget)
 {
 	pitchTarget = newTarget;
-	pitchControl.setSetpoint(newTarget);
+	//pitchControl.setSetpoint(newTarget);
 }
 
 void RotPIDController::setYawTarget(float newTarget)
 {
 	yawTarget = newTarget;
-	yawControl.setSetpoint(newTarget);
+	//yawControl.setSetpoint(newTarget);
 }
