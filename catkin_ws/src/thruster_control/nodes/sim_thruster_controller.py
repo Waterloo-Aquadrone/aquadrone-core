@@ -8,7 +8,7 @@ from thruster_control.thruster_interfaces import SimulatedThrusterInterface
 
 
 if __name__ == "__main__":
-    tm = ThrusterManager(SimulatedThrusterInterface)
     rospy.init_node('sim_thruster_controller')
+    tm = ThrusterManager(SimulatedThrusterInterface)
     while not rospy.is_shutdown():
         rospy.sleep(1)

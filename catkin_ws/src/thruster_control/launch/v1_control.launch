@@ -1,0 +1,7 @@
+<launch>
+
+    <node name="sub_controller" pkg="thruster_control" type="v1_controller.py" output="screen"/>
+    <node name="thruster_controller" pkg="thruster_control" type="sim_thruster_controller.py" output="screen"/>
+    <node name="depth_pid" pkg="thruster_control" type="demo_depth_control.py"/>
+
+</launch>

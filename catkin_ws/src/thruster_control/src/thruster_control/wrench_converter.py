@@ -55,7 +55,10 @@ class WrenchConverter:
     def publish_command(self, force):
         thrusts = np.dot(self.transform, force)
         msg = MotorControls()
-        msg.motorThrusts = thrusts
+
+        th = np.ndarray.tolist(thrusts)[0]
+        print(th)
+        msg.motorThrusts = list(th)
         self.publisher.publish(msg)
 
     def get_empty_thrusts(self):
@@ -65,8 +68,3 @@ class WrenchConverter:
         return np.array([wrench.force.x, wrench.force.y, wrench.force.z, 
                          wrench.torque.x, wrench.torque.y, wrench.torque.z])
 
-if __name__ == "__main__":
-    rospy.init_node("wrench_transformer")
-    sc = WrenchConverter(get_wrench_to_thrusts_lb_in())
-
-    sc.run()

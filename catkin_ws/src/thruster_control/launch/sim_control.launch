@@ -1,6 +1,0 @@
-<launch>
-
-    <node name="wrench_transformer" pkg="thruster_control" type="wrench_converter.py" output="screen"/>
-    <node name="thruster_controller" pkg="thruster_control" type="sim_controller.py" output="screen"/>
-
-</launch>
