@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
   message_generation
 )
 
@@ -51,6 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    ThrusterControls.msg
+   AquadroneIMU.msg
 #   Message2.msg
  )
 
@@ -72,6 +74,7 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs
+   geometry_msgs
  )
 
 ################################################
