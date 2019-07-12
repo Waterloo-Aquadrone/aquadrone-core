@@ -24,6 +24,7 @@ RUN apt-get update && \
       ros-kinetic-gazebo-ros-pkgs \
       ros-kinetic-gazebo-ros-control \
       ros-kinetic-rviz \
+      ros-kinetic-message-to-tf \
       ros-kinetic-uuv-* && \
     rm -rf /var/lib/apt/lists/*
 
