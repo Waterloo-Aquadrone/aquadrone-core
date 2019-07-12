@@ -1,7 +1,7 @@
 import rospy
 from aquadrone_msgs.msg import MotorControls
 
-class ThrusterManager:
+class ThrusterCollectionManager:
     num_thrusters = 6
     
     def __init__(self, thrusters):

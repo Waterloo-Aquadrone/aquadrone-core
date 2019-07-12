@@ -2,7 +2,7 @@
 
 import rospy
 
-from thruster_control.thruster_manager import ThrusterManager
+from thruster_control.thruster_collection_manager import ThrusterCollectionManager
 from thruster_control.thruster_interfaces import SimulatedThrusterInterface
 
 
@@ -12,6 +12,6 @@ if __name__ == "__main__":
 
     thrusters = [SimulatedThrusterInterface(i) for i in range(0, 6)]
 
-    tm = ThrusterManager(thrusters)
+    tm = ThrusterCollectionManager(thrusters)
     while not rospy.is_shutdown():
         rospy.sleep(1)

@@ -35,8 +35,10 @@ class DemoDepthController:
 
 
     def depth_cb(self, msg):
-        self.depth = (msg.fluid_pressure - self.pressure_offset) / self.g
-        #print("depth = %f" % self.depth)
+        self.depth = self.pressure_to_m(msg.fluid_pressure)
+
+    def pressure_to_m(self, p):
+        return (p - self.pressure_offset) / self.g
 
     def run(self):
 
