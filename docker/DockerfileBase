@@ -14,6 +14,7 @@ RUN apt-get update && \
       vim \
       gedit \
       sudo \
+      python-pip \
       git-all && \
     rm -rf /var/lib/apt/lists/*
 
@@ -26,6 +27,7 @@ RUN apt-get update && \
       ros-kinetic-rviz \
       ros-kinetic-message-to-tf \
       ros-kinetic-uuv-* && \
+    pip install simple-pid && \
     rm -rf /var/lib/apt/lists/*
 
 
