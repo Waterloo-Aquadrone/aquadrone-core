@@ -29,14 +29,7 @@ class DemoDepthController:
         self.pressure_offset = 100.0
         self.g = 9.8
 
-        # In future, send to control accumulator node
-        self.th_0_pup = rospy.Publisher('aquadrone_v2/thrusters/0/input', FloatStamped, queue_size=3)
-        self.th_1_pup = rospy.Publisher('aquadrone_v2/thrusters/1/input', FloatStamped, queue_size=3)
-        self.th_4_pup = rospy.Publisher('aquadrone_v2/thrusters/4/input', FloatStamped, queue_size=3)
-        self.th_5_pup = rospy.Publisher('aquadrone_v2/thrusters/5/input', FloatStamped, queue_size=3)
-
         self.w_pub = rospy.Publisher('/depth_command', Wrench, queue_size=3)
-
         self.depth_sub = rospy.Subscriber("/depth_control/goal_depth", Float64, callback=self.goal_cb)
 
     def goal_cb(self, msg):
@@ -46,7 +39,6 @@ class DemoDepthController:
 
     def depth_cb(self, msg):
         self.depth = self.pressure_to_m(msg.fluid_pressure)
-        print(self.depth)
 
     def pressure_to_m(self, p):
         return (p - self.pressure_offset) / self.g
@@ -59,23 +51,10 @@ class DemoDepthController:
 
             self.rate.sleep()
 
-    def publish_thrusts(self, u):
-            self.send_command(self.th_0_pup, u)
-            self.send_command(self.th_1_pup, u)
-
-            self.send_command(self.th_4_pup, u)
-            self.send_command(self.th_5_pup, u)
-
     def publish_wrench(self, u):
         msg = Wrench()
         msg.force.z = u
         self.w_pub.publish(msg)
-
-
-    def send_command(self, pub, u):
-        msg = FloatStamped()
-        msg.data = u
-        pub.publish(msg)
 
 
 
