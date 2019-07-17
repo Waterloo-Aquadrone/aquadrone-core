@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # Originally based on files by Alex Werner for UW Robohub
 # Used with verbal permission
@@ -36,7 +36,7 @@ xhost +
 
 #ADDITIONAL_FLAGS="--detach"
 ADDITIONAL_FLAGS="--rm --interactive --tty"
-ADDITIONAL_FLAGS="$ADDITIONAL_FLAGS --device /dev/dri:/dev/dri --volume=/run/udev:/run/udev"
+ADDITIONAL_FLAGS="$ADDITIONAL_FLAGS --device /dev/dri:/dev/dri"
 
 
 IMAGE_NAME=aquadrone_latest
