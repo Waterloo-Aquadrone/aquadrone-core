@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot name="aquadrone_v2" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
+
+  <!-- Input debug flag -->
+  <xacro:arg name="debug" default="0"/>
+
+
+  <!-- Include the ROV macro file -->
+  <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
+  <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
+
+  <!-- Create the rov_example -->
+  <xacro:aquadrone_base debug="$(arg debug)" cog="0.02 0.02 0" cob="-0.02 -0.02 0"/>
+
+
+    <!-- Pressure  -->
+  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/pressure_snippets.xacro"/>
+  <xacro:default_pressure namespace="aquadrone_v2/out/" parent_link="base_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:default_pressure>
+
+  <!-- IMU -->
+  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/imu_snippets.xacro"/>
+  <xacro:default_imu namespace="aquadrone_v2/out/" parent_link="base_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:default_imu>
+
+
+
+
+  <xacro:thruster_macro thruster_id="0">
+    <origin xyz="0.4 0.4 0" rpy="0 ${pi/4} ${pi/2}"/>
+  </xacro:thruster_macro>
+
+  <xacro:thruster_macro thruster_id="1">
+    <origin xyz="0.4 -0.4 0" rpy="0 ${pi/4} ${-pi/2}"/>
+  </xacro:thruster_macro>
+
+
+  <xacro:thruster_macro thruster_id="2">
+    <origin xyz="0 0.4 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+
+  <xacro:thruster_macro thruster_id="3">
+    <origin xyz="0 -0.4 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+
+
+  <xacro:thruster_macro thruster_id="4">
+    <origin xyz="-0.4 0.4 0" rpy="0 ${-pi/4} ${pi/2}"/>
+  </xacro:thruster_macro>
+
+  <xacro:thruster_macro thruster_id="5">
+    <origin xyz="-0.4 -0.4 0" rpy="0 ${-pi/4} ${-pi/2}"/>
+  </xacro:thruster_macro>
+
+
+</robot>
