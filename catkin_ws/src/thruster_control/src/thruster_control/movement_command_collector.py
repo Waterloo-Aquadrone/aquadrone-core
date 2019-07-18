@@ -7,10 +7,15 @@ from geometry_msgs.msg import Wrench
 
 
 class CommandSubscriber:
+    # Should listen to a wrench command from some source topic
+    # Track the latest command, as well as the last time it was received
+
     def __init__(self, topic):
         self.cmd = Wrench()
         self.time = rospy.Time()
         self.sub = rospy.Subscriber(topic, Wrench, self.callback)
+
+        self.cmd_timeout = 0.5
 
     def callback(self, msg):
         self.cmd = msg
@@ -22,6 +27,7 @@ class CommandSubscriber:
 
 class MovementCommandCollector:
     def __init__(self):
+        # Set up command sources
         # First added is highest priority
         self.sources = []
         self.sources.append(CommandSubscriber("movement_command"))
@@ -30,16 +36,20 @@ class MovementCommandCollector:
     def get_recent_thrusts(self, drop=0):
         w = self.get_empty_wrench()
 
+        # Add commands from each source
         for i in range(0, len(self.sources) - drop):
             w = w + self.add_source_command(self.sources[i])
 
         return w
 
     def add_source_command(self, source):
+        # Return the latest command from the source
+        # Set to 0 if not received for some time
         cmd, dt = source.get_cmd()
-        if dt > 0.5:
+        cmd = self.wrench_to_np_array(cmd)
+        if dt > self.cmd_timeout:
             cmd = cmd * 0.0
-        return self.wrench_to_np_array(cmd)
+        return cmd
 
     def get_empty_wrench(self):
         return self.wrench_to_np_array(Wrench())

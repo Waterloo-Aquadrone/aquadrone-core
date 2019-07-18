@@ -3,13 +3,14 @@
 import rospy
 import numpy as np
 
-from thruster_control.configurations.v2_configuration import get_wrench_to_thrusts_lb_in
-
 from aquadrone_msgs.msg import MotorControls
 from geometry_msgs.msg import Wrench
 
 
 class ThrustCommandAllocator:
+    # Uses the mcc to gather all commands to sub
+    # Then uses configuration information to
+    #  transform wrench commands into thruster thrusts
     
     def __init__(self, w_to_t, mcc):
         self.transform = w_to_t
