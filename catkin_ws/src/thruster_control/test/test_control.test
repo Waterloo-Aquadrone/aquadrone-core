@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_controls" pkg="thruster_control" type="test_depth_control.py" />
+</launch>

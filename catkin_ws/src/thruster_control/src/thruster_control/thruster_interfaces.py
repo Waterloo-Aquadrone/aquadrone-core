@@ -8,8 +8,8 @@ from uuv_gazebo_ros_plugins_msgs.msg import FloatStamped
 
 
 class SimulatedThrusterInterface:
-    def __init__(self, id):
-        self.pub = rospy.Publisher("/aquadrone_v2/thrusters/%d/input" % id, FloatStamped, queue_size=2)
+    def __init__(self, ns, id):
+        self.pub = rospy.Publisher("/%s/thrusters/%d/input" % (ns, id), FloatStamped, queue_size=2)
         self.msg = FloatStamped()
 
     def command(self, th):

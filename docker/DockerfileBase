@@ -28,6 +28,7 @@ RUN apt-get update && \
       ros-kinetic-message-to-tf \
       ros-kinetic-uuv-* && \
     pip install simple-pid && \
+    pip install mock && \
     rm -rf /var/lib/apt/lists/*
 
 
