@@ -15,3 +15,7 @@ class SimulatedThrusterInterface:
     def command(self, th):
         self.msg.data = th
         self.pub.publish(self.msg)
+
+    def emergency():
+        self.msg.data = 0
+        self.pub.publish(self.msg)

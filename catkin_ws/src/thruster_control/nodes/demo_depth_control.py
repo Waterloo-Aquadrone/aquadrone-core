@@ -46,10 +46,13 @@ class DemoDepthController:
     def run(self):
 
         while not rospy.is_shutdown():
-            u = -self.pid(self.depth)
-            self.publish_wrench(u)
-
+            self.control_loop()
             self.rate.sleep()
+
+    def control_loop(self):
+        u = -self.pid(self.depth)
+        self.publish_wrench(u)
+
 
     def publish_wrench(self, u):
         msg = Wrench()

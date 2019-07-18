@@ -19,9 +19,12 @@ class ThrustCommandAllocator:
 
     def run(self):
         while not rospy.is_shutdown():
-            w = self.mcc.get_recent_thrusts()
-            self.publish_command(w)
+            self.control_loop()
             rospy.sleep(0.1)
+
+    def control_loop(self):
+        w = self.mcc.get_recent_thrusts()
+        self.publish_command(w)
 
 
     def publish_command(self, force):
