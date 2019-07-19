@@ -83,7 +83,9 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install dpkg
   - sudo apt-get install -y --allow-unauthenticated python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-ros-base
-  - sudo apt-get install -y --allow-unauthenticated ros-$ROS_DISTRO-xacro ros-$ROS_DISTRO-uuv*
+  - sudo apt-get install -y --allow-unauthenticated ros-$ROS_DISTRO-xacro ros-$ROS_DISTRO-uuv* ros-kinetic-message-to-tf
+  - sudo apt-get install -y --allow-unauthenticated python-pip
+  - sudo pip install mock simple-pid
   - source /opt/ros/$ROS_DISTRO/setup.bash
   # Prepare rosdep to install dependencies.
   - sudo rosdep init

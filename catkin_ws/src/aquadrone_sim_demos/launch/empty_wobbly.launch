@@ -5,7 +5,7 @@
     </include>
     
     <include file="$(find aquadrone_description)/launch/upload_sub.launch">
-        <arg name="model_file" default="v2_wobbly.urdf.xacro"/>
+        <arg name="model_file" value="v2_wobbly.urdf.xacro"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/spawn_sub.launch">

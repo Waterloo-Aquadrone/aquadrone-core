@@ -8,7 +8,7 @@
 
 
   <!-- Include the ROV macro file -->
-  <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
+  <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v1.urdf.xacro"/>
   <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
 
   <!-- Create the rov_example -->
@@ -31,11 +31,11 @@
 
 
   <xacro:thruster_macro thruster_id="0">
-    <origin xyz="0.4 0.4 0" rpy="0 ${pi/4} ${pi/2}"/>
+    <origin xyz="0.4 0.4 0" rpy="0 -${pi/2} 0"/>
   </xacro:thruster_macro>
 
   <xacro:thruster_macro thruster_id="1">
-    <origin xyz="0.4 -0.4 0" rpy="0 ${pi/4} ${-pi/2}"/>
+    <origin xyz="0.4 -0.4 0" rpy="0 -${pi/2} 0"/>
   </xacro:thruster_macro>
 
 
@@ -49,11 +49,11 @@
 
 
   <xacro:thruster_macro thruster_id="4">
-    <origin xyz="-0.4 0.4 0" rpy="0 ${pi/4} ${pi/2}"/>
+    <origin xyz="-0.4 0.4 0" rpy="0 -${pi/2} 0"/>
   </xacro:thruster_macro>
 
   <xacro:thruster_macro thruster_id="5">
-    <origin xyz="-0.4 -0.4 0" rpy="0 ${pi/4} ${-pi/2}"/>
+    <origin xyz="-0.4 -0.4 0" rpy="0 -${pi/2} 0"/>
   </xacro:thruster_macro>
 
 

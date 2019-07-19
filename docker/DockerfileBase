@@ -14,6 +14,7 @@ RUN apt-get update && \
       vim \
       gedit \
       sudo \
+      python-pip \
       git-all && \
     rm -rf /var/lib/apt/lists/*
 
@@ -24,7 +25,10 @@ RUN apt-get update && \
       ros-kinetic-gazebo-ros-pkgs \
       ros-kinetic-gazebo-ros-control \
       ros-kinetic-rviz \
+      ros-kinetic-message-to-tf \
       ros-kinetic-uuv-* && \
+    pip install simple-pid && \
+    pip install mock && \
     rm -rf /var/lib/apt/lists/*
 
 
