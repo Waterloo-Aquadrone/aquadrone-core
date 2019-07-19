@@ -1,0 +1,15 @@
+<launch>
+
+    <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
+        <arg name="paused" value="false"/>
+    </include>
+    
+    <include file="$(find aquadrone_description)/launch/upload_sub.launch">
+        <arg name="model_file" default="v2_wobbly.urdf.xacro"/>
+    </include>
+    
+    <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
+        <arg name="model" value="aquadrone_v2"/>
+    </include>
+
+</launch>
