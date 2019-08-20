@@ -60,7 +60,7 @@ public:
 	void getMotorValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut);
 
 	//runs pid without returning values
-	void runPID(float, float, float);
+	void runPID(float&, float&, float&);
 
 	//returns just roll pid output
 	float getRollValue(float rollValue);
@@ -105,7 +105,7 @@ public:
 	void setYawTarget(float newTarget);
 
 	//***NEW*** startRosLoop will return a nodehandle pointer and subscribers
-	ros::NodeHandle* startRosLoop(int, char**/*,ros::Subscriber*&, ros::Subscriber*&*/);
+	void startRosLoop(int, char**/*,ros::Subscriber*&, ros::Subscriber*&*/);
 
 	void setTargets(geometry_msgs::Vector3);
 

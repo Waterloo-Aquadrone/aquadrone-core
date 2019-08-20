@@ -66,6 +66,7 @@ RotPIDController::RotPIDController():
 	yawControl.setSetpoint(0);
 
 	rollFlip = pitchFlip = yawFlip = false;
+	std::cout<<"a"<<std::endl;
 }
 
 //LOOP FUNCTIONS (TO BE CALLED IN A LOOP THING)
@@ -81,11 +82,13 @@ void RotPIDController::getMotorValues(float rollValue, float pitchValue, float y
 	yawOut = yawControl.getOutput(yawValue - yawTarget);
 }
 
-void RotPIDController::runPID(float pReturn, float rReturn, float yReturn)
+void RotPIDController::runPID(float&pReturn, float&rReturn, float&yReturn)
 {
-	rReturn = rollControl.getOutput(rollVal);
-	pReturn = pitchControl.getOutput(pitchVal);
-	yReturn = yawControl.getOutput(yawVal);
+	rReturn = rollControl.getOutput(rollVal - rollTarget);
+	pReturn = pitchControl.getOutput(pitchVal - pitchTarget);
+	yReturn = yawControl.getOutput(yawVal-yawTarget);
+	//std::cout<<rReturn<<" "<<pReturn<<" "<<yReturn<<" "<<std::endl;
+	//std::cout<<"runningPID"<<std::endl;
 }
 
 
@@ -208,9 +211,11 @@ void RotPIDController::setYawTarget(float newTarget)
 
 void RotPIDController::setTargets(geometry_msgs::Vector3 input)
 {
+	//std::cout<<"f"<<std::endl;
 	pitchTarget = input.y;
 	rollTarget = input.x;
 	yawTarget = input.z;
+	//std::cout<<"hi"<<std::endl;
 }
 
 void RotPIDController::setInputs(sensor_msgs::Imu input)
@@ -219,21 +224,22 @@ void RotPIDController::setInputs(sensor_msgs::Imu input)
   	pitchVal = angles.pitch;
   	yawVal = angles.yaw;
   	rollVal = angles.roll;
-	std::cout<<"hi"<<std::endl;
+	//std::cout<<pitchVal<<" "<< yawVal<< " " << rollVal <<std::endl;
 }
 
-ros::NodeHandle* RotPIDController::startRosLoop(int argc, char** argv/*, ros::Subscriber*&subTarget, ros::Subscriber*&subSensor*/)
+//has become obsolete, not being used
+void RotPIDController::startRosLoop(int argc, char** argv/*, ros::Subscriber*&subTarget, ros::Subscriber*&subSensor*/)
 {
-	ros::init(argc, argv, "pidLoop");
-	ros::NodeHandle n;
+	//ros::init(argc, argv, "pidLoop");
+	//ros::NodeHandle n;
 	//previous code
-	
-	ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, this);
-	ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, this);
+			//move subscriber things to stability_node
+	//ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, this);
+	//ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, this);
 	//experimental loop stuff
 	//subTarget = &target;
 	//subSensor = &sensor;
-	return &n;
+	//return &n;
 
 	//new loop code
 	//target = node.subscribe("target_topic", 50, &RotPIDController::setTargets, this);

@@ -48,36 +48,51 @@ int main(int argc, char **argv)
     //experimental loop stuff
     //ros::Subscriber* subSensor;
     //ros::Subscriber* subTarget;
-    //ros::NodeHandle* subs = rotCtrl.startRosLoop(argc, argv, subTarget, subSensor);
 
+    //startRosLoop has become sort of obselete
+    //ros::NodeHandle* subs = rotCtrl.startRosLoop(argc, argv);
+
+  std::cout<<"b"<<std::endl;
 
   ros::init(argc, argv, "stability");
 
-
   ros::NodeHandle n;
 
-
   ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 100);
+  //ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, &rotCtrl);
+ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
+  std::cout<<"c"<<std::endl;
   
-    std::cout<<"ITSLITFAM";
+
   ros::Rate r(5);
-    while(ros::ok())
+  while(ros::ok())
 	{
         float pMotor = 0;
         float yMotor = 0;
         float rMotor = 0;
         //rotCtrl.runSubs(argc, argv); //new looping subscriber code
-		rotCtrl.runPID(pMotor, rMotor, yMotor);
-
+        geometry_msgs::Vector3 target;
+        target.x = 0;
+        target.y = 0;
+        target.z = 0;
+        rotCtrl.setTargets(target);
+		    rotCtrl.runPID(pMotor, rMotor, yMotor);
+        //std::cout<<pMotor<<" "<<rMotor<<" "<<yMotor<<" "<<std::endl;
         geometry_msgs::Wrench returnVal;
-        returnVal.torque.x = rMotor;
-        returnVal.torque.y = pMotor;
-        returnVal.torque.z = yMotor;
+
+        returnVal.torque.x = double(rMotor);
+        returnVal.torque.y = double(pMotor);
+        returnVal.torque.z = double(yMotor);
+        std::cout<<returnVal.torque<<std::endl;
         //experimental loop stuff
         //ros::Subscriber target = *subTarget;
         //ros::Subscriber sensor = *subSensor;
-
+        //subscribers
+        
+        //ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, &rotCtrl);
+        
         motorPub.publish(returnVal);
+        ros::spinOnce();
 		r.sleep();
 	}
 
