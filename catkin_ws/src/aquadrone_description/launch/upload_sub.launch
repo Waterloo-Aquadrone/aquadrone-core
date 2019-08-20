@@ -1,0 +1,6 @@
+<launch>
+    <arg name="model_file" default="v2.urdf.xacro"/>
+    <arg name="param_name" default="robot_description"/>
+
+    <param name="$(arg param_name)" command="$(find xacro)/xacro.py '$(find aquadrone_description)/models/$(arg model_file)'"/>
+</launch>
