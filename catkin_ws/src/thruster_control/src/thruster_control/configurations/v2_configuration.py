@@ -23,7 +23,8 @@ class V2Configuration:
         return np.column_stack((th_0, th_1, th_2, th_3, th_4, th_5))
 
     def get_wrench_to_thrusts_lb_in(self):
-
+        return np.linalg.pinv(self.get_thrusts_to_wrench())
+        '''
         xLength = 36.0
         yLength = 12.0
 
@@ -42,5 +43,5 @@ class V2Configuration:
 
         thrustMatrix = np.column_stack((relativeXThrusts, relativeYThrusts, relativeZThrusts, 
                     relativeRollThrusts, relativePitchThrusts, relativeYawThrusts))
-
+        '''
         return thrustMatrix
