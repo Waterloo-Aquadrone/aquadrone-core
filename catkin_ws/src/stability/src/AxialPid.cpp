@@ -12,7 +12,7 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	//initializing PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 1;
+	OUT_LIMIT = 5;
 	MARGIN = 0.5;
 	//setting output limits
 	rollControl.setOutputLimits(OUT_LIMIT);
@@ -32,7 +32,7 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	//setting PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 1;
+	OUT_LIMIT = 5;
 	MARGIN = 0.5;
 	//setting pid limits
 	rollControl.setOutputLimits(OUT_LIMIT);
@@ -53,7 +53,7 @@ RotPIDController::RotPIDController():
 	//initializing PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 1;
+	OUT_LIMIT = 5;
 	MARGIN = 0.5;
 	//setting pid limits
 	rollControl.setOutputLimits(OUT_LIMIT);

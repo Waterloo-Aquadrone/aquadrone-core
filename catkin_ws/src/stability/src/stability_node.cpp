@@ -42,9 +42,12 @@ void stabilityMotorLoop(sensor_msgs::Imu input)
 int main(int argc, char **argv)
 {
     RotPIDController rotCtrl;
-    rotCtrl.setPitchPID(1,1,1);
-    rotCtrl.setRollPID(1,1,1);
-    rotCtrl.setYawPID(1,1,1);
+    double kp = 0.1;
+    double ki = 0.0001;
+    double kd = 5;
+    rotCtrl.setPitchPID(kp,ki,kd);
+    rotCtrl.setRollPID(kp,ki,kd);
+    rotCtrl.setYawPID(kp,ki,kd);
     //experimental loop stuff
     //ros::Subscriber* subSensor;
     //ros::Subscriber* subTarget;
