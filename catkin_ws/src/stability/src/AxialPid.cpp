@@ -67,7 +67,6 @@ RotPIDController::RotPIDController():
 	std::cout<<"a"<<std::endl;
 }
 
-//LOOP FUNCTIONS (TO BE CALLED IN A LOOP THING)
 	
 //returns all pid outputs in a vector in this order (roll, pitch, yaw)
 void RotPIDController::getMotorValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut)
@@ -85,8 +84,7 @@ void RotPIDController::runPID(float&pReturn, float&rReturn, float&yReturn)
 	rReturn = rollControl.getOutput(rollVal - rollTarget);
 	pReturn = pitchControl.getOutput(pitchVal - pitchTarget);
 	yReturn = yawControl.getOutput(yawVal-yawTarget);
-	//std::cout<<rReturn<<" "<<pReturn<<" "<<yReturn<<" "<<std::endl;
-	//std::cout<<"runningPID"<<std::endl;
+
 }
 
 
@@ -141,7 +139,7 @@ bool RotPIDController::atTarget(float rollValue, float pitchValue, float yawValu
 	return atRollTarget(rollValue) && atPitchTarget(pitchValue) && atYawTarget(yawValue);
 }
 
-//SPECIALTY FUNCTIONS (called not in a loop)
+
 
 //flips pid control (for if the robot is moving away from target instead of towards it)
 void RotPIDController::flipRoll()
@@ -209,48 +207,19 @@ void RotPIDController::setYawTarget(float newTarget)
 
 void RotPIDController::setTargets(geometry_msgs::Vector3 input)
 {
-	//std::cout<<"f"<<std::endl;
 	pitchTarget = input.y;
 	rollTarget = input.x;
 	yawTarget = input.z;
-	//std::cout<<"hi"<<std::endl;
 }
 
 void RotPIDController::setInputs(sensor_msgs::Imu input)
 {
-  	EulerAngles angles = ToEulerAngles(input.orientation);
+  	EulerAngles angles = ToEulerAngles(input);
   	pitchVal = angles.pitch;
   	yawVal = angles.yaw;
-  	rollVal = angles.roll;
-	//std::cout<<pitchVal<<" "<< yawVal<< " " << rollVal <<std::endl;
+  	rollVal = angles.roll;	
 }
 
-//has become obsolete, not being used
-void RotPIDController::startRosLoop(int argc, char** argv/*, ros::Subscriber*&subTarget, ros::Subscriber*&subSensor*/)
-{
-	//ros::init(argc, argv, "pidLoop");
-	//ros::NodeHandle n;
-	//previous code
-			//move subscriber things to stability_node
-	//ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, this);
-	//ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, this);
-	//experimental loop stuff
-	//subTarget = &target;
-	//subSensor = &sensor;
-	//return &n;
-
-	//new loop code
-	//target = node.subscribe("target_topic", 50, &RotPIDController::setTargets, this);
-	//sensor = node.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, this);
-	/*
-	ros::Rate r(5);
-	while(ros::ok())
-	{
-		runPID(rollVal, pitchVal, yawVal);
-		r.sleep();
-	}
-	*/
-}
 
 void RotPIDController::runSubs(int argc, char** argv)
 {
@@ -263,25 +232,25 @@ void RotPIDController::runSubs(int argc, char** argv)
 
 
 //copied from wikipedia
-RotPIDController::EulerAngles RotPIDController::ToEulerAngles(geometry_msgs::Quaternion q)
+RotPIDController::EulerAngles RotPIDController::ToEulerAngles(sensor_msgs::Imu input)
 {
     EulerAngles angles;
 
     // roll (x-axis rotation)
-    double sinr_cosp = +2.0 * (q.w * q.x + q.y * q.z);
-    double cosr_cosp = +1.0 - 2.0 * (q.x * q.x + q.y * q.y);
+    double sinr_cosp = +2.0 * (input.orientation.w * input.orientation.x + input.orientation.y * input.orientation.z);
+    double cosr_cosp = +1.0 - 2.0 * (input.orientation.x * input.orientation.x + input.orientation.y * input.orientation.y);
     angles.roll = atan2(sinr_cosp, cosr_cosp);
 
     // pitch (y-axis rotation)
-    double sinp = +2.0 * (q.w * q.y - q.z * q.x);
+    double sinp = +2.0 * (input.orientation.w * input.orientation.y - input.orientation.z * input.orientation.x);
     if (fabs(sinp) >= 1)
         angles.pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
     else
         angles.pitch = asin(sinp);
 
     // yaw (z-axis rotation)
-    double siny_cosp = +2.0 * (q.w * q.z + q.x * q.y);
-    double cosy_cosp = +1.0 - 2.0 * (q.y * q.y + q.z * q.z);  
+    double siny_cosp = +2.0 * (input.orientation.w * input.orientation.z + input.orientation.x * input.orientation.y);
+    double cosy_cosp = +1.0 - 2.0 * (input.orientation.y * input.orientation.y + input.orientation.z * input.orientation.z);  
     angles.yaw = atan2(siny_cosp, cosy_cosp);
 
     return angles;
