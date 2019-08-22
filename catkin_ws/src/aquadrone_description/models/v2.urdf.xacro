@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="aquadrone_v2" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+<robot name="aquadrone" xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
 <!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
 
@@ -17,13 +17,13 @@
 
     <!-- Pressure  -->
   <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/pressure_snippets.xacro"/>
-  <xacro:default_pressure namespace="aquadrone_v2/out/" parent_link="base_link">
+  <xacro:default_pressure namespace="aquadrone/out/" parent_link="base_link">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:default_pressure>
 
   <!-- IMU -->
   <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/imu_snippets.xacro"/>
-  <xacro:default_imu namespace="aquadrone_v2/out/" parent_link="base_link">
+  <xacro:default_imu namespace="aquadrone/out/" parent_link="base_link">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:default_imu>
 

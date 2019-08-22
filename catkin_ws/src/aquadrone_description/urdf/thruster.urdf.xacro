@@ -49,9 +49,9 @@
 
         <gain>1</gain>
 
-        <clampMax>1</clampMax>
+        <clampMax>10</clampMax>
 
-        <clampMin>-1</clampMin>
+        <clampMin>-10</clampMin>
 
    
         <thrust_efficiency>1</thrust_efficiency>

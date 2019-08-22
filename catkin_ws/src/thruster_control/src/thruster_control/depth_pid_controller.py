@@ -12,9 +12,9 @@ class DepthPIDController:
         rospy.init_node('depth_control')
         self.depth = 0
 
-        self.Kp = 100
-        self.Kd = 20
-        self.Ki = 0.05
+        self.Kp = 1
+        self.Kd = 5
+        self.Ki = 0.0005
 
         self.loop_rate = 10.0
         self.rate = rospy.Rate(self.loop_rate)
@@ -23,7 +23,7 @@ class DepthPIDController:
         self.pid.sample_time = 1.0 / self.loop_rate 
 
         # In future, take in state estimation, and not sensor reading
-        self.depth_sub = rospy.Subscriber('aquadrone_v2/out/pressure', FluidPressure, self.depth_cb)
+        self.depth_sub = rospy.Subscriber('aquadrone/out/pressure', FluidPressure, self.depth_cb)
 
         self.pressure_offset = 100.0
         self.g = 9.8

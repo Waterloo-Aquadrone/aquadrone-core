@@ -43,8 +43,8 @@ int main(int argc, char **argv)
 {
     RotPIDController rotCtrl;
     double kp = 0.1;
-    double ki = 0.0001;
-    double kd = 5;
+    double ki = 0.00001;
+    double kd = 1;
     rotCtrl.setPitchPID(kp,ki,kd);
     rotCtrl.setRollPID(kp,ki,kd);
     rotCtrl.setYawPID(kp,ki,kd);
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
   ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 100);
   //ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, &rotCtrl);
-ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
+  ros::Subscriber sensor = n.subscribe("aquadrone/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
   std::cout<<"c"<<std::endl;
   
 
