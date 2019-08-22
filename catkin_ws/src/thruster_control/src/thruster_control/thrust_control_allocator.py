@@ -25,7 +25,6 @@ class ThrustCommandAllocator:
 
     def control_loop(self):
         w = self.mcc.get_recent_thrusts()
-        print(w)
         self.publish_command(w)
 
 
