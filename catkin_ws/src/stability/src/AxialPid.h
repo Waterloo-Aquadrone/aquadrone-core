@@ -3,11 +3,9 @@
 #ifndef AXIALPID_H
 #define AXIALPID_H
 #include "MiniPID.h"
-#include </opt/ros/kinetic/include/std_msgs/Float64.h>
-#include </opt/ros/kinetic/include/sensor_msgs/Imu.h>
-#include </opt/ros/kinetic/include/ros/ros.h>
-#include </opt/ros/kinetic/include/geometry_msgs/Quaternion.h>
-#include </opt/ros/kinetic/include/geometry_msgs/Vector3.h>
+#include <sensor_msgs/Imu.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Vector3.h>
 
 class RotPIDController {
 private:

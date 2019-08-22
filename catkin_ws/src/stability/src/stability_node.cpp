@@ -1,7 +1,7 @@
-#include </opt/ros/kinetic/include/ros/ros.h>
-#include </opt/ros/kinetic/include/geometry_msgs/Wrench.h>
-#include </opt/ros/kinetic/include/sensor_msgs/Imu.h>
-#include </opt/ros/kinetic/include/std_msgs/Float64.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Wrench.h>
+#include <sensor_msgs/Imu.h>
+#include <std_msgs/Float64.h>
 #include <cmath>
 
 #include "MiniPID.h"
@@ -42,12 +42,9 @@ void stabilityMotorLoop(sensor_msgs::Imu input)
 int main(int argc, char **argv)
 {
     RotPIDController rotCtrl;
-    double kp = 0.1;
-    double ki = 0.00001;
-    double kd = 1;
-    rotCtrl.setPitchPID(kp,ki,kd);
-    rotCtrl.setRollPID(kp,ki,kd);
-    rotCtrl.setYawPID(kp,ki,kd);
+    rotCtrl.setPitchPID(1,1,1);
+    rotCtrl.setRollPID(1,1,1);
+    rotCtrl.setYawPID(1,1,1);
     //experimental loop stuff
     //ros::Subscriber* subSensor;
     //ros::Subscriber* subTarget;
@@ -63,7 +60,7 @@ int main(int argc, char **argv)
 
   ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 100);
   //ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, &rotCtrl);
-  ros::Subscriber sensor = n.subscribe("aquadrone/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
+ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
   std::cout<<"c"<<std::endl;
   
 
@@ -75,9 +72,9 @@ int main(int argc, char **argv)
         float rMotor = 0;
         //rotCtrl.runSubs(argc, argv); //new looping subscriber code
         geometry_msgs::Vector3 target;
-        target.x = 0;
-        target.y = 0;
-        target.z = 0;
+        target.x = 0.5;
+        target.y = 0.5;
+        target.z = 0.5;
         rotCtrl.setTargets(target);
 		    rotCtrl.runPID(pMotor, rMotor, yMotor);
         //std::cout<<pMotor<<" "<<rMotor<<" "<<yMotor<<" "<<std::endl;

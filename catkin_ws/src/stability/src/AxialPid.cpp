@@ -1,9 +1,7 @@
 #include "AxialPid.h"
-#include </opt/ros/kinetic/include/std_msgs/Float64.h>
-#include </opt/ros/kinetic/include/geometry_msgs/Vector3.h>
-#include </opt/ros/kinetic/include/sensor_msgs/Imu.h>
-#include </opt/ros/kinetic/include/ros/ros.h>
-#include </opt/ros/kinetic/include/geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Vector3.h>
+#include <sensor_msgs/Imu.h>
+#include <ros/ros.h>
 #include <cmath>
 
 RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, float newPKp, float newPKi, float newPKd, float newYKp, float newYKi, float newYKd, float rTarget, float pTarget, float yTarget) :
@@ -12,7 +10,7 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	//initializing PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 5;
+	OUT_LIMIT = 1;
 	MARGIN = 0.5;
 	//setting output limits
 	rollControl.setOutputLimits(OUT_LIMIT);
@@ -32,7 +30,7 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	//setting PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 5;
+	OUT_LIMIT = 1;
 	MARGIN = 0.5;
 	//setting pid limits
 	rollControl.setOutputLimits(OUT_LIMIT);
@@ -53,7 +51,7 @@ RotPIDController::RotPIDController():
 	//initializing PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 5;
+	OUT_LIMIT = 1;
 	MARGIN = 0.5;
 	//setting pid limits
 	rollControl.setOutputLimits(OUT_LIMIT);
