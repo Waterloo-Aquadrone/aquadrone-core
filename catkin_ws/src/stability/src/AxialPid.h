@@ -55,7 +55,7 @@ public:
 	//LOOP FUNCTIONS (TO BE CALLED IN A LOOP THING)
 
 	//returns all pid outputs in a vector in this order (roll, pitch, yaw)
-	void getMotorValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut);
+	void getCommandValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut);
 
 	//runs pid without returning values
 	void runPID(float&, float&, float&);

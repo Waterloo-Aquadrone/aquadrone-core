@@ -4,9 +4,7 @@
 #include <std_msgs/Float64.h>
 #include <cmath>
 
-#include "MiniPID.h"
 #include "AxialPid.h"
-#include "DepthPid.h"
 
 int main(int argc, char **argv)
 {

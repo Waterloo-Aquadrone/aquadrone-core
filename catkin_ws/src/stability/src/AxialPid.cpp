@@ -69,7 +69,7 @@ RotPIDController::RotPIDController():
 
 	
 //returns all pid outputs in a vector in this order (roll, pitch, yaw)
-void RotPIDController::getMotorValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut)
+void RotPIDController::getCommandValues(float rollValue, float pitchValue, float yawValue, float& rollOut, float& pitchOut, float& yawOut)
 {
 	rollVal = rollValue;
 	pitchVal = pitchValue;
@@ -231,7 +231,7 @@ void RotPIDController::runSubs(int argc, char** argv)
 }
 
 
-//copied from wikipedia
+//copied from wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
 RotPIDController::EulerAngles RotPIDController::ToEulerAngles(sensor_msgs::Imu input)
 {
     EulerAngles angles;
