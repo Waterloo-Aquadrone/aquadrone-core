@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 100);
-  //ros::Subscriber target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, &rotCtrl);
+  ros::Subscriber target = n.subscribe("orientation_Target", 50, &RotPIDController::setTargets, &rotCtrl);
   ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
   std::cout<<"c"<<std::endl;
   
