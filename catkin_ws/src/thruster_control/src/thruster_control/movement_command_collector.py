@@ -27,6 +27,7 @@ class MovementCommandCollector:
         # Set up command sources
         # First added is highest priority
         self.sources = []
+        self.sources.append(CommandSubscriber("motorStability"))
         self.sources.append(CommandSubscriber("depth_command"))
         self.sources.append(CommandSubscriber("movement_command"))
 

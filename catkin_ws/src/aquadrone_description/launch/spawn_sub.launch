@@ -1,5 +1,5 @@
 <launch>
-<arg name="model" default="aquadrone_v2"/>
+<arg name="model" default="aquadrone"/>
 <arg name="param_name" default="robot_description"/>
 
   <!-- Vehicle's initial pose -->
