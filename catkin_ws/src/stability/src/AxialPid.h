@@ -118,7 +118,7 @@ public:
     double roll, pitch, yaw;
 	};
 
-	EulerAngles ToEulerAngles(geometry_msgs::Quaternion);
+	EulerAngles ToEulerAngles(sensor_msgs::Imu);
 };
 
 	
