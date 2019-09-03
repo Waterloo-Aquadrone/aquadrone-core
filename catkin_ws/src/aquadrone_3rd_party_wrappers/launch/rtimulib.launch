@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="update_rate" default="50"/>
+    <arg name="frame_id" default="base_link"/>
+    <arg name="imu_topic" default="aquadrone/out/imu"/>
+
+    <node pkg="rtimulib_ros" type="rtimulib_ros" name="rtimulib_node" output="screen">
+        <param name="calibration_file_path" value="$(find rtimulib_ros)/config"/>
+        <param name="frame_id" value="$(arg frame_id)"/> <!-- /map is used for debug in RViz, to be replaced by the imu_link -->
+        <param name="update_rate" value="$(arg update_rate)"/>
+        <remap from="/imu/data" to="$(arg imu_topic)"/>
+    </node>
+</launch>
