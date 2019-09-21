@@ -1,5 +1,7 @@
 import math
 import numpy as np
+from tf.transformations import euler_matrix
+
 
 from geometry_msgs.msg import Wrench
 
@@ -8,9 +10,9 @@ def vector_to_wrench(v):
     w.force.x = v[0]
     w.force.y = v[1]
     w.force.z = v[2]
-    w.torque.x = v[0]
-    w.torque.y = v[1]
-    w.torque.z = v[2]
+    w.torque.x = v[3]
+    w.torque.y = v[4]
+    w.torque.z = v[5]
     return w
 
 def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
@@ -56,6 +58,9 @@ def Roll(r):
                 ])
 
 def RPY_Matrix(r, p, y):
+    #    Re = euler_matrix(alpha, beta, gamma, 'rxyz')
+    R = euler_matrix(r, p, y, 'sxyz')
+    return R[0:3, 0:3]
     r = Roll(r)
     p = Pitch(p)
     y = Yaw(y)
