@@ -9,7 +9,7 @@ class V2Configuration:
         self.in2m = 2.54 * 0.01
 
         self.dX = 24.0 * self.in2m * 0.5
-        self.dY = 24.0 * self.in2m * 0.5
+        self.dY = 20.0 * self.in2m * 0.5
         self.dZ = 0.0
 
         self.a2 = math.pi / 2.0
