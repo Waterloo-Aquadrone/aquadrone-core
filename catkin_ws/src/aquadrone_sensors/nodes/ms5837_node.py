@@ -8,12 +8,6 @@ from ms5837_python import ms5837
 port = 1
 #-------
 
-'''DepthSensor.msg
-float64 pressure
-float64 temperature
-float64 depth
-'''
-
 sensor = ms5837.MS5837_30BA(port)
 
 if not sensor.init():
