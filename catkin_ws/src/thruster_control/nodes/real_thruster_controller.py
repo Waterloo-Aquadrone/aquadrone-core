@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import rospy
 import rospkg
@@ -8,7 +8,7 @@ from aquadrone_msgs.msg import MotorControls
 from thruster_control.thruster_collection_manager import ThrusterCollectionManager
 from thruster_control.thruster_interfaces import SimulatedThrusterInterface
 
-import RPi.GPIO as GPIO
+import Jetson.GPIO as GPIO
 
 class ThrusterCollectionManager:
     
@@ -18,7 +18,7 @@ class ThrusterCollectionManager:
         rospack = rospkg.RosPack()
         config_path = rospack.get_path('thruster_control') + "/config"
 
-        self.pwmData = np.genfromtxt( config_path +  "/Motor PWM Width - Thrust Relation.csv", delimiter=",")
+        self.pwmData = np.genfromtxt( config_path +  "/pwm_thrust_conversion.csv", delimiter=",")
         #microseconds
         self.pwmSignals = pwmData[:, 0]
         #pounds
@@ -57,11 +57,11 @@ class ThrusterCollectionManager:
 
     def thrust_to_pwm(self, thrust):
         thrustPWM = np.interp(thrust, motorThrusts, pwmSignals)
-		thrustPWM = thrustPWM / 200.0 - self.pwmOffset
+        thrustPWM = thrustPWM / 200.0 - self.pwmOffset
         return thrustPWM
 
     def remove_pwm(self):
-        for pwn im self.pwm:
+        for pwn in self.pwm:
             pwm.stop()
 
 
