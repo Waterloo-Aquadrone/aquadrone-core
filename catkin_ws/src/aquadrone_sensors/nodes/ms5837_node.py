@@ -13,7 +13,7 @@ sensor = ms5837.MS5837_30BA(port)
 if not sensor.init():
     rospy.core.logerr("unable to init ms5837, depth sensor")
 else:
-    pub = rospy.Publisher('/aquadrone_v2/out/pressure', FluidPressure)
+    pub = rospy.Publisher('/aquadrone/out/pressure', FluidPressure)
     rospy.init_node('depth_sensor')
     rate = rospy.Rate(10)
 
