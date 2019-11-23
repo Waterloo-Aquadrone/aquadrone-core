@@ -23,6 +23,7 @@ DOCKER_GPU_ARGS="--env DISPLAY=unix${DISPLAY} --env QT_X11_NO_MITSHM=1 --volume=
 which nvidia-docker > /dev/null 2> /dev/null
 HAS_NVIDIA_DOCKER=$?
 if [ $HAS_NVIDIA_DOCKER -eq 0 ]; then
+  echo "Using nvidia-docker"
   DOCKER_COMMAND=nvidia-docker
   DOCKER_GPU_ARGS="$DOCKER_GPU_ARGS --env NVIDIA_VISIBLE_DEVICES=all --env NVIDIA_DRIVER_CAPABILITIES=all"
 else
