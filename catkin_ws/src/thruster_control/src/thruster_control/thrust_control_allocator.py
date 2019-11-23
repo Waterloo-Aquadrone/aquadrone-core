@@ -30,9 +30,10 @@ class ThrustCommandAllocator:
 
     def publish_command(self, force):
         thrusts = self.config.wrench_to_thrusts(force)
-
+        thrusts = thrusts.tolist()[0]
+        print(thrusts)
         msg = MotorControls()
-        msg.motorThrusts = list(thrusts)
+        msg.motorThrusts = [float(th) for th in thrusts]
         self.publisher.publish(msg)
 
 

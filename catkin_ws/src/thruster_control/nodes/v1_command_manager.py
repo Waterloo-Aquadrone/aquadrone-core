@@ -16,7 +16,7 @@ if __name__ == "__main__":
     mcc = MovementCommandCollector()
 
     config = V1Configuration()
-    transform_mat = config.get_wrench_to_thrusts_lb_in()
+    config.initialize()
 
-    tca = ThrustCommandAllocator(transform_mat, mcc)
+    tca = ThrustCommandAllocator(config, mcc)
     tca.run()

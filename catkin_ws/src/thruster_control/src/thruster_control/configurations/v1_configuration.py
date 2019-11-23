@@ -11,8 +11,11 @@ class V1Configuration:
         self.a2 = math.pi / 2.0
         self.a4 = math.pi / 4.0
 
+        self.A_inv = None
+
     def initialize(self):
-        pass
+        self.A_inv = np.linalg.pinv(self.get_thrusts_to_wrench_matrix())
+
 
     def get_thrusts_to_wrench_matrix(self):
         th_0 = gh.get_thruster_wrench_vector(x=self.dX,        y=self.dY,   z=0,  roll=0,  pitch=-self.a2,  yaw=0)
@@ -23,5 +26,6 @@ class V1Configuration:
         th_5 = gh.get_thruster_wrench_vector(x=-self.dX,       y=-self.dY,  z=0,  roll=0,  pitch=-self.a2,  yaw=0)
         return np.column_stack((th_0, th_1, th_2, th_3, th_4, th_5))
 
-    def get_wrench_to_thrusts_lb_in(self):
-        return np.linalg.pinv(self.get_thrusts_to_wrench())
+    def wrench_to_thrusts(self, wrench_vec):
+        th =  np.dot(self.A_inv, wrench_vec)
+        return th
