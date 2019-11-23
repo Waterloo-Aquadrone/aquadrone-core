@@ -12,7 +12,7 @@
   <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
 
   <!-- Create the rov_example -->
-  <xacro:aquadrone_base debug="$(arg debug)" cog="0.0000001 0.0000001 0" cob="-0.0000001 -0.0000001 0"/>
+  <xacro:aquadrone_base debug="$(arg debug)" cog="0 0 0" cob="0 0 0"/>
 
 
     <!-- Pressure  -->
@@ -31,29 +31,32 @@
 
 
   <xacro:thruster_macro thruster_id="0">
-    <origin xyz="0.4 0.4 0" rpy="0 ${pi/4} ${pi/2}"/>
+    <origin xyz="0.4 0.4 -0.2" rpy="0 ${pi/2} 0"/>
   </xacro:thruster_macro>
-
   <xacro:thruster_macro thruster_id="1">
-    <origin xyz="0.4 -0.4 0" rpy="0 ${pi/4} ${-pi/2}"/>
+    <origin xyz="0.4 -0.4 -0.2" rpy="0 ${pi/2} 0"/>
   </xacro:thruster_macro>
-
 
   <xacro:thruster_macro thruster_id="2">
-    <origin xyz="0 0.4 0" rpy="0 0 0"/>
+    <origin xyz="-0.4 0.4 -0.2" rpy="0 ${pi/2} 0"/>
+  </xacro:thruster_macro>
+  <xacro:thruster_macro thruster_id="3">
+    <origin xyz="-0.4 -0.4 -0.2" rpy="0 ${pi/2} 0"/>
   </xacro:thruster_macro>
 
-  <xacro:thruster_macro thruster_id="3">
+
+ <xacro:thruster_macro thruster_id="4">
+    <origin xyz="0 0.4 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+   <xacro:thruster_macro thruster_id="5">
     <origin xyz="0 -0.4 0" rpy="0 0 0"/>
   </xacro:thruster_macro>
 
-
-  <xacro:thruster_macro thruster_id="4">
-    <origin xyz="-0.4 0.4 0" rpy="0 ${-pi/4} ${pi/2}"/>
+<xacro:thruster_macro thruster_id="6">
+    <origin xyz="0.4 0 0.2" rpy="0 0 ${-pi/2}"/>
   </xacro:thruster_macro>
-
-  <xacro:thruster_macro thruster_id="5">
-    <origin xyz="-0.4 -0.4 0" rpy="0 ${-pi/4} ${-pi/2}"/>
+   <xacro:thruster_macro thruster_id="7">
+    <origin xyz="-0.4 0 0.2" rpy="0 0 ${-pi/2}"/>
   </xacro:thruster_macro>
 
 

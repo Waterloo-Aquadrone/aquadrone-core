@@ -5,7 +5,7 @@ import numpy as np
 
 from thruster_control.movement_command_collector import MovementCommandCollector
 from thruster_control.thrust_control_allocator import ThrustCommandAllocator
-from thruster_control.configurations.v2_configuration import V2Configuration
+from thruster_control.configurations.v28_configuration import V28Configuration
 
 from aquadrone_msgs.msg import MotorControls
 from geometry_msgs.msg import Wrench
@@ -15,8 +15,8 @@ if __name__ == "__main__":
 
     mcc = MovementCommandCollector()
 
-    config = V2Configuration()
-    transform_mat = config.get_wrench_to_thrusts_lb_in()
+    config = V28Configuration()
+    config.initialize()
 
-    tca = ThrustCommandAllocator(transform_mat, mcc)
+    tca = ThrustCommandAllocator(config, mcc)
     tca.run()

@@ -11,7 +11,10 @@ class V1Configuration:
         self.a2 = math.pi / 2.0
         self.a4 = math.pi / 4.0
 
-    def get_thrusts_to_wrench(self):
+    def initialize(self):
+        pass
+
+    def get_thrusts_to_wrench_matrix(self):
         th_0 = gh.get_thruster_wrench_vector(x=self.dX,        y=self.dY,   z=0,  roll=0,  pitch=-self.a2,  yaw=0)
         th_1 = gh.get_thruster_wrench_vector(x=self.dX,   y=-self.dY,  z=0,  roll=0,  pitch=-self.a2,  yaw=0)
         th_2 = gh.get_thruster_wrench_vector(x=0,              y=self.dY,   z=0,  roll=0,  pitch=0,         yaw=0)

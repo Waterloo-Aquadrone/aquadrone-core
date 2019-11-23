@@ -12,8 +12,8 @@ class ThrustCommandAllocator:
     # Then uses configuration information to
     #  transform wrench commands into thruster thrusts
     
-    def __init__(self, w_to_t, mcc):
-        self.transform = w_to_t
+    def __init__(self, config, mcc):
+        self.config = config
         self.mcc = mcc
 
         self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=0)
@@ -29,11 +29,10 @@ class ThrustCommandAllocator:
 
 
     def publish_command(self, force):
-        thrusts = np.dot(self.transform, force)
-        th = np.ndarray.tolist(thrusts)[0]
+        thrusts = self.config.wrench_to_thrusts(force)
 
         msg = MotorControls()
-        msg.motorThrusts = list(th)
+        msg.motorThrusts = list(thrusts)
         self.publisher.publish(msg)
 
 
