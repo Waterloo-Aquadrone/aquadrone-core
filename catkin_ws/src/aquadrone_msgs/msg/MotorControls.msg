@@ -1,1 +1,1 @@
-float64[6] motorThrusts
+float64[] motorThrusts

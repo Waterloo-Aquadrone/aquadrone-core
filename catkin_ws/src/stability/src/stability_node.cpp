@@ -9,12 +9,13 @@
 int main(int argc, char **argv)
 {
     RotPIDController rotCtrl;
-    double Kp = 0.001;
+
+    double Kp = 0.1;
     double Ki = 0.00001;
     double Kd = 1;
     rotCtrl.setPitchPID(Kp, Ki, Kd);
     rotCtrl.setRollPID(Kp, Ki, Kd);
-    rotCtrl.setYawPID(Kp, Ki, Kd);
+    rotCtrl.setYawPID(Kp*5, Ki, Kd);
 
   std::cout<<"b"<<std::endl;
 
@@ -33,13 +34,12 @@ int main(int argc, char **argv)
   or_target.z = 0.0;
   rotCtrl.setTargets(or_target);
 
-  ros::Rate r(5);
+  ros::Rate r(10);
   while(ros::ok())
 	{
         float pMotor = 0;
         float yMotor = 0;
         float rMotor = 0;
-
 
 		    rotCtrl.runPID(pMotor, rMotor, yMotor);
 
