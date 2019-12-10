@@ -9,5 +9,6 @@ class ThrusterCollectionManager:
 
 
     def apply_thrusts(self, msg):
-        for i in range(0, len(self.thrusters)):
+        limit = min(len(self.thrusters), len(msg.motorThrusts))
+        for i in range(0, limit):
             self.thrusters[i].command(msg.motorThrusts[i])

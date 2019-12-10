@@ -27,11 +27,14 @@ RUN apt-get update && \
       ros-kinetic-rviz \
       ros-kinetic-message-to-tf \
       ros-kinetic-uuv-* && \
-    pip install simple-pid && \
-    pip install mock && \
     rm -rf /var/lib/apt/lists/*
 
-
+# Install other requirements
+ADD pip_requirements.txt pip_requirements.txt
+RUN apt-get update && \
+    pip install -r pip_requirements.txt && \
+    rm -rf /var/lib/apt/lists/*
+    
 
 # setup entrypoint
 COPY ./docker/docker_entrypoint.sh /

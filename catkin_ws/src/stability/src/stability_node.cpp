@@ -9,9 +9,13 @@
 int main(int argc, char **argv)
 {
     RotPIDController rotCtrl;
-    rotCtrl.setPitchPID(0.1,0.0001,5);
-    rotCtrl.setRollPID(0.1,0.0001,5);
-    rotCtrl.setYawPID(0.1,0.0001,5);
+
+    double Kp = 0.1;
+    double Ki = 0.00001;
+    double Kd = 1;
+    rotCtrl.setPitchPID(Kp, Ki, Kd);
+    rotCtrl.setRollPID(Kp, Ki, Kd);
+    rotCtrl.setYawPID(Kp*5, Ki, Kd);
 
   std::cout<<"b"<<std::endl;
 
@@ -19,24 +23,24 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-  ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 100);
-  ros::Subscriber target = n.subscribe("orientation_Target", 50, &RotPIDController::setTargets, &rotCtrl);
-  ros::Subscriber sensor = n.subscribe("aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, &rotCtrl);
+  ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 5);
+  ros::Subscriber target = n.subscribe("orientation_target", 5, &RotPIDController::setTargets, &rotCtrl);
+  ros::Subscriber sensor = n.subscribe("aquadrone/out/imu", 5, &RotPIDController::setInputs, &rotCtrl);
   std::cout<<"c"<<std::endl;
   
+  geometry_msgs::Vector3 or_target;
+  or_target.x = 0.0;
+  or_target.y = 0.0;
+  or_target.z = 0.0;
+  rotCtrl.setTargets(or_target);
 
-  ros::Rate r(5);
+  ros::Rate r(10);
   while(ros::ok())
 	{
         float pMotor = 0;
         float yMotor = 0;
         float rMotor = 0;
 
-        geometry_msgs::Vector3 target;
-        target.x = 0.5;
-        target.y = 0.5;
-        target.z = 0.5;
-        rotCtrl.setTargets(target);
 		    rotCtrl.runPID(pMotor, rMotor, yMotor);
 
         geometry_msgs::Wrench returnVal;
