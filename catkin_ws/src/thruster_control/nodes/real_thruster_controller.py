@@ -70,7 +70,7 @@ class ThrusterCollectionManager:
         return thrustPWM
 
     def remove_pwm(self):
-        for pwn in self.pwm:
+        for pwm in self.pwm:
             #pwm.stop()
             pwm.duty_cycle=0
 
