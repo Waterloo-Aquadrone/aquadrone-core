@@ -1,0 +1,116 @@
+Vector
+    float x, y, z
+Coordinate System Description
+    Any coordinate system can be described in another coordinate system by 2 Vectors:
+        position = Vector  # x, y, z
+        direction = Vector  # roll, pitch, yaw
+    Note:
+        For describing an object, the coordinate system can be thought of as describing its position and orientation
+        For a point object with no orientation, the direction vector is not necessary
+        For describing a vector offset from the origin, pitch and yaw can describe the direction the vector is facing, and roll can describe its magnitude
+    Relative Coordinate System (defined relative to the instantaneous position of the sub)
+        x = y = 0 at the center of mass of the sub
+        x increases going forwards with respect to the sub
+        y increases going leftwards with respect to the sub
+        z = 0 at the surface of the water
+        z decreases going downwards into the water
+        roll angle = angle that the target coordinate system's y axis makes with the xy plane of the submarine
+        pitch angle = angle that the target coordinate system's x axis makes with the xy plane of the submarine
+        yaw angle = angle that the target coordinate system's x axis makes with the yz plane of the submarine
+        This coordinate system moves with the submarine and changes over time
+    Static Coordinate System (defined relative to the starting position of the sub)
+        Coincident with the relative coordinate system of the submarine when it starts (t = 0)
+        Does not change over time
+    Camera Coordinate System
+        Exactly the same as the submarine's relative coordinate system, but with and x, y, z offset based on the camera's position relative to the sub center of mass
+        Only for use within the vision system. Vision should convert to the sub's coordinate system before sending to other systems
+        Changes over time as the sub moves
+    By convention, everything (unless stated otherwise) is measured with respect to the static coordinate system
+Map
+    Submarine
+        position = Vector
+        velocity = Vector
+        direction = Vector # roll, pitch, yaw
+        angularVelocity = Vector # roll, pitch, yaw
+    Gate
+        averagePosition = Vector
+        averageDirection = Vector  # roll has no meaning, pitch should be 0, yaw indicates orientation
+        topCorners = [Vector, Vector] # sorted by x coordinate
+        bottomCorners = [Vector, Vector] # sorted by x coordinate
+    Directional Marker
+        position = Vector
+        direction = Vector  # roll has no meaning
+        rawPoints = [Vector, Vector, Vector]  # the 3 points of the directional marker
+
+Systems:
+    Localization and Mapping
+        Inputs: 
+            sensor data: pressure sensor, zed camera localization, gyro
+            data from vision
+        Outputs: Map with uncertainties
+        Notes:
+            utilizes some sort of kalman filter or monte carlo localization
+            Vision data used for localization of other objects (SLAM)
+    Vision
+        Inputs: video stream from cameras
+        Outputs: 
+            list of objects found, 
+            each with expected position and orientation (Vectors relative to sub's coordinate system),
+            also including uncertainties for each 
+                uncertainties may be hard coded based on camera properties, or may vary based on location within the image frame
+                i.e. more certain near center of image frame, less certain near edges/corners
+            can return empty list if nothing found for that that frame/time step
+    Business/Competition Logic
+        Inputs:
+            time elapsed (overall and on each task) (for deciding when to quit a task)
+            description of challenges, where to go, what actions to perform, in what order etc.
+        Outputs:
+            Basic instruction for path planning:
+                Example: 'go through gate', 'follow directional marker', 'pull lever'
+    Path Planning
+        Inputs:
+            Map with uncertainties
+            Business logic (high level: where to go, etc.)
+        Outputs:
+            desired acceleration = Vector
+            desired angular acceleration = Vector # roll, pitch, yaw
+        search subsystem:
+            If certainty in object trying to reach is below a threshold,
+            then do a search routine
+        reach position subroutine:
+            for the simple case where we just want to reach a certain position/pose (PID on all 6 degrees of freedom)
+            Inputs: 
+                desired position (from main path planning routine)
+                desired direction (from main path planning routine) # roll, pitch, yaw
+                desired velocity assumed to be 0
+            Outputs:
+                acceleration = Vector
+                angularAcceleration = Vector # roll, pitch, yaw
+                isInDesiredPosition = Boolean
+                failed = Boolean
+            Notes:
+                main routine will delegate to the subroutine until it terminates by indicating it is in the desired position
+                subroutine will likely use some variation on a PID controller to reach the destination
+        stabilizing angular position subroutine:
+            for the case where we want a stable roll and pitch (PID on 3 degrees of freedom)
+    Stabilization PID
+        Inputs:
+            Mode, which is a string containing any of the following letters in any order:
+                'x', 'y', 'z', 'r', p', 'y'
+                The letters given correspond to the coordinate's of the sub to maintain at a specified value
+            Params: list of the values to maintain for the values which are being stabilized
+                Example: if mode='rpz' then params = [0, 0, -5] to maintain roll = 0, pitch = 0, z = -5
+            Map data from Localization (sub's position, direction, velocity and angular velocity)
+        Outputs:
+            desired acceleration = Vector
+            desired angular acceleration = Vector
+        Note:
+            The overall acceleration and angular acceleration can be a sum of the the output of a PID and commands from path planning
+            However, path planning must ensure that this is logically consistent
+            Example: cannot tell PID to maintain x = 5, but attempt to move forwards in the x direction
+    Thrust Control
+        Inputs:
+            desired acceleration = Vector
+            desired angular acceleration = Vector # roll, pitch, yaw
+        Outputs:
+            the pwm signals to the thrusters
