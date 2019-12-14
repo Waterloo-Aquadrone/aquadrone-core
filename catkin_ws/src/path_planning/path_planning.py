@@ -68,7 +68,7 @@ class Pole:
 		self.position_std = None
 
 
-	def set_uncertainties(x, y):
+	def set_uncertainties(self, x, y):
 		self.position_std = Vector(x, y, None)
 
 
@@ -93,11 +93,15 @@ class CompetitionMap:
 		self.walls = []
 
 
-	def set_gate(gate):
+	def set_gate(self, gate):
 		self.gate = gate
 
 
-	def add_wall(wall):
+	def set_pole(self, pole):
+		self.pole = pole
+
+
+	def add_wall(self, wall):
 		self.walls.append(wall)
 
 
