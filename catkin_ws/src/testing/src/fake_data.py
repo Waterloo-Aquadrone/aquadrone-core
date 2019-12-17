@@ -13,7 +13,7 @@ rate = rospy.Rate(10)
 value = 0.5
 
 def fake_input(msg):
-    print("RECIEVED")
+    print("RECIEVED @%s" % rospy.rostime.get_time())
     global value
     value = msg.data
     print("   value: " + str(value))

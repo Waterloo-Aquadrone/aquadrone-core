@@ -1,0 +1,15 @@
+<launch>
+    <arg name="timeout" default="5"/>
+    <arg name="command_rate" default="1"/>
+    <!-- list, seperator is a space -->
+
+    <node name="fake_news" pkg="testing" type="fake_data.py"/>
+    
+    <node name="test_controller" pkg="testing" type="testcontroller.py" output="screen" args="timeout:=$(arg timeout) command_rate:=$(arg command_rate)"/>
+    
+    <param name="test_control/observers" value="/aquadrone/fake/out.data" />
+    
+    <param name="test_control/commander" value="/aquadrone/fake/in std_msgs/Float32 {'data':'!CTRL'} [10,20]" />
+        
+    <!-- <include file="$(find pkg-name)/path/filename.xml"/> -->
+</launch>

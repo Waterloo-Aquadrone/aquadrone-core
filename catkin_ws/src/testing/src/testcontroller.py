@@ -4,6 +4,8 @@ import matplotlib.pyplot as plot
 import sys
 import rospy
 
+CONTROL = '!CTRL'
+
 
 def access(access_point, path):
     attr = getattr(access_point, path[0])
@@ -14,19 +16,33 @@ def access(access_point, path):
 
 
 class MessageFinder:
-    def __init__(self, topic, msg_attr=None):
+    def __init__(self, topic, content, msg_type=None, target_msg_attr=None):        
         self.topic = topic
         self.Msg = None
-        self.type = None
-        self.msg_attr = msg_attr
-
-        topics_list = rospy.get_published_topics()
-        for name, typ in topics_list:
-            if topic == name:
-                self.type = typ
+        self.type = msg_type
+        if type(content) is str:
+            self.content = {content: CONTROL}
+            self.target_msg_attr = content
+        elif type(content) is dict:
+            self.content = content
+        else:
+            raise ValueError(str(content) + ": not dict or string")
         
-        if not self.type == None:
+        if target_msg_attr is None:
+            for attr, value in self.content.items():
+                if value == CONTROL:
+                    self.target_msg_attr = attr
+                    break         
 
+        if self.type is None:
+            topics_list = rospy.get_published_topics()
+            for name, typ in topics_list:
+                if topic == name:
+                    self.type = typ
+        
+        if self.type is None:
+            raise ValueError('message not found: %s' % (topic,))
+        else:
             type_path = self.type.split('/')
             type_path.insert(-1,'msg')
 
@@ -37,8 +53,7 @@ class MessageFinder:
 
             msg_module = sys.modules[type_path[0]]
             self.Msg = access(msg_module, type_path[1:])
-        else:
-            raise ValueError('message not found: %s' % (topic,))
+            
     
     def create_subscriber(self, callback_fnc, callback_fnc_args=None):
         return rospy.Subscriber(self.topic, self.Msg, callback=callback_fnc, callback_args=callback_fnc_args)
@@ -47,10 +62,16 @@ class MessageFinder:
         return rospy.Publisher(self.topic, self.Msg)
 
     def extract_data(self, msg):
-        return getattr(msg, self.msg_attr)
-
-    def insert_data(self, msg, value):
-        return setattr(msg, self.msg_attr, value)
+        return getattr(msg, self.target_msg_attr)
+    
+    def create_controlmsg(self, data_value):
+        msg = self.Msg()
+        for attr, value in self.content.items():
+            if value == CONTROL:     
+                setattr(msg, attr, data_value)
+            else:
+                setattr(msg, attr, value)
+        return msg
 
 
 class DataSeries:
@@ -73,14 +94,13 @@ class DataSeries:
 
 
 class DataCollector:
-    def __init__(self, timeout, commander, observers):
-        self.timeout = timeout
+    def __init__(self, commander, observers):
+        self.timeout = commander.lin_ctrl.duration
         self.obsrs = observers# list of Observers
         self.cmdr =commander# single Commander
-        self.cmdr.duration = timeout
 
     def run_test(self, t0='on call'):
-        print('=======TEST=======')
+        print('\n=======TEST=======')
         if self.cmdr is None:
             print('[CONTROL] None')
         else:
@@ -93,7 +113,7 @@ class DataCollector:
         if t0 == 'on call':
             t0 = rospy.rostime.get_time()
         
-        print('---BEGINING TEST')
+        print('---BEGINING TEST\n')
             
         for obs in self.obsrs:
             obs.t0 = t0
@@ -101,15 +121,11 @@ class DataCollector:
 
         self.cmdr.t0 = t0
         self.cmdr.pub_commands()
-        '''
-        while not rospy.is_shutdown() and rospy.rostime.get_time() < t2:
-            print('[time]' + str(rospy.rostime.get_time()) + 's')
-            rate.sleep()'''
         
         for obs in self.obsrs:
              obs.active = False
 
-        print('---ENDING TEST')
+        print('\n---ENDING TEST')
         
         print('plotting results...')
         self.plot()
@@ -133,10 +149,10 @@ class DataCollector:
 
 #gets data from subscriber
 class Observer:
-    def __init__(self, topic, msg_attr):
-        self.data_series = DataSeries('time', topic)
+    def __init__(self, topic, msg_attr, msg_type=None):
+        self.data_series = DataSeries('time', topic + "." + msg_attr)
        
-        self.msgf = MessageFinder(topic, msg_attr)
+        self.msgf = MessageFinder(topic, {msg_attr:CONTROL}, msg_type)
 
         if self.msgf.Msg == None:
             print("cannot observe unpublished topic: '" + topic + "'")
@@ -169,7 +185,7 @@ class LinearControl:
      0 ---------------
        0
        |<-------->|
-           deltax
+           duration
     '''
     def __init__(self, duration, y0, y1=None):
         self.y0 = y0
@@ -187,12 +203,12 @@ class LinearControl:
 
 #publishes control signals
 class Commander:
-    def __init__(self, topic, msg_attr, duration, y0, y1=None, update_rate=0):
-        self.msgf = MessageFinder(topic, msg_attr)
+    def __init__(self, topic, msg_content, msg_type, timeout, y0, y1=None, command_rate=0):
+        self.msgf = MessageFinder(topic, msg_content, msg_type)
         self.pub = rospy.Publisher(topic, self.msgf.Msg, queue_size=10)
-        self.data_series = DataSeries('time', topic)
-        self.linCtrl = LinearControl(duration, y0, y1)
-        self.rate = update_rate
+        self.data_series = DataSeries('time', topic + "." + self.msgf.target_msg_attr)
+        self.lin_ctrl = LinearControl(timeout, y0, y1)
+        self.rate = command_rate
 
     def pub_commands(self):
         if self.t0 is None:
@@ -203,12 +219,13 @@ class Commander:
         if self.rate > 0:
             rospy_rate = rospy.Rate(self.rate)            
 
-        t2 = self.linCtrl.duration + self.t0
+        t2 = self.lin_ctrl.duration + self.t0
 
         while not rospy.is_shutdown() and rospy.rostime.get_time() < t2:
-            msg = self.msgf.Msg()
-            self.msgf.insert_data(msg, self.create_control_data()[1])
+            data = self.create_control_data()
+            msg = self.msgf.create_controlmsg(data[1])
             self.pub.publish(msg)
+            self.print_controlmsg_info(data)
 
             if self.rate > 0:
                 rospy_rate.sleep()
@@ -217,42 +234,78 @@ class Commander:
                     rospy_rate.sleep()
         
         data = self.create_control_data()#adding a point at the end allows plot to interplorate across test range
-        print('@%s:{:.2f} %s<<{:.2f}'.format(data[0], data[1]) % (self.data_series.xlabel, self.data_series.ylabel))
-    
+        self.print_controlmsg_info(data)
+        
     def create_control_data(self):
         data = [None,None]
         data[0] = rospy.rostime.get_time() - self.t0
-        data[1] = self.linCtrl.interplorate(data[0])
+        data[1] = self.lin_ctrl.interplorate(data[0])
         self.data_series += data
         return data
+    
+    def print_controlmsg_info(self, data):
+        print('@%s:{:.2f} %s<<{:.2f}'.format(data[0], data[1]) % (self.data_series.xlabel, self.data_series.ylabel))
 
 
-rospy.init_node('test_controller')
+def observer_arg(arg):
+    #format: "/aquadrone/fake/out.data"
+    arg = arg.split('.')
+    for a in arg:
+        if len(a) == 0:
+            return None
+    return Observer(arg[0], arg[1])
 
-print("==============")
-for x, y in rospy.get_published_topics():
-    print(x, y)
-print("==============")
+def commander_arg(arg, timeout, command_rate):
+    #format: "/aquadrone/fake/in std_msgs/Float32 {'data':'!CTRL'} [10,20]"
+    try:
+        arg = arg.split(" ")
+        exec("arg[2] = " + arg[2])
+        exec("arg[3] = " + arg[3])
+        return Commander(topic=arg[0], msg_content=arg[2], msg_type=arg[1], timeout=float(timeout),
+                        y0=float(arg[3][0]),y1=float(arg[3][1]), command_rate=float(command_rate))
+    except Exception as ex:
+        print("FAILED TO PARSE COMMANDER ARG: " + str(ex))
+        return None
 
-from std_msgs.msg import Float32
-pubx = rospy.Publisher('/aquadrone/fake/in', Float32, queue_size=1)
-#pubx.publish(Float32(0.6))
-rospy.Rate(10).sleep()
+
+
+
+rospy.init_node('test_controller') #INITIALIZE
 
 #MessageFinder test code
 msg = MessageFinder('/rosout', '')
 if not repr(msg.Msg) == "<class 'rosgraph_msgs.msg._Log.Log'>":
-    print('PROBLEM:', msg.Msg, "!= <class 'rosgraph_msgs.msg._Log.Log'>")
+    print('FUNCTIONALITY TEST-ERROR:', msg.Msg, "!= <class 'rosgraph_msgs.msg._Log.Log'>")
 
-obs = Observer('/aquadrone/fake/out', 'data')
 
-cmdr = Commander('/aquadrone/fake/in', 'data', 5, y0=10,y1=20, update_rate=1)
+#ARGUMENTS
+ARGS = {}
+for arg in sys.argv[1:]:
+    sep = arg.partition(":=")
+    ARGS[sep[0]] = sep[2]
 
-clt = DataCollector(1, cmdr, [obs,])
+print(ARGS)
+
+
+print('\n')
+#MAIN
+
+observers = map(observer_arg, rospy.get_param("test_control/observers").split(" "))
+
+
+cmdr = commander_arg(rospy.get_param("test_control/commander"), ARGS["timeout"], ARGS["command_rate"])
+if cmdr is None:
+    quit()
+
+clt = DataCollector(cmdr, observers)
 
 clt.run_test()
 
-# main
+# MAIN
+print('\n')
+
+
+
 '''
 obs = Observer('aquadrone/sensors/out/pressure', 'fluid_pressure')
 com = Commander('')
