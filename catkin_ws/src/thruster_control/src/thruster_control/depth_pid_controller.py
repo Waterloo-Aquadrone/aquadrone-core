@@ -12,7 +12,7 @@ class DepthPIDController:
         rospy.init_node('depth_control')
         self.depth = 0
 
-        self.Kp = 1
+        self.Kp = 2
         self.Kd = 5
         self.Ki = 0.0005
 

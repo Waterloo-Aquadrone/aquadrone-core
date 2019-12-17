@@ -1,0 +1,3 @@
+simple-pid
+mock
+numpy==1.13
