@@ -61,7 +61,11 @@ class MessageFinder:
         return rospy.Publisher(self.topic, self.Msg)
 
     def extract_data(self, msg):
-        return getattr(msg, self.target_msg_attr)
+        try:
+            exec("data = msg." + self.target_msg_attr)
+            return data
+        except:
+            return None
     
     def create_controlmsg(self, data_value):
         msg = self.Msg()
@@ -93,9 +97,10 @@ class DataSeries:
 
 
 class DataCollector:
-    def __init__(self, commander, observers):
+    def __init__(self, commander, observers, bkp_timeout=None):
         self.obsrs = observers# list of Observers
-        self.cmdr =commander# single Commander
+        self.cmdr = commander# single Commander
+        self.bkp_timeout = bkp_timeout
 
     def run_test(self, t0='on call'):
         print('\n=======TEST=======')
@@ -115,9 +120,17 @@ class DataCollector:
         for obs in self.obsrs:
             obs.t0 = t0
             obs.active = True
-
-        self.cmdr.t0 = t0
-        self.cmdr.pub_commands()
+        
+        if cmdr is not None:
+            self.cmdr.t0 = t0
+            self.cmdr.pub_commands()
+        else:
+            if self.bkp_timeout is None:
+                t2 = t0 + 1
+            else:
+                t2 = t0 + self.bkp_timeout
+            while not rospy.is_shutdown() and rospy.rostime.get_time() < t2:
+                rospy.sleep(.2)
         
         for obs in self.obsrs:
              obs.active = False
@@ -134,9 +147,12 @@ class DataCollector:
             else:
                 colour = colours.pop(0)
             plot.plot(series.x_values, series.y_values, '.-' + colour, label='OBS:'+series.ylabel)
-        series = self.cmdr.data_series
-        plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
-        plot.xlabel(series.xlabel)
+        
+        if self.cmdr is not None:
+            series = self.cmdr.data_series
+            plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
+            plot.xlabel(series.xlabel)
+        
         plot.legend(title="LEGEND", fontsize='x-small')
         plot.show()
 
@@ -240,7 +256,7 @@ class Commander:
 
 
 def observer_arg(arg):
-    #format: "/aquadrone/fake/out.data"
+    #format: "/tf.translation.z"
     try:
         arg = arg.partition('.')
         return Observer(arg[0], arg[2])
@@ -265,6 +281,8 @@ def commander_arg(arg, timeout, command_rate):
 
 rospy.init_node('test_controller') #INITIALIZE
 
+rospy.sleep(2)
+
 #MessageFinder test code
 '''
 msg = MessageFinder('/rosout', '')
@@ -287,19 +305,27 @@ observers = map(observer_arg, rospy.get_param("test_controller/observers").split
 if None in observers:
     quit()
 
+cmd_param = rospy.get_param("test_controller/commander", None)
+if cmd_param is None:
+    print("Could not find commmander, using none")
+    cmdr = None
+else:
+    cmdr = commander_arg(cmd_param, ARGS["timeout"], ARGS["command_rate"])
+    if cmdr is None:
+        quit()
 
-cmdr = commander_arg(rospy.get_param("test_controller/commander"), ARGS["timeout"], ARGS["command_rate"])
-if cmdr is None:
+try:
+    clt = DataCollector(cmdr, observers, bkp_timeout=float(ARGS["timeout"]))
+except ValueError as err:
+    print(err)
     quit()
-
-rospy.sleep(1)
-
-clt = DataCollector(cmdr, observers)
 
 clt.run_test()
 
 print('plotting results...')
 clt.plot()
+
+rospy.signal_shutdown('TEST OVER')
 
 # MAIN
 print('\n')
