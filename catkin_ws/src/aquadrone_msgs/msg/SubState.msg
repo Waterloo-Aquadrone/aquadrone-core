@@ -1,0 +1,8 @@
+geometry_msgs/Point position
+geometry_msgs/Vector3 pos_variance
+
+geometry_msgs/Vector3 velocity
+geometry_msgs/Vector3 vel_variance
+
+geometry_msgs/Quaternion orientation_quat
+geometry_msgs/Vector3 orientation_RPY

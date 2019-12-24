@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
   ros::Publisher motorPub = n.advertise<geometry_msgs::Wrench>("motorStability", 5);
   ros::Subscriber target = n.subscribe("orientation_target", 5, &RotPIDController::setTargets, &rotCtrl);
-  ros::Subscriber sensor = n.subscribe("aquadrone/out/imu", 5, &RotPIDController::setInputs, &rotCtrl);
+  ros::Subscriber sensor = n.subscribe("state_estimation", 5, &RotPIDController::setInputs, &rotCtrl);
   std::cout<<"c"<<std::endl;
   
   geometry_msgs::Vector3 or_target;
