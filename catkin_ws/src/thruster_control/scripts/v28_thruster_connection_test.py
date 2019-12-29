@@ -4,9 +4,8 @@ import rospy
 import rospkg
 import numpy as np
 
-from aquadrone_msgs.msg import MotorControls
-from thruster_control.thruster_collection_manager import ThrusterCollectionManager
-from thruster_control.thruster_interfaces import SimulatedThrusterInterface
+from thruster_control.thruster_interfaces import V2ThrusterInterface
+from thruster_control.thruster_types import BlueRoboticsT100
 
 import board
 import busio
@@ -14,14 +13,17 @@ import adafruit_pca9685
 
 
 if __name__ == "__main__":
-    rospy.init_node('real_thruster_tester')
-    pub = rospy.pub("motor_command", MotorControls, queue_size=1)
+    rospy.init_node('sim_thruster_controller')
 
+    interface = V2ThrusterInterface()
+    interface.initialize()
+
+    spec = BlueRoboticsT100()
+    spec.initialize()
 
     def send_command(i, T):
-        msg = MotorControls()
-        msg.motorThrusts[i] = T
-        pup.publish(msg)
+        sig = spec.thrust_to_signal(T)
+        interface.command(i, sig)
 
     for i in range(0, 6):
         print("Testing thruster %d" % i)
