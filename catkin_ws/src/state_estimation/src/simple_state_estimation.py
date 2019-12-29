@@ -12,12 +12,15 @@ from aquadrone_msgs.msg import SubState
 class StateEstimator:
 
     def __init__(self):
+        # World Frame
         self.position = Point()
         self.pos_variance = Vector3(*(1, 1, 1))
 
-        self.velocity = Vector3()
+        # Local Frame
+        self.velocity = Vector3(*(0, 0, 0))
         self.vel_variance = Vector3(*(1, 1, 1))
 
+        # World Frame
         self.orientation = Quaternion()
     
         self.imu_sub = None
@@ -28,16 +31,54 @@ class StateEstimator:
         self.pressure_offset = 100.0
         self.g = 9.8
 
-        self.rate = rospy.Rate(10)
+        self.rate = 10
+        self.rate_ctrl = rospy.Rate(self.rate)
+
+    def increment_dynamics(self):
+        dp = self.velocity.x * 1.0/self.rate
+        self.position.x += dp
+        self.pos_variance.x +=  0.01 * dp
+
+        dp = self.velocity.y * 1.0/self.rate
+        self.position.y += dp
+        self.pos_variance.y +=  0.01 * dp
+
+        dp = self.velocity.z * 1.0/self.rate
+        #self.position.z += dp
+        #self.pos_variance.z +=  0.01 * dp
 
     def imu_cb(self, msg):
         self.orientation = msg.orientation
 
+        dv = msg.linear_acceleration.x * 1.0/self.rate
+        self.velocity.x += dv
+        self.vel_variance.x += 0.01 * dv
+        
+
+        dv = msg.linear_acceleration.y * 1.0/self.rate
+        self.velocity.y += dv
+        self.vel_variance.y += 0.01 * dv
+
+        '''
+        dv = msg.linear_acceleration.z * 1.0/self.rate
+        self.velocity.z += dv
+        self.vel_variance.z += 0.01 * dv
+        '''
+
+
     def depth_cb(self, msg):
         press = msg.fluid_pressure
         var = msg.variance
+
+        last_z = self.position.z
+
         self.position.z = -self.pressure_to_depth(press)
         self.pos_variance.z = var / self.g
+
+        # Hardcoded. Do not use in production
+        dz_dt = (last_z - self.position.z) / 0.1
+        self.velocity.z = dz_dt
+        self.vel_variance.z = self.pos_variance.z / 0.1
 
     def pressure_to_depth(self, press):
         return (press - self.pressure_offset) / self.g
@@ -88,7 +129,8 @@ class StateEstimator:
         while not rospy.is_shutdown():
 
             self.publish()
-            self.rate.sleep()
+            self.increment_dynamics()
+            self.rate_ctrl.sleep()
             
 
 if __name__ == "__main__":
