@@ -10,6 +10,27 @@ from autograd import grad, jacobian, elementwise_grad
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from sensor_msgs.msg import Imu, FluidPressure
 
+class IDx:
+    # Position
+    Px = 0
+    Py = 1
+    Pz = 2
+    
+    # Velocity
+    Vx = 3
+    Vy = 4
+    Vz = 5
+
+    # Orientation - Quaternion
+    Ow = 6
+    Ox = 7
+    Oy = 8
+    Oz = 9
+
+    # Angular Velocity
+    Ax = 10
+    Ay = 11
+    Az = 12
 
 class PressureSensorListener:
     def __init__(self):
@@ -51,7 +72,7 @@ class PressureSensorListener:
         return H
 
     def state_to_measurement(self, x, u):
-        return x[0]
+        return x[IDx.Pz]
 
     def depth_cb(self, msg):
         press = msg.fluid_pressure
@@ -69,8 +90,9 @@ class EKF:
     def __init__(self):
         # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
-        self.n = 2
-        self.m = 2
+        self.n = 13
+        self.m = 8
+
         self.x = np.zeros((self.n, 1))
         self.u = np.zeros((self.m,1))
 
@@ -86,14 +108,13 @@ class EKF:
 
 
     def prediction(self):
-        xu = self.stack_xu(self.x, self.u)
-        F = self.calc_F(xu)
-        F = np.reshape(F, (self.n,self.n + self.m))
+        F = self.calc_F(self.x, self.u)
+        F = np.reshape(F, (self.n,self.n))
         Fx = F[0:self.n, 0:self.n]
         #print("Fx")
         #print(Fx)
 
-        self.x = self.f(self.stack_xu(self.x, self.u))
+        self.x = self.f(self.x, self.u)
         inter = np.dot(Fx, self.P)
         self.P = np.dot(  inter,  np.transpose(Fx)  ) + self.Q
 
@@ -147,20 +168,14 @@ class EKF:
         self.x = self.x + diff
         self.P = np.dot(I - KH, self.P)
 
-    def stack_xu(self, x, u):
-        return np.concatenate((x, u), axis=0)
 
-    def split_xu(self, xu):
-        x = xu[0:self.n]
-        u = xu[self.n:]
-        return x,u
-
-    def f(self, xu):
-        x, u = self.split_xu(xu)
+    def f(self, x, u):
         n = x.shape[0]
 
+        x_out = x
+
         #return np.dot(1.0*np.eye(n), x) + np.dot(2.0*np.eye(m), u)
-        return np.dot(np.array([[1, 1.0/self.rate], [0, 1]]), x) + 3.0*u
+        return x_out
 
     def output(self):
         print("X")
