@@ -14,6 +14,9 @@ from sensor_msgs.msg import Imu, FluidPressure
 from thruster_control.configurations.v28_configuration import V28Configuration
 from aquadrone_msgs.msg import SubState, MotorControls
 
+from ekf_indices import IDx as IDx
+from ekf_sensors import IMUSensorListener, PressureSensorListener
+
 def quaternion_to_euler(orientation):
         # From wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
 
@@ -29,152 +32,14 @@ def quaternion_to_euler(orientation):
         if np.abs(sinp) >= 1:
             angles.y = np.sign(sinp) * math.pi # use 90 degrees if out of range
         else:
-            angles.y = math.asin(sinp);
+            angles.y = math.asin(sinp)
 
         # yaw (z-axis rotation)
-        siny_cosp = +2.0 * (orientation.w * orientation.z + orientation.x * orientation.y);
-        cosy_cosp = +1.0 - 2.0 * (orientation.y * orientation.y + orientation.z * orientation.z);  
-        angles.z = math.atan2(siny_cosp, cosy_cosp);
+        siny_cosp = +2.0 * (orientation.w * orientation.z + orientation.x * orientation.y)
+        cosy_cosp = +1.0 - 2.0 * (orientation.y * orientation.y + orientation.z * orientation.z)
+        angles.z = math.atan2(siny_cosp, cosy_cosp)
 
-        return angles;
-
-class IDx:
-    # Position
-    Px = 0
-    Py = 1
-    Pz = 2
-    
-    # Velocity
-    Vx = 3
-    Vy = 4
-    Vz = 5
-
-    # Orientation - Quaternion
-    Ow = 6
-    Ox = 7
-    Oy = 8
-    Oz = 9
-
-    # Angular Velocity
-    Ax = 10
-    Ay = 11
-    Az = 12
-
-class PressureSensorListener:
-    def __init__(self):
-        self.last_time = rospy.Time.now().to_sec()
-        self.depth_sub = rospy.Subscriber("aquadrone/out/pressure", FluidPressure, self.depth_cb)
-
-        self.z = 0
-        self.var = 1
-
-        self.pressure_offset = 100.0
-        self.g = 9.8
-
-        self.calc_H = jacobian(self.state_to_measurement)
-
-
-    def get_timeout_sec(self):
-        return 0.1
-
-    def get_p(self):
-        return 1
-
-    def is_valid(self):
-        return rospy.Time.now().to_sec() - self.last_time < self.get_timeout_sec()
-
-    def get_measurement(self):
-        vec = np.zeros((1,1))
-        vec[0] = self.z
-        return vec
-
-    def get_R(self):
-        # Variance of measurements
-        var = np.zeros((1,1))
-        var[0,0] = self.var
-        return var
-
-    def get_H(self, x, u):
-        # Jacobian of measurement wrt state (as calculated by get_measurement)
-        H = self.calc_H(x, u)
-        H = np.reshape(H, (self.get_p(), x.shape[0]))
-        return H
-
-    def state_to_measurement(self, x, u):
-        return x[IDx.Pz]
-
-    def depth_cb(self, msg):
-        press = msg.fluid_pressure
-        var = msg.variance
-
-        self.z = -self.pressure_to_depth(press)
-        self.var = var / self.g
-        self.last_time = rospy.Time.now().to_sec()
-
-    def pressure_to_depth(self, press):
-        return (press - self.pressure_offset) / self.g
-
-
-class IMUSensorListener:
-    def __init__(self):
-        self.last_time = rospy.Time.now().to_sec()
-        self.imu_sub = rospy.Subscriber("aquadrone/out/imu", Imu, self.imu_cb)
-
-        self.calc_H = jacobian(self.state_to_measurement)
-
-        self.orientation = np.array([1, 0, 0, 0])
-        self.orientation_var = np.array([1, 1, 1, 1])
-
-        self.pressure_offset = 100.0
-        self.g = 9.8
-
-    def get_timeout_sec(self):
-        return 0.1
-
-    def get_p(self):
-        return 4
-
-    def is_valid(self):
-        return rospy.Time.now().to_sec() - self.last_time < self.get_timeout_sec()
-
-    def get_measurement(self):
-        vec = np.zeros((4,1))
-        vec[0:4] = self.orientation
-        return vec
-
-    def get_R(self):
-        # Variance of measurements
-        var = np.zeros((4,4))
-        for i in range(0, 4):
-            var[i,i] = self.orientation_var[i]
-        return var
-
-    def get_H(self, x, u):
-        # Jacobian of measurement wrt state (as calculated by get_measurement)
-        H = self.calc_H(x, u)
-        H = np.reshape(H, (self.get_p(), x.shape[0]))
-        return H
-
-    def state_to_measurement(self, x, u):
-        z =  np.array( [ x[IDx.Ow],
-                         x[IDx.Ox],
-                         x[IDx.Oy],
-                         x[IDx.Oz] ])
-        #z.shape = (4,1)
-        return z
-
-    def imu_cb(self, msg):
-        self.orientation = np.array([ msg.orientation.w,
-                                      msg.orientation.x,
-                                      msg.orientation.y,
-                                      msg.orientation.z ])[np.newaxis]
-        self.orientation.shape = (4, 1)
-        self.orientation_var = np.array([ msg.orientation_covariance[0],
-                                          msg.orientation_covariance[0],
-                                          msg.orientation_covariance[0],
-                                          msg.orientation_covariance[0] ])
-        self.last_time = rospy.Time.now().to_sec()
-
+        return angles
 
 
 
@@ -287,14 +152,12 @@ class EKF:
         n = x.shape[0]
         dt = 1.0 / self.rate
 
-        motor_wrench = np.dot(self.B, self.u)
-
         new_pos = np.array([x[IDx.Px] + dt*x[IDx.Vx],
                             x[IDx.Py] + dt*x[IDx.Vy],
                             x[IDx.Pz] + dt*x[IDx.Vz]])
 
         mass = 10.0
-        accel = (self.calculate_linear_forces(x, motor_wrench)) * 1.0 / mass
+        accel = (self.calculate_linear_forces(x, u)) * 1.0 / mass
 
         new_vel = np.array([x[IDx.Vx],
                             x[IDx.Vy],
@@ -304,7 +167,7 @@ class EKF:
         new_or = self.update_orientation_quaternion(x)
 
         # Update with inertia
-        ang_acc = self.calculate_angular_forces(x, motor_wrench) * 1.0/mass
+        ang_acc = self.calculate_angular_forces(x, u) * 1.0/mass
         new_ang_vel = np.array([x[IDx.Ax],
                                 x[IDx.Ay],
                                 x[IDx.Az]])
@@ -315,9 +178,10 @@ class EKF:
         #return np.dot(1.0*np.eye(n), x) + np.dot(2.0*np.eye(m), u)
         return x_out
 
-    def calculate_linear_forces(self, x, wrench):
+    def calculate_linear_forces(self, x, u):
         mass = 10.0
-        motor_forces = np.array(wrench[0:3])
+        motor_wrench = np.dot(self.B, u)
+        motor_forces = np.array(motor_wrench[0:3])
         motor_forces.shape = (3,1)
 
         drag_forces_linear = np.array([ -0.01 * x[IDx.Vx],
@@ -338,8 +202,9 @@ class EKF:
 
         return motor_forces + drag_forces_linear + drag_forces_quad
 
-    def calculate_angular_forces(self, x, wrench):
-        motor_forces = np.array(wrench[0:3])
+    def calculate_angular_forces(self, x, u):
+        motor_wrench = np.dot(self.B, u)
+        motor_forces = np.array(motor_wrench[0:3])
         motor_forces.shape = (3,1)
 
         # TODO: Add drag
@@ -418,11 +283,12 @@ class EKF:
             self.rate_ctrl.sleep()
 
             self.output()
-            self.update_state_msg()
-            self.state_pub.publish(self.sub_state_msg)
 
             self.prediction()
             self.update()
+
+            self.update_state_msg()
+            self.state_pub.publish(self.sub_state_msg)
             
             
 
