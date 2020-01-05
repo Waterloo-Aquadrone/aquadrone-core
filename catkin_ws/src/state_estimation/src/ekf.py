@@ -3,6 +3,7 @@
 import rospy
 import math
 import numpy as np
+import scipy.linalg
 
 import autograd.numpy as np  # Thinly-wrapped numpy
 from autograd import grad, jacobian, elementwise_grad
@@ -114,6 +115,70 @@ class PressureSensorListener:
         return (press - self.pressure_offset) / self.g
 
 
+class IMUSensorListener:
+    def __init__(self):
+        self.last_time = rospy.Time.now().to_sec()
+        self.imu_sub = rospy.Subscriber("aquadrone/out/imu", Imu, self.imu_cb)
+
+        self.calc_H = jacobian(self.state_to_measurement)
+
+        self.orientation = np.array([1, 0, 0, 0])
+        self.orientation_var = np.array([1, 1, 1, 1])
+
+        self.pressure_offset = 100.0
+        self.g = 9.8
+
+    def get_timeout_sec(self):
+        return 0.1
+
+    def get_p(self):
+        return 4
+
+    def is_valid(self):
+        return rospy.Time.now().to_sec() - self.last_time < self.get_timeout_sec()
+
+    def get_measurement(self):
+        vec = np.zeros((4,1))
+        vec[0:4] = self.orientation
+        return vec
+
+    def get_R(self):
+        # Variance of measurements
+        var = np.zeros((4,4))
+        for i in range(0, 4):
+            var[i,i] = self.orientation_var[i]
+        return var
+
+    def get_H(self, x, u):
+        # Jacobian of measurement wrt state (as calculated by get_measurement)
+        H = self.calc_H(x, u)
+        H = np.reshape(H, (self.get_p(), x.shape[0]))
+        return H
+
+    def state_to_measurement(self, x, u):
+        z =  np.array( [ x[IDx.Ow],
+                         x[IDx.Ox],
+                         x[IDx.Oy],
+                         x[IDx.Oz] ])
+        #z.shape = (4,1)
+        return z
+
+    def imu_cb(self, msg):
+        self.orientation = np.array([ msg.orientation.w,
+                                      msg.orientation.x,
+                                      msg.orientation.y,
+                                      msg.orientation.z ])[np.newaxis]
+        self.orientation.shape = (4, 1)
+        self.orientation_var = np.array([ msg.orientation_covariance[0],
+                                          msg.orientation_covariance[0],
+                                          msg.orientation_covariance[0],
+                                          msg.orientation_covariance[0] ])
+        self.last_time = rospy.Time.now().to_sec()
+
+
+
+
+
 class EKF:
     def __init__(self, config):
         # https://en.wikipedia.org/wiki/Extended_Kalman_filter
@@ -132,6 +197,7 @@ class EKF:
         self.Q = np.eye(self.n) * 0.01
 
         self.depth_sub = PressureSensorListener()
+        self.imu_sub = IMUSensorListener()
 
         self.rate = 20
         self.rate_ctrl = rospy.Rate(self.rate)
@@ -166,10 +232,17 @@ class EKF:
         H = np.zeros((0,0))
         R = np.zeros((0,0))
 
-        def add_block(H, newH):
+        def add_block_diag(H, newH):
+            if H.shape[0] == 0:
+                ret = np.diag(newH)
+                ret.shape = (newH.shape[0],newH.shape[0])
+                return ret
+            return scipy.linalg.block_diag(H, newH)
+
+        def add_block_vertical(H, newH):
             if H.shape[0] == 0:
                 return newH
-            return np.block([H, newH])
+            return np.vstack([H, newH])
 
         def read_listener(listener, z, h, H, R):
             if listener.is_valid():
@@ -178,16 +251,18 @@ class EKF:
                 pred = listener.state_to_measurement(self.x, self.u)
                 h = np.append(h, np.array([pred]))
 
-                H = add_block(H, listener.get_H(self.x, self.u))
-                R = add_block(R, listener.get_R())
+                H = add_block_vertical(H, listener.get_H(self.x, self.u))
+                R = add_block_diag(R, listener.get_R())
 
                 return z, h, H, R
 
-        try:
-            z, h, H, R = read_listener(self.depth_sub, z, h, H, R)
-        except TypeError as e:
-            print(e)
-            return
+        for listener in [self.depth_sub,
+                         self.imu_sub]:
+            try:
+                z, h, H, R = read_listener(listener, z, h, H, R)
+            except TypeError as e:
+                print(e)
+                return
 
         if R.shape[0] == 0:
             return
