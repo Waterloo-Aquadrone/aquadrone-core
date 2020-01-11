@@ -128,6 +128,9 @@ class IMUSensorListener(BaseSensorListener):
                                       msg.orientation.y,
                                       msg.orientation.z ])[np.newaxis]
         self.orientation.shape = (4, 1)
+
+        # Need to verify what our onboard sensor reports
+        # Keep as this as an initial estimate
         self.orientation_var = np.array([ msg.orientation_covariance[0],
                                           msg.orientation_covariance[0],
                                           msg.orientation_covariance[0],

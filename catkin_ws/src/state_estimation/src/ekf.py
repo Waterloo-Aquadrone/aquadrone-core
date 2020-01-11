@@ -2,7 +2,7 @@
 
 import rospy
 import math
-import numpy as np
+#import numpy as np
 import scipy.linalg
 
 import autograd.numpy as np  # Thinly-wrapped numpy
@@ -17,30 +17,61 @@ from aquadrone_msgs.msg import SubState, MotorControls
 from ekf_indices import IDx as IDx
 from ekf_sensors import IMUSensorListener, PressureSensorListener
 
-def quaternion_to_euler(orientation):
+def quat_msg_to_vec(q):
+    return np.array([q.w, q.x, q.y, q.z])
+
+def rpy_vec_to_msg(vec):
+    angles = Vector3()
+    angles.x = vec[0]
+    angles.y = vec[1]
+    angles.z = vec[2]
+    return angles
+
+def msg_quaternion_to_euler(quat):
+    q_vec = quat_msg_to_vec(quat)
+    rpy_vec = quaternion_to_euler(q_vec)
+    return rpy_vec_to_msg(rpy_vec)
+
+def quaternion_to_euler(quat_vec):
         # From wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
 
-        angles = Vector3()
+        w = quat_vec[0]
+        x = quat_vec[1]
+        y = quat_vec[2]
+        z = quat_vec[3]
+
+        angles = np.array([0, 0 ,0])
 
         # roll (x-axis rotation)
-        sinr_cosp = +2.0 * (orientation.w * orientation.x + orientation.y * orientation.z)
-        cosr_cosp = +1.0 - 2.0 * (orientation.x * orientation.x + orientation.y * orientation.y)
-        angles.x = math.atan2(sinr_cosp, cosr_cosp)
-
-        # pitch (y-axis rotation)
-        sinp = +2.0 * (orientation.w * orientation.y - orientation.z * orientation.x)
-        if np.abs(sinp) >= 1:
-            angles.y = np.sign(sinp) * math.pi # use 90 degrees if out of range
-        else:
-            angles.y = math.asin(sinp)
+        sinr_cosp = +2.0 * (w * x + y * z)
+        cosr_cosp = +1.0 - 2.0 * (x * x + y * y)
+        #angles[0] = np.arctan2(sinr_cosp, cosr_cosp)
+        
 
         # yaw (z-axis rotation)
-        siny_cosp = +2.0 * (orientation.w * orientation.z + orientation.x * orientation.y)
-        cosy_cosp = +1.0 - 2.0 * (orientation.y * orientation.y + orientation.z * orientation.z)
-        angles.z = math.atan2(siny_cosp, cosy_cosp)
+        siny_cosp = +2.0 * (w * z + x * y)
+        cosy_cosp = +1.0 - 2.0 * (y * y + z * z)
+        #angles[2] = math.atan2(siny_cosp, cosy_cosp)
+
+        # pitch (y-axis rotation)
+        sinp = +2.0 * (w * y - z * x)
+        if np.abs(sinp) >= 1:
+            #angles[1] = np.sign(sinp) * math.pi # use 90 degrees if out of range
+            return np.array([ np.arctan2(sinr_cosp, cosr_cosp),
+                              np.sign(sinp) * math.pi,
+                              np.arctan2(siny_cosp, cosy_cosp)
+                              ])
+        else:
+            #angles[1] = math.asin(sinp)
+            return np.array([ np.arctan2(sinr_cosp, cosr_cosp),
+                              np.arcsin(sinp),
+                              np.arctan2(siny_cosp, cosy_cosp)
+                              ])
 
         return angles
 
+
+quat_to_euler_jacobian = jacobian(quaternion_to_euler)
 
 
 
@@ -248,8 +279,8 @@ class EKF:
         var = np.array(np.diagonal(self.P))
         var.shape = (self.n, 1)
         
-        print("X, Var:")
-        print(np.hstack([self.x, var]))
+        #print("X, Var:")
+        #print(np.hstack([self.x, var]))
 
     def fill_vector_value_variance(self, val, var, x, P, i0):
         val.x = x[i0 + 0]
@@ -275,7 +306,29 @@ class EKF:
         quat.z = self.x[IDx.Oz]
         quat.w = self.x[IDx.Ow]
         self.sub_state_msg.orientation_quat = quat
-        self.sub_state_msg.orientation_RPY = quaternion_to_euler(quat)
+        self.sub_state_msg.orientation_quat_variance.w = self.P[IDx.Ow, IDx.Ow]
+        self.sub_state_msg.orientation_quat_variance.x = self.P[IDx.Ox, IDx.Ox]
+        self.sub_state_msg.orientation_quat_variance.y = self.P[IDx.Oy, IDx.Oy]
+        self.sub_state_msg.orientation_quat_variance.z = self.P[IDx.Oz, IDx.Oz]
+
+
+        self.sub_state_msg.orientation_RPY = msg_quaternion_to_euler(quat)
+
+        # Get RPY Variance from quaternion variance
+        # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
+        Cq = np.diag([self.sub_state_msg.orientation_quat_variance.w,
+                      self.sub_state_msg.orientation_quat_variance.x,
+                      self.sub_state_msg.orientation_quat_variance.y,
+                      self.sub_state_msg.orientation_quat_variance.z])
+
+        quat_vec = quat_msg_to_vec(self.sub_state_msg.orientation_quat)
+        G = quat_to_euler_jacobian(quat_vec)
+        G.shape = (3,4)
+
+        rpy_var_mat = np.dot(G, np.dot(Cq, np.transpose(G)))
+        self.sub_state_msg.orientation_RPY_variance.x = rpy_var_mat[0,0]
+        self.sub_state_msg.orientation_RPY_variance.y = rpy_var_mat[1,1]
+        self.sub_state_msg.orientation_RPY_variance.z = rpy_var_mat[2,2]
 
 
     def run(self):
