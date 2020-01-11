@@ -19,6 +19,11 @@ class Vector:
 		"""
 		return sum(v ** 2 for v in vectors) ** 0.5 / len(vectors)
 
+    def from_msg(self, msg):
+        self.x = msg.x
+        self.y = msg.y
+        self.z = msg.z
+
 
 	def __add__(self, vector):
 		return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -40,23 +45,47 @@ class Vector:
 		return Vector(self.x ** exponent, self.y ** exponent, self.z ** exponent)  # exponentiation is component-wise
 
 
+class Quaternion:
+    def __inite__(self, w, x, y, z):
+        self.w = w
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def from_msg(self, msg):
+        self.w = msg.w
+        self.x = msg.x
+        self.y = msg.y
+        self.z = msg.z
+
 class Submarine:
-	def __init__(self, position, direction, velocity, angular_velocity):
+	def __init__(self, position,
+                       velocity,
+                       orientation_quat,
+                       orientation_rpy,
+                       angular_velocity):
 		self.position = position
-		self.direction = direction
-		self.velocity = velocity
+        self.velocity = velocity
+
+		self.orientation_quat = orientation_quat
+        self.orientation_rpy = orientation_rpy
+		
 		self.angular_velocity = angular_velocity
-		self.position_std = None
-		self.direction_std = None
-		self.velocity_std = None
-		self.angular_velocity_std = None
+
+		self.position_var = None
+		self.direction_var = None
+		self.velocity_var = None
+		self.angular_velocity_var = None
 
 
-	def set_uncertainties(self, position, direction, velocity, angular_velocity):
-		self.position_std = position
-		self.direction_std = direction
-		self.velocity_std = velocity
-		self.angular_velocity_std = angular_velocity
+	def set_uncertainties(self, position, velocity, orientation_quat, orientation_rpy, angular_velocity):
+		self.position_var = position
+        self.velocity_var = velocity
+
+		self.orientation_quat_var = orientation_quat
+        self.orientation_rpy_var = orientation_rpy
+
+		self.angular_velocity_var = angular_velocity
 
 
 class Gate:

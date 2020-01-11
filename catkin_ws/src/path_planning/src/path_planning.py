@@ -1,6 +1,8 @@
 import numpy as np
 import rospy
-from data_structures import Vector, Submarine, Gate, Pole, Wall, CompetitionMap, PIDCommand
+from data_structures import Vector, Submarine, Gate, Pole, Wall, CompetitionMap
+
+from ros_modules import ROSControlsModule
 
 
 class PathPlanner:
@@ -13,6 +15,8 @@ class PathPlanner:
 		self.state = 'GATE'
 		self.searching_tolerance = 5  # the maximum standard deviation in position of an object before it is considered lost
 		self.searched_areas = []
+
+		self.controls = ROSControlsModule()
 
 
 	def process_business_command(self, state):
