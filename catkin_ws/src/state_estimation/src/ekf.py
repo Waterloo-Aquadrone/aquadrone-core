@@ -142,9 +142,9 @@ class EKF:
 
         def read_listener(listener, z, h, H, R):
             if listener.is_valid():
-                meas = listener.get_measurement()
+                meas = listener.get_measurement_z()
                 z = np.append(z, np.array([meas]))
-                pred = listener.state_to_measurement(self.x, self.u)
+                pred = listener.state_to_measurement_h(self.x, self.u)
                 h = np.append(h, np.array([pred]))
 
                 H = add_block_vertical(H, listener.get_H(self.x, self.u))
@@ -329,6 +329,19 @@ class EKF:
         self.sub_state_msg.orientation_RPY_variance.x = rpy_var_mat[0,0]
         self.sub_state_msg.orientation_RPY_variance.y = rpy_var_mat[1,1]
         self.sub_state_msg.orientation_RPY_variance.z = rpy_var_mat[2,2]
+
+
+        ang_vel = Vector3()
+        ang_vel.x = self.x[IDx.Ax]
+        ang_vel.y = self.x[IDx.Ay]
+        ang_vel.z = self.x[IDx.Az]
+        self.sub_state_msg.ang_vel = ang_vel
+
+        ang_vel_var = Vector3()
+        ang_vel_var.x = self.P[IDx.Ax][IDx.Ax]
+        ang_vel_var.y = self.P[IDx.Ay][IDx.Ay]
+        ang_vel_var.z = self.P[IDx.Az][IDx.Az]
+        self.sub_state_msg.ang_vel_variance = ang_vel_var
 
 
     def run(self):
