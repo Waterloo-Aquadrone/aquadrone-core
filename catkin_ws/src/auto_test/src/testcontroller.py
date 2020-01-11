@@ -6,7 +6,7 @@ import rospy
 
 CONTROL = '!CTRL'
 
-
+#for an object m, with variable m.red.blue; using "access(m, ['red','blue'])" returns m.red.blue
 def access(access_point, path):
     attr = getattr(access_point, path[0])
     if len(path) > 1:
@@ -15,6 +15,7 @@ def access(access_point, path):
         return attr
 
 
+#allows msg classes to be gathered, created, accessed, as well as generating publishers and subsribers with that msg using string args
 class MessageFinder:
     def __init__(self, topic, content, msg_type=None, target_msg_attr=None):        
         self.topic = topic
@@ -77,6 +78,7 @@ class MessageFinder:
         return msg
 
 
+#class for storing data
 class DataSeries:
     def __init__(self, x_axis_name='x', y_axis_name='y'):
         self.x_values = []
@@ -94,67 +96,6 @@ class DataSeries:
         for i in range(len(self.x_values)):
             text += "(%f,%f) " % (self.x_values[i], self.y_values[i])
         return text
-
-
-class DataCollector:
-    def __init__(self, commander, observers, bkp_timeout=None):
-        self.obsrs = observers# list of Observers
-        self.cmdr = commander# single Commander
-        self.bkp_timeout = bkp_timeout
-
-    def run_test(self, t0='on call'):
-        print('\n=======TEST=======')
-        if self.cmdr is None:
-            print('[CONTROL] None')
-        else:
-            print('[CONTROL]' + self.cmdr.msgf.topic)
-        
-        for obs in self.obsrs:
-            print('[OBSERVING]' + obs.msgf.topic)
-        
-        if t0 == 'on call':
-            t0 = rospy.rostime.get_time()
-        
-        print('---BEGINING TEST\n')
-            
-        for obs in self.obsrs:
-            obs.t0 = t0
-            obs.active = True
-        
-        if cmdr is not None:
-            self.cmdr.t0 = t0
-            self.cmdr.pub_commands()
-        else:
-            if self.bkp_timeout is None:
-                t2 = t0 + 1
-            else:
-                t2 = t0 + self.bkp_timeout
-            while not rospy.is_shutdown() and rospy.rostime.get_time() < t2:
-                rospy.sleep(.2)
-        
-        for obs in self.obsrs:
-             obs.active = False
-
-        print('\n---ENDING TEST')
-        
-        
-    def plot(self):
-        colours = ['g','r','c','m' ,'y']
-        for obs in self.obsrs:
-            series = obs.data_series
-            if len(colours) == 0:
-                colour = 'k'
-            else:
-                colour = colours.pop(0)
-            plot.plot(series.x_values, series.y_values, '.-' + colour, label='OBS:'+series.ylabel)
-        
-        if self.cmdr is not None:
-            series = self.cmdr.data_series
-            plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
-            plot.xlabel(series.xlabel)
-        
-        plot.legend(title="LEGEND", fontsize='x-small')
-        plot.show()
 
 
 #gets data from subscriber
@@ -187,6 +128,7 @@ class Observer:
         self.data_series += [x, self.msgf.extract_data(data)]
 
 
+#linear interploration for the commander
 class LinearControl:
     '''
     y2 |          *
@@ -255,8 +197,10 @@ class Commander:
         print('@%s:{:.2f} %s<<{:.2f}'.format(data[0], data[1]) % (self.data_series.xlabel, self.data_series.ylabel))
 
 
+
+#creates observer from string arg
 def observer_arg(arg):
-    #format: "/tf.translation.z"
+    #example: "/tf.translation.z"
     try:
         arg = arg.partition('.')
         return Observer(arg[0], arg[2])
@@ -264,12 +208,14 @@ def observer_arg(arg):
         print("FAILED TO PARSE OBSERVER ARG: " + str(ex))
         return None
 
+#creates commander from string arg
 def commander_arg(arg, timeout, command_rate):
-    #format: "/aquadrone/fake/in std_msgs/Float32 {'data':'!CTRL'} [10,20]"
+    #example: "/aquadrone/fake/in std_msgs/Float32 {'data':'!CTRL'} [10,20]"
     try:
         arg = arg.split(" ")
         exec("arg[2] = " + arg[2])
         exec("arg[3] = " + arg[3])
+        print(type(arg[3]))
         return Commander(topic=arg[0], msg_content=arg[2], msg_type=arg[1], timeout=float(timeout),
                         y0=float(arg[3][0]),y1=float(arg[3][1]), command_rate=float(command_rate))
     except Exception as ex:
@@ -277,6 +223,69 @@ def commander_arg(arg, timeout, command_rate):
         return None
 
 
+#puts together obervers and commander; 
+class DataCollector:
+    def __init__(self, commander, observers, bkp_timeout=None):
+        self.obsrs = observers# list of Observers
+        self.cmdr = commander# single Commander
+        self.bkp_timeout = bkp_timeout
+
+    def run_test(self, t0='on call'):
+        print('\n=======TEST=======')
+        if self.cmdr is None:
+            print('[CONTROL] None')
+        else:
+            print('[CONTROL]' + self.cmdr.msgf.topic)
+        
+        for obs in self.obsrs:
+            print('[OBSERVING]' + obs.msgf.topic)
+        
+        if t0 == 'on call':
+            t0 = rospy.rostime.get_time()
+        
+        print('---BEGINING TEST\n')
+            
+        for obs in self.obsrs:
+            obs.t0 = t0
+            obs.active = True
+        
+        if cmdr is not None:
+            self.cmdr.t0 = t0
+            self.cmdr.pub_commands()
+        else:
+            if self.bkp_timeout is None:
+                t2 = t0 + 1
+            else:
+                t2 = t0 + self.bkp_timeout
+            while not rospy.is_shutdown() and rospy.rostime.get_time() < t2:
+                rospy.sleep(.2)
+        
+        for obs in self.obsrs:
+             obs.active = False
+
+        print('\n---ENDING TEST')
+        
+        
+    def plot(self):
+        colours = ['g','r','c','m' ,'y']
+        for obs in self.obsrs:
+            series = obs.data_series
+            if len(colours) == 0:
+                colour = 'k'
+            else:
+                colour = colours.pop(0)
+            plot.plot(series.x_values, series.y_values, '.-' + colour, label='OBS:'+series.ylabel)
+        
+        if self.cmdr is not None:
+            series = self.cmdr.data_series
+            plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
+            plot.xlabel(series.xlabel)
+        
+        plot.legend(title="LEGEND", fontsize='x-small')
+        plot.show()
+        
+        
+        
 
 
 rospy.init_node('test_controller') #INITIALIZE
@@ -325,7 +334,7 @@ clt.run_test()
 print('plotting results...')
 clt.plot()
 
-rospy.signal_shutdown('TEST OVER')
+print("Ready to exit...")
 
 # MAIN
 print('\n')

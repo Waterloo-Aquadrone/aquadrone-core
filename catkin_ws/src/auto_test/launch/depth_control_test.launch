@@ -10,6 +10,8 @@
     
     
     <!--Do not change--><node name="test_controller" pkg="testing" type="testcontroller.py" output="screen" args="timeout:=$(arg timeout) command_rate:=$(arg command_rate)"><!--Do not change-->
+    
+        <!-- this is incomplete -->
         <!-- TEST SPECIFICATIONS: -->
         <param name="observers" value="/gazebo/model_states.pose[1].position.z"/><!--multiple observers can be seperated by a space-->
         <param name="commander" value="/aquadrone/fake/in std_msgs/Float32 {'data':'!CTRL'} [10,20]"/>
