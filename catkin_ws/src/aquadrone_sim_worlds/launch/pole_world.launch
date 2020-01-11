@@ -27,7 +27,7 @@
                 seafloor:
                     plane: [2000, 2000, 0.1]
                     pose:
-                        position: [0, 0, -100]
+                        position: [0, 0, -10]
                 north:
                     plane: [0.1, 2000, 100]
                     pose:
@@ -53,4 +53,23 @@
         </include>
     </group>
 
+
+    <param name="red_pole_description" command="$(find xacro)/xacro.py $(find aquadrone_sim_worlds)/demo_objects/red_pole.urdf.xacro" />
+    <node name="red_pole_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model red_pole -param red_pole_description -x 3 -y 0"/>
+
+
+    <param name="green_pole_description" command="$(find xacro)/xacro.py $(find aquadrone_sim_worlds)/demo_objects/green_pole.urdf.xacro" />
+    <node name="green_pole_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model green_pole -param green_pole_description -x 0 -y 3"/>
+
+
+    <param name="blue_pole_description" command="$(find xacro)/xacro.py $(find aquadrone_sim_worlds)/demo_objects/blue_pole.urdf.xacro" />
+    <node name="blue_pole_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model blue_pole -param blue_pole_description -x -3 -y 0"/>
+
+
+    <param name="white_pole_description" command="$(find xacro)/xacro.py $(find aquadrone_sim_worlds)/demo_objects/white_pole.urdf.xacro" />
+    <node name="white_pole_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model white_pole -param white_pole_description -x 0 -y -3"/>
 </launch>
