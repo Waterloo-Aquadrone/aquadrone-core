@@ -49,21 +49,24 @@ class ROSStateEstimationModule:
 
     def get_submarinne_state(self):
 
-        def make_data_type(msg, type=DS.Vector):
-            out = type()
+        def make_vector(msg):
+            out = DS.Vector(0, 0, 0)
+            out.from_msg(msg)
+        def make_quat(msg):
+            out = DS.Quaternion()
             out.from_msg(msg)
 
-        position = make_data_type(self.sub_state.position)
-        velocity = make_data_type(self.sub_state.velocity)
-        orientation_quat = make_data_type(self.sub_state.orientation_quat, DS.Quaternion)
-        orientation_rpy = make_data_type(self.sub_state.orientation_rpy)
-        ang_vel = make_data_type(self.sub_state.ang_vel)
+        position = make_vector(self.sub_state.position)
+        velocity = make_vector(self.sub_state.velocity)
+        orientation_quat = make_quat(self.sub_state.orientation_quat)
+        orientation_rpy = make_vector(self.sub_state.orientation_rpy)
+        ang_vel = make_vector(self.sub_state.ang_vel)
 
-        position_var = make_data_type(self.sub_state.position_variance)
-        velocity_var = make_data_type(self.sub_state.velocity_variance)
-        orientation_quat_var = make_data_type(self.sub_state.orientation_quat_var, DS.Quaternion)
-        orientation_rpy_var = make_data_type(self.sub_state.orientation_RPY_var)
-        ang_vel_var = make_data_type(self.sub_state.ang_vel_var)
+        position_var = make_vector(self.sub_state.position_variance)
+        velocity_var = make_vector(self.sub_state.velocity_variance)
+        orientation_quat_var = make_quat(self.sub_state.orientation_quat_var)
+        orientation_rpy_var = make_vector(self.sub_state.orientation_RPY_var)
+        ang_vel_var = make_vector(self.sub_state.ang_vel_var)
 
         out = Submarine(position, velocity, orientation_quat, orientation_rpy, ang_vel)
         out.set_uncertainties(position_var, velocity_var, orientation_quat_var, orientation_rpy_var, ang_vel_var)
@@ -78,7 +81,6 @@ class ROSSensorDataModule:
         print("init'd")
 
     def image_callback(self, msg):
-        print("cb")
         self.main_cam_image = msg
     
     def get_main_cam_image(self):
