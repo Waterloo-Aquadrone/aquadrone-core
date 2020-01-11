@@ -28,7 +28,10 @@
   </xacro:default_imu>
 
 
-
+  <xacro:include filename="$(find aquadrone_description)/urdf/simple_camera.urdf.xacro"/>
+  <xacro:simple_camera_macro name="front_cam">
+    <origin xyz="0.5 0 0.2" rpy="0 0 0"/>
+  </xacro:simple_camera_macro>
 
   <!-- UP/DOWN-->
   <xacro:thruster_macro thruster_id="0">
