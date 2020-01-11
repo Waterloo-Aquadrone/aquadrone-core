@@ -137,23 +137,6 @@ class CompetitionMap:
 	def add_wall(self, wall):
 		self.walls.append(wall)
 
-class PIDCommand:
-	OFF_COMMAND = {'x' : None, 'y' : None, 'z' : None, 'r' : None, 'p' : None, 'w' : None}
-
-	def __init__(self, mode, values):
-		self.desired_state = OFF_COMMAND.copy()
-		for m, val in zip(mode, values):
-			if m in 'xyzrpw':
-				self.desired_state[m] = val
-			else:
-				raise Exception('Unrecognized mode: ' + m)
-
-
-class ThrusterCommand:
-	def __init__(self, acceleration=None, angular_acceleration=None):
-		self.acceleration = acceleration
-		self.angular_acceleration = angular_acceleration
-
 
 class VisionData:
 	def __init__(self, labels, data):
