@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 import rospy
 import math
@@ -127,9 +127,12 @@ class IMUSensorListener(BaseSensorListener):
 
     def get_measurement_z(self):
         vec = np.zeros((self.get_p(),1))
-        vec[0:4] = self.orientation
+        for i in range(0, 4):
+            vec[i] = self.orientation[i]
 
-        vec[4:7] = self.ang_vel
+        for i in range(0, 3):
+            vec[i+4] = self.ang_vel[i]
+
         return vec
 
     def get_R(self):
