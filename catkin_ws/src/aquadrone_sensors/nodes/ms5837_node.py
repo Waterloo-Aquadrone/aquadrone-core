@@ -12,6 +12,10 @@ pub = rospy.Publisher('/aquadrone/out/pressure', FluidPressure, queue_size=1)
 rospy.init_node('depth_sensor')
 rate = rospy.Rate(10)
 
+# Data sheet says +- 200 mbar
+# Assuming this is +- 3 standard deviations (99.7% confidence) the variance can be calculated as follows:
+sensor_var = (200 / 3) ** 2
+
 while not rospy.is_shutdown():
     sensor = ms5837.MS5837_30BA(port)
 
@@ -23,6 +27,7 @@ while not rospy.is_shutdown():
                 if sensor.read():
                     msg = FluidPressure()
                     msg.fluid_pressure = sensor.pressure()# mbar
+                    msg.var = sensor_var
                     pub.publish(msg)
                 else:
                     rospy.core.logwarn("unable to read ms5837, depth sensor")
