@@ -93,6 +93,21 @@ class EKF:
             z[k] = C*x[k] + B*u[k]
         '''
 
+        ''' Process Description
+
+        Each loop will do a prediction step based on the motor thrusts,
+        gravity, bouyancy, drag, and other forces to update the expected
+        state and its variance.
+        
+        Then a measurement step, where it uses input from the pressure sensor
+        and gyro (and sensors added in hte future) to refine its expected state
+        and variance.
+        
+        Then there is a step where the new expected state/variance is converted
+        to a SubState message which is then published.
+
+        '''
+
         self.n = 13 # Number of state elements
         self.m = 8 # Number of inputs
 
@@ -108,6 +123,10 @@ class EKF:
 
         self.depth_sub = PressureSensorListener()
         self.imu_sub = IMUSensorListener()
+        # Potential Future Sensors:
+        # - ZED mini localization
+        # - ZED mini IMU
+        # - Position info from detecting objects
 
         self.rate = 20
         self.rate_ctrl = rospy.Rate(self.rate)
@@ -119,8 +138,13 @@ class EKF:
 
         self.motor_sub = rospy.Subscriber("motor_command", MotorControls, self.motor_cb)
 
+        self.last_prediction_t = self.get_t()
+
     def motor_cb(self, msg):
         self.u = np.array(msg.motorThrusts)
+
+    def get_t(self):
+        return rospy.Time.now().to_sec()
 
     def prediction(self):
 
@@ -204,7 +228,11 @@ class EKF:
         # Calculate next state from current state x and inputs u
         # Must be autograd-able
         n = x.shape[0]
-        dt = 1.0 / self.rate
+
+        # Update time and calculate dt
+        t = self.get_t()
+        dt = t - self.last_prediction_t
+        self.last_prediction_t = t
 
         new_pos = np.array([x[IDx.Px] + dt*x[IDx.Vx],
                             x[IDx.Py] + dt*x[IDx.Vy],
@@ -262,6 +290,7 @@ class EKF:
         motor_forces.shape = (3,1)
 
         # TODO: Add drag
+        # TODO: add torque and forces from buoyancy
 
         return motor_forces
         
