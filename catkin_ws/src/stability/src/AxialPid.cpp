@@ -4,6 +4,8 @@
 #include <ros/ros.h>
 #include <cmath>
 
+#include <aquadrone_msgs/SubState.h>
+
 RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, float newPKp, float newPKi, float newPKd, float newYKp, float newYKi, float newYKd, float rTarget, float pTarget, float yTarget) :
 	//initializing PID constants & targets
 	rollKp(newRKp), rollKi(newRKi), rollKd(newRKd), pitchKp(newPKp), pitchKi(newPKi), pitchKd(newPKd), yawKp(newYKp), yawKi(newYKi), yawKd(newYKd), rollTarget(rTarget), pitchTarget(pTarget), yawTarget(yTarget),
@@ -212,46 +214,10 @@ void RotPIDController::setTargets(geometry_msgs::Vector3 input)
 	yawTarget = input.z;
 }
 
-void RotPIDController::setInputs(sensor_msgs::Imu input)
+void RotPIDController::setInputs(aquadrone_msgs::SubState input)
 {
-  	EulerAngles angles = ToEulerAngles(input);
-  	pitchVal = angles.pitch;
-  	yawVal = angles.yaw;
-  	rollVal = angles.roll;	
+  	pitchVal = input.orientation_RPY.y;
+  	yawVal = input.orientation_RPY.z;
+  	rollVal = input.orientation_RPY.x;	
 }
 
-
-void RotPIDController::runSubs(int argc, char** argv)
-{
-	ros::init(argc, argv, "pidLoop");
-	ros::NodeHandle n;
-	target = n.subscribe("target_topic", 50, &RotPIDController::setTargets, this);
-	sensor = n.subscribe("/aquadrone_v2/out/imu", 50, &RotPIDController::setInputs, this);	
-	ros::spinOnce();
-}
-
-
-//copied from wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
-RotPIDController::EulerAngles RotPIDController::ToEulerAngles(sensor_msgs::Imu input)
-{
-    EulerAngles angles;
-
-    // roll (x-axis rotation)
-    double sinr_cosp = +2.0 * (input.orientation.w * input.orientation.x + input.orientation.y * input.orientation.z);
-    double cosr_cosp = +1.0 - 2.0 * (input.orientation.x * input.orientation.x + input.orientation.y * input.orientation.y);
-    angles.roll = atan2(sinr_cosp, cosr_cosp);
-
-    // pitch (y-axis rotation)
-    double sinp = +2.0 * (input.orientation.w * input.orientation.y - input.orientation.z * input.orientation.x);
-    if (fabs(sinp) >= 1)
-        angles.pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
-    else
-        angles.pitch = asin(sinp);
-
-    // yaw (z-axis rotation)
-    double siny_cosp = +2.0 * (input.orientation.w * input.orientation.z + input.orientation.x * input.orientation.y);
-    double cosy_cosp = +1.0 - 2.0 * (input.orientation.y * input.orientation.y + input.orientation.z * input.orientation.z);  
-    angles.yaw = atan2(siny_cosp, cosy_cosp);
-
-    return angles;
-}

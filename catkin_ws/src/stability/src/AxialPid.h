@@ -7,6 +7,8 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Vector3.h>
 
+#include <aquadrone_msgs/SubState.h>
+
 class RotPIDController {
 private:
 	//pid control objects
@@ -107,18 +109,8 @@ public:
 
 	void setTargets(geometry_msgs::Vector3);
 
-	void setInputs(sensor_msgs::Imu);
+	void setInputs(aquadrone_msgs::SubState);
 	
-	//ros looping function
-	void runSubs(int , char** );
-
-	//stuff for converting quaterions
-	struct EulerAngles
-	{
-    double roll, pitch, yaw;
-	};
-
-	EulerAngles ToEulerAngles(sensor_msgs::Imu);
 };
 
 	
