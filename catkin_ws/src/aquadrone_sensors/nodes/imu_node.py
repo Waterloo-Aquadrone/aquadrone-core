@@ -23,6 +23,7 @@ while not rospy.is_shutdown():
   msgUW.quaternion = bno.read_quaternion()
 
   msgIMU = Imu()
+  # TODO: add variance data based on BNO005 datasheet
   msgIMU.orientation = bno.read_quaternion()
   msgIMU.angular_velocity = bno.read_gyroscope()
   msgIMU.linear_acceleration = bno.read_linear_acceleration()
