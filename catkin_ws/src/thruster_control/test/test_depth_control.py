@@ -9,6 +9,7 @@ from thruster_control.depth_pid_controller import DepthPIDController
 
 from sensor_msgs.msg import FluidPressure
 from geometry_msgs.msg import Wrench
+from aquadrone_msgs.msg import SubState
 
 
 class TestDepthPIDController(unittest.TestCase):
@@ -48,16 +49,12 @@ class TestDepthPIDController(unittest.TestCase):
         pid.depth = 0 # Make sure we have init condition
 
         # Set up message
-        # It's not great that we need to reverse-engineer the pressure-depth equation
-        #  See about refactoring this in the future
-        #  If the callback just stored the pressure message, then calculated depth
-        #   later, we could test both separately
         in_depth = 5.0
-        msg = FluidPressure()
-        msg.fluid_pressure = in_depth * pid.g + pid.pressure_offset
+        msg = SubState()
+        msg.position.z = -in_depth
 
         # Run code
-        pid.depth_cb(msg)
+        pid.state_cb(msg)
 
         # No need to mock, since the method updates a variable we can access
         self.assertAlmostEqual(in_depth, pid.depth)
