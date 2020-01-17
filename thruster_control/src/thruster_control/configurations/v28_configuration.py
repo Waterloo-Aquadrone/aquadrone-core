@@ -41,8 +41,8 @@ class V28Configuration:
         th_5 = gh.get_thruster_wrench_vector(x=0,         y=-self.dY,  z=0,  roll=0,  pitch=0,        yaw=0)
 
         # Lef-Right Thrusters
-        th_6 = gh.get_thruster_wrench_vector(x=self.dX,    y=0,    z=self.dZ,  roll=0,  pitch=0,  yaw=-self.a2)
-        th_7 = gh.get_thruster_wrench_vector(x=-self.dX,   y=0,    z=self.dZ,  roll=0,  pitch=0,  yaw=-self.a2)
+        th_6 = gh.get_thruster_wrench_vector(x=self.dX,    y=0,    z=0.05,  roll=0,  pitch=0,  yaw=-self.a2)
+        th_7 = gh.get_thruster_wrench_vector(x=-self.dX,   y=0,    z=0.05,  roll=0,  pitch=0,  yaw=-self.a2)
 
 
         return np.column_stack((th_0, th_1, th_2, th_3, th_4, th_5, th_6, th_7))

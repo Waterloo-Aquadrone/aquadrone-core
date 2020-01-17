@@ -58,10 +58,10 @@
 
 <!-- LEFT/RIGHT-->
 <xacro:thruster_macro thruster_id="6">
-    <origin xyz="0.4 0 0.2" rpy="0 0 ${-pi/2}"/>
+    <origin xyz="0.4 0 0.05" rpy="0 0 ${-pi/2}"/>
   </xacro:thruster_macro>
    <xacro:thruster_macro thruster_id="7">
-    <origin xyz="-0.4 0 0.2" rpy="0 0 ${-pi/2}"/>
+    <origin xyz="-0.4 0 0.05" rpy="0 0 ${-pi/2}"/>
   </xacro:thruster_macro>
 
 
