@@ -79,8 +79,37 @@ class EKF:
     def __init__(self, config):
         # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
-        self.n = 13
-        self.m = 8
+        ''' Model Description
+        x = state
+        u = inputs (thruster forces, etc)
+        z = ouputs (measurements)
+        P = unvertainty/variance matrix of state x
+
+        Dynamics: x[k+1] = f(x[k], u[k])
+        Outputs:    z[k] = h(x[k], u[k])
+
+        Linear Form:
+          x[k+1] = A*x[k] + B*u[k]
+            z[k] = C*x[k] + B*u[k]
+        '''
+
+        ''' Process Description
+
+        Each loop will do a prediction step based on the motor thrusts,
+        gravity, bouyancy, drag, and other forces to update the expected
+        state and its variance.
+        
+        Then a measurement step, where it uses input from the pressure sensor
+        and gyro (and sensors added in hte future) to refine its expected state
+        and variance.
+        
+        Then there is a step where the new expected state/variance is converted
+        to a SubState message which is then published.
+
+        '''
+
+        self.n = 13 # Number of state elements
+        self.m = 8 # Number of inputs
 
         self.x = np.zeros((self.n, 1))
         self.x[IDx.Ow] = 1
@@ -90,10 +119,14 @@ class EKF:
         self.B = np.array(config.get_thrusts_to_wrench_matrix())
 
         self.P = np.eye(self.n)
-        self.Q = np.eye(self.n) * 0.01
+        self.Q = np.eye(self.n) * 0.01 # Uncertanty in dynamics model
 
         self.depth_sub = PressureSensorListener()
         self.imu_sub = IMUSensorListener()
+        # Potential Future Sensors:
+        # - ZED mini localization
+        # - ZED mini IMU
+        # - Position info from detecting objects
 
         self.rate = 20
         self.rate_ctrl = rospy.Rate(self.rate)
@@ -105,16 +138,24 @@ class EKF:
 
         self.motor_sub = rospy.Subscriber("motor_command", MotorControls, self.motor_cb)
 
+        self.last_prediction_t = self.get_t()
+
     def motor_cb(self, msg):
         self.u = np.array(msg.motorThrusts)
 
+    def get_t(self):
+        return rospy.Time.now().to_sec()
+
     def prediction(self):
+
+        # Get jacobian of function f
         F = self.calc_F(self.x, self.u)
         F = np.reshape(F, (self.n,self.n))
         Fx = F[0:self.n, 0:self.n]
         #print("Fx")
         #print(Fx)
 
+        # Update x and uncertainty P
         self.x = self.f(self.x, self.u)
         inter = np.dot(Fx, self.P)
         self.P = np.dot(  inter,  np.transpose(Fx)  ) + self.Q
@@ -122,11 +163,12 @@ class EKF:
         
 
     def update(self):
-        z = np.zeros((0,0))
-        h = np.zeros((0,0))
+        # Update state based on sensor measurements
+        z = np.zeros((0,0)) # measurements
+        h = np.zeros((0,0)) # predicted measurements
 
-        H = np.zeros((0,0))
-        R = np.zeros((0,0))
+        H = np.zeros((0,0)) # Jacobian of function h
+        R = np.zeros((0,0)) # Uncertainty matrix of measurement
 
         def add_block_diag(H, newH):
             if H.shape[0] == 0:
@@ -163,9 +205,11 @@ class EKF:
         if R.shape[0] == 0:
             return
 
+        # Error in measurements vs predicted
         y = z - h
         y.shape = (y.shape[0], 1)
 
+        # Calculate Kalman gain
         Ht = np.transpose(H)
         S = np.dot(np.dot(H, self.P), Ht) + R
         K = np.dot(np.dot(self.P, Ht), np.linalg.inv(S))
@@ -175,13 +219,20 @@ class EKF:
 
         diff = np.dot(K, y)
 
+        # Update state x and uncertainty P
         self.x = self.x + diff
         self.P = np.dot(I - KH, self.P)
 
 
     def f(self, x, u):
+        # Calculate next state from current state x and inputs u
+        # Must be autograd-able
         n = x.shape[0]
-        dt = 1.0 / self.rate
+
+        # Update time and calculate dt
+        t = self.get_t()
+        dt = t - self.last_prediction_t
+        self.last_prediction_t = t
 
         new_pos = np.array([x[IDx.Px] + dt*x[IDx.Vx],
                             x[IDx.Py] + dt*x[IDx.Vy],
@@ -239,6 +290,7 @@ class EKF:
         motor_forces.shape = (3,1)
 
         # TODO: Add drag
+        # TODO: add torque and forces from buoyancy
 
         return motor_forces
         
