@@ -40,8 +40,8 @@
       <inertial>
         <mass value="${mass}" />
         <origin xyz="${cog}" rpy="0 0 0"/>
-        <inertia ixx="1" ixy="0" ixz="0"
-                 iyy="1" iyz="0"
+        <inertia ixx="100" ixy="0" ixz="0"
+                 iyy="100" iyz="0"
                  izz="1" />
       </inertial>
 
@@ -126,7 +126,7 @@
             or a full matrix (36 coefficients), like the added-mass coefficients above
             -->
             <quadratic_damping>
-              0 0 0 0 0 0
+              -1 -1 -1 -1 -1 -1
             </quadratic_damping>
 
           <!-- Link's bounding box, it is used to recalculate the immersed

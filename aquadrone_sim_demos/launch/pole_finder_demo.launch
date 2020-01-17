@@ -1,21 +1,21 @@
 <launch>
-    <arg name="model_name" default="v2"/>
-    <arg name="control_file" default="$(arg model_name)_control.launch"/>
 
-    <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
+    <include file="$(find aquadrone_sim_worlds)/launch/pole_world.launch">
         <arg name="paused" value="false"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/upload_sub.launch">
-        <arg name="model_file" value="$(arg model_name).urdf.xacro"/>
+        <arg name="model_file" value="v28.urdf.xacro"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
         <arg name="model" value="aquadrone"/>
     </include>
 
-    <include file="$(find thruster_control)/launch/$(arg control_file)"/>
+    <include file="$(find thruster_control)/launch/v28_control.launch"/>
 
     <node name="state_est" pkg="state_estimation" type="ekf.py"/>
+
+    <!--<node name="demo" pkg="path_planning" type="pole_finder_demo.py"/>-->
 
 </launch>
