@@ -108,7 +108,7 @@ class ColoredPoleFinderState(BaseState):
 
         yaw = sub_state.get_submarinne_state().orientation_rpy.z
         controls.set_yaw_goal(yaw + dt * 2*math.pi * 0.05)
-        controls.planar_move_command(Fy=-0, Fx=0.05)
+        controls.planar_move_command(Fy=0, Fx=0.05)
 
         image = sensors.get_main_cam_image()
         mask = cv2.inRange(image, self.color_low, self.color_high)
