@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import rospy
 import rospkg
 import numpy as np
 
-from thruster_control.thruster_interfaces import V2ThrusterInterface
+from thruster_control.thruster_interfaces.v2_interface import V2ThrusterInterface
 from thruster_control.thruster_types import BlueRoboticsT100
 
 import board

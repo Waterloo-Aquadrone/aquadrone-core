@@ -3,7 +3,6 @@ import math
 import rospy
 import rospkg
 
-import geometry_helper as gh
 
 a2 = math.pi / 2.0
 a4 = math.pi / 4.0
