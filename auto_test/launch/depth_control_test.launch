@@ -1,0 +1,21 @@
+<launch>
+    <arg name="timeout" default="30"/>
+    <arg name="command_rate" default="1"/>
+
+    <!-- LAUNCH ACTIVE ELEMENTS: -->
+    <include file="$(find aquadrone_sim_demos)/launch/empty.launch">
+        <arg name="model_name" value="v28"/>
+    </include>
+    
+    <!--<node name="fake_news" pkg="auto_test" type="fake_data.py"/>-->
+    
+    
+    
+    <!--Do not change--><node name="test_controller" pkg="auto_test" type="testcontroller.py" output="screen" args="timeout:=$(arg timeout) command_rate:=$(arg command_rate)"><!--Do not change-->
+    
+        <!-- this is incomplete -->
+        <!-- TEST SPECIFICATIONS: -->
+        <param name="observers" value="/gazebo/model_states.pose[1].position.z"/><!--multiple observers can be seperated by a space-->
+        <param name="commander" value="/depth_control/goal_depth std_msgs/Float64 {'data':'!CTRL'} [3,5]"/>
+    </node>
+</launch>
