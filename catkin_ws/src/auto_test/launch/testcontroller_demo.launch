@@ -1,0 +1,15 @@
+<launch>
+    <arg name="timeout" default="5"/>
+    <arg name="command_rate" default="1"/>
+
+    <!-- LAUNCH ACTIVE ELEMENTS: -->    
+    <node name="fake_news" pkg="testing" type="fake_data.py"/>
+    
+    
+    
+    <!--Do not change--><node name="test_controller" pkg="testing" type="testcontroller.py" output="screen" args="timeout:=$(arg timeout) command_rate:=$(arg command_rate)"><!--Do not change-->
+        <!-- TEST SPECIFICATIONS: -->
+        <param name="observers" value="/aquadrone/fake/out.data"/><!--multiple observers can be seperated by a space-->
+        <param name="commander" value="/aquadrone/fake/in std_msgs/Float32 {'data':'!CTRL'} [10,20]"/>
+    </node>
+</launch>
