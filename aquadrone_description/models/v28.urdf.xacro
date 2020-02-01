@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<robot name="aquadrone" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
+
+  <!-- Input debug flag -->
+  <xacro:arg name="debug" default="0"/>
+
+
+  <!-- Include the ROV macro file -->
+  <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
+  <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
+
+  <!-- Create the rov_example -->
+  <xacro:aquadrone_base debug="$(arg debug)" cog="0 0 0" cob="0 0 0"/>
+
+
+    <!-- Pressure  -->
+  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/pressure_snippets.xacro"/>
+  <xacro:default_pressure namespace="aquadrone/out/" parent_link="base_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:default_pressure>
+
+  <!-- IMU -->
+  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/imu_snippets.xacro"/>
+  <xacro:default_imu namespace="aquadrone/out/" parent_link="base_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:default_imu>
+
+
+  <xacro:include filename="$(find aquadrone_description)/urdf/simple_camera.urdf.xacro"/>
+  <xacro:simple_camera_macro name="front_cam">
+    <origin xyz="0.5 0 0.2" rpy="0 0 0"/>
+  </xacro:simple_camera_macro>
+
+  <!-- UP/DOWN-->
+  <xacro:thruster_macro thruster_id="0">
+    <origin xyz="0.4 0.4 -0.2" rpy="0 ${pi/2} 0"/>
+  </xacro:thruster_macro>
+  <xacro:thruster_macro thruster_id="1">
+    <origin xyz="0.4 -0.4 -0.2" rpy="0 ${pi/2} 0"/>
+  </xacro:thruster_macro>
+
+  <xacro:thruster_macro thruster_id="2">
+    <origin xyz="-0.4 0.4 -0.2" rpy="0 ${pi/2} 0"/>
+  </xacro:thruster_macro>
+  <xacro:thruster_macro thruster_id="3">
+    <origin xyz="-0.4 -0.4 -0.2" rpy="0 ${pi/2} 0"/>
+  </xacro:thruster_macro>
+
+<!-- FORWARD/BACKWARD-->
+ <xacro:thruster_macro thruster_id="4">
+    <origin xyz="0 0.4 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+   <xacro:thruster_macro thruster_id="5">
+    <origin xyz="0 -0.4 0" rpy="0 0 0"/>
+  </xacro:thruster_macro>
+
+<!-- LEFT/RIGHT-->
+<xacro:thruster_macro thruster_id="6">
+    <origin xyz="0.4 0 0.05" rpy="0 0 ${-pi/2}"/>
+  </xacro:thruster_macro>
+   <xacro:thruster_macro thruster_id="7">
+    <origin xyz="-0.4 0 0.05" rpy="0 0 ${-pi/2}"/>
+  </xacro:thruster_macro>
+
+
+</robot>
