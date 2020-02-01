@@ -4,8 +4,8 @@ import rospy
 
 from thruster_control.thruster_configurations import V1Configuration, V2Configuration, V28Configuration
 from thruster_control.movement_command_collector import MovementCommandCollector
-from thruster_control.thruster_interfaces.sim_interface import SimulatedThrusterInterface
-from thruster_control.thruster_types import UUVSimThruster
+from thruster_control.thruster_interfaces.v2_interface import V2ThrusterInterface
+from thruster_control.thruster_types import BlueRoboticsT100
 from thruster_control.thruster_control_manager import SimThrusterController
 
 
@@ -32,10 +32,10 @@ if __name__ == "__main__":
 
     config.initialize()
 
-    interface = SimulatedThrusterInterface("aquadrone", num)
+    interface = V2ThrusterInterface()
     interface.initialize()
 
-    th_spec = UUVSimThruster()
+    th_spec = BlueRoboticsT100()
     th_spec.initialize()
     specs = [th_spec for i in range(0, 8)]
 
