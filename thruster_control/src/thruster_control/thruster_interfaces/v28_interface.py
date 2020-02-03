@@ -26,7 +26,7 @@ class V28ThrusterInterface:
         #self.gpio.setmode(self.gpio.BCiM)
         self.pca.frequency = self.frequency
 
-    def init_thrusters(self, specs):
+    def init_thrusters(self, thruster_specs):
         print("Init Thruster PWM")
         for i in range(0, 6):
             self.pwm[i] = self.pca.channels[self.motorPins[i]]
