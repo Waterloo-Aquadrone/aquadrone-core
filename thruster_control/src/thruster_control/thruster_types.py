@@ -4,10 +4,6 @@ import rospy
 import rospkg
 
 
-a2 = math.pi / 2.0
-a4 = math.pi / 4.0
-in2m = 2.54 * 0.01
-
 class ThrusterType:
     def __init__(self):
         raise NotImplementedError
@@ -22,7 +18,6 @@ class ThrusterType:
 class BlueRoboticsT100(ThrusterType):
     def __init__(self, pwm_freq):
         self.pwm_freq = pwm_freq
-        self.pwmOffset = 0.3754
         self.pwmData = None
         self.pwmSignals_us = None
         self.motorThrusts_lbs = None
