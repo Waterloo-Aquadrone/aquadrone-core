@@ -21,7 +21,9 @@ if __name__ == "__main__":
     spec.initialize()
     specs = [spec, spec, spec, spec, spec, spec, spec, spec]
 
-    interface.initialize(specs)
+    interface.init_gpio()
+    
+    interface.init_thrusters(specs)
 
     
 
@@ -29,20 +31,30 @@ if __name__ == "__main__":
         sig = spec.thrust_to_signal(T)
         interface.command(i, sig)
 
-    THRUST = 2
+    THRUST = 0.5
 
     while not rospy.is_shutdown():
-        for i in range(0, 6):
+        for i in range(0, 1):
             if rospy.is_shutdown():
                 break
 
             print("Testing thruster %d" % i)
 
-            send_command(i, THRUST)
-            rospy.sleep(1.0)
+            for th in range(0, 30):
+                send_command(i, th/10.0)
+                rospy.sleep(0.1)
 
-            send_command(i, -THRUST)
-            rospy.sleep(1.0)
-        
+            rospy.sleep(3.0)
+
             send_command(i, 0)
-            rospy.sleep(2.0)
+            rospy.sleep(3.0)
+
+
+            for th in range(0, 30):
+                send_command(i, -th/10.0)
+                rospy.sleep(0.1)
+        
+            rospy.sleep(3.0)
+
+            send_command(i, 0)
+            rospy.sleep(3.0)

@@ -36,7 +36,7 @@ class BlueRoboticsT100(ThrusterType):
         pulse_perc = pulse_s * self.pwm_freq
         pulse_duty = int(pulse_perc * 0xffff)
 
-        '''
+        '''        
         print("Thrust: %f" % thrust)
         print("Pulse us: %f" % pulse_us)
         print("Pulse s: %f" % pulse_s)
