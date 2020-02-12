@@ -16,6 +16,6 @@
         <!-- this is incomplete -->
         <!-- TEST SPECIFICATIONS: -->
         <param name="observers" value="/gazebo/model_states.pose[1].orientation.z"/><!--multiple observers can be seperated by a space-->
-        <param name="commander" value="/orientation_target geometry_msgs/Vector3 {'x':0.0,'y':'0.0','z':'!CTRL'} [-3.14,3.14]"/>
+        <param name="commander" value="/orientation_target geometry_msgs/Vector3 {'x':0.0,'y':0.0,'z':'!CTRL'} [-3.14,3.14]"/>
     </node>
 </launch>
