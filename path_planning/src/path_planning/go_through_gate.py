@@ -30,20 +30,17 @@ class GoThroughGate(BaseState):
         x = (y_coord)/(x_coord)
         angle =  math.atan(x)
         controls.set_yaw_goal(angle)
-        ##for yaw
         ##if(self.do_roll ):
         while(sub_pos.x <= gate_pos.x):
             planar_move_command(1,0,0)
+        ##when the sub reaches the gate, it pitches
+        planar_move_command(0,1,0)
+        planar_move_command(0,-2,0)
+        ##pitch done 
+        planar_move_command(0,1,0)
         if(self.go_right):
-            
             planar_move_command(1,0,0)
         elif(self.go_left):
             planar_move_command(1,0,0)
-
-
-
-        
-
-        pass
 
 
