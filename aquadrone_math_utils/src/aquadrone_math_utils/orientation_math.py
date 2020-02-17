@@ -26,6 +26,4 @@ def RPY_Matrix(r, p, y):
     r = Roll(r)
     p = Pitch(p)
     y = Yaw(y)
-
-    interm = np.dot(y,p)
-    return np.dot(interm, r)
+    return np.linalg.multi_dot([y, p, r])
