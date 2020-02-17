@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image
 import data_structures  as DS
 
 from aquadrone_msgs.msg import SubState
+from aquadrone_msgs.msg import MotorControls
 
 
 class ROSControlsModule:
@@ -17,6 +18,7 @@ class ROSControlsModule:
         self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
         self.yaw_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
+        self.raw_thruster_pub = rospy.Publisher("motor_command", MotorControls, queue_size=1)
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
@@ -38,6 +40,11 @@ class ROSControlsModule:
         w.torque.z = Tz
         self.planar_move_pub.publish(w)
 
+    def raw_thrust_command(self, thrusts):
+        msg = MotorControls()
+        msg.motorThrusts = thrusts
+        self.raw_thruster_pub.publish(msg)
+
 
 class ROSStateEstimationModule:
     def __init__(self):
@@ -47,7 +54,7 @@ class ROSStateEstimationModule:
     def sub_state_callback(self, msg):
         self.sub_state = msg
 
-    def get_submarinne_state(self):
+    def get_submarine_state(self):
 
         def make_vector(msg):
             out = DS.Vector(0, 0, 0)

@@ -14,9 +14,9 @@ class DepthPIDController:
         rospy.init_node('depth_control')
         self.depth = 0
 
-        self.Kp = 3
+        self.Kp = 5
         self.Kd = 10
-        self.Ki = 0.05
+        self.Ki = 0.1
 
         self.loop_rate = 10.0
         self.rate = rospy.Rate(self.loop_rate)

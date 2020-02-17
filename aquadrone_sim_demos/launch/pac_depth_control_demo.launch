@@ -1,0 +1,24 @@
+<launch>
+    <arg name="model_name" default="v28"/>
+
+    <include file="$(find aquadrone_sim_worlds)/launch/empty_dropin_world.launch">
+        <arg name="paused" value="false"/>
+    </include>
+    
+    <include file="$(find aquadrone_description)/launch/upload_sub.launch">
+        <arg name="model_file" value="$(arg model_name).urdf.xacro"/>
+    </include>
+    
+    <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
+        <arg name="model" value="aquadrone"/>
+    </include>
+
+    <include file="$(find thruster_control)/launch/sim_control.launch">
+        <arg name="model" value="$(arg model_name)"/>
+    </include>
+
+    <node name="state_est" pkg="state_estimation" type="ekf.py"/>
+
+    <node name="competition_logic" pkg="path_planning" type="pac_depth_control_demo.py" output="screen" required="true"/>
+
+</launch>

@@ -4,47 +4,7 @@ import numpy as np
 import scipy.misc
 from simple_pid import PID
 
-class BaseState(object):
-    def __init__(self):
-        pass
-
-    def state_name(self):
-        return "base_state"
-
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        # Set up anything that needs initializing
-        # Run EACH time the state is chosen as the next state
-        # process(...) will be called with the next available data
-        pass
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        # Clean up anything necessary
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        # Regular tick at some rate
-        pass
-
-    # Expose functions to identify when a state should exit
-    # Ex: has_timed_out, has_lost_track_of_[some object]
-
-
-class InitialState(object):
-    def __init__(self):
-        pass
-
-    def state_name(self):
-        return "init_state"
-
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        pass
-
+from base_state import BaseState
 
 class GoToDepthState(BaseState):
     def __init__(self, d):
@@ -65,7 +25,7 @@ class GoToDepthState(BaseState):
         pass
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        self.current_depth = -sub_state.get_submarinne_state().position.z
+        self.current_depth = -sub_state.get_submarine_state().position.z
         dt = t - self.last_t
         self.last_t = t
 
@@ -106,7 +66,7 @@ class ColoredPoleFinderState(BaseState):
         dt = t - self.last_t
         self.last_t = t
 
-        yaw = sub_state.get_submarinne_state().orientation_rpy.z
+        yaw = sub_state.get_submarine_state().orientation_rpy.z
         controls.set_yaw_goal(yaw + dt * 2*math.pi * 0.05)
         controls.planar_move_command(Fy=0, Fx=0.05)
 
