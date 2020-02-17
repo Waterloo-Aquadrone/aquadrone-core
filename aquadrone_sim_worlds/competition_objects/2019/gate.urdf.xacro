@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="2019/gate" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find aquadrone_sim_worlds)/competition_objects/common/common_shapes.urdf.xacro"/>
+
+<gazebo>
+    <static>true</static>
+</gazebo>
+<link name="base_link">
+    <inertial>
+      <origin xyz="0 0 0" />
+      <mass value="1.0" />
+      <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0" />
+    </inertial>
+</link>
+    
+<xacro:cylinder_link name="top" parent="base_link" radius="0.0381" length="3.048">
+    <origin xyz="0 0 1.524" rpy="0 1.5707 0"/>
+    <material>Gazebo/Black</material>
+</xacro:cylinder_link>
+
+<xacro:cylinder_link name="divider" parent="base_link" radius="0.0254" length="0.609">
+    <origin xyz="${3.048/2.0 - 1.219} 0 ${1.524 - (0.609/2.0)}" rpy="0 0 0"/>
+    <material>Gazebo/Black</material>
+</xacro:cylinder_link>
+
+<xacro:cylinder_link name="left_leg" parent="base_link" radius="0.0254" length="1.524">
+    <origin xyz="${3.048/2.0} 0 ${1.524/2.0}" rpy="0 0 0"/>
+    <material>Gazebo/Orange</material>
+</xacro:cylinder_link>
+
+<xacro:cylinder_link name="right_leg" parent="base_link" radius="0.0254" length="1.524">
+    <origin xyz="${-3.048/2.0} 0 ${1.524/2.0}" rpy="0 0 0"/>
+    <material>Gazebo/Orange</material>
+</xacro:cylinder_link>
+
+
+</robot>
