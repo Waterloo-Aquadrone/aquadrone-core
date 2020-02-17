@@ -1,0 +1,17 @@
+<launch>
+    <arg name="object" default="2019/gate"/>
+
+
+    <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+    <include file="$(find aquadrone_sim_worlds)/launch/blank_world.launch">
+    </include>
+
+    <arg name="world_frame" default="world"/>
+
+    <param name="object_description" command="$(find xacro)/xacro.py '$(find aquadrone_sim_worlds)/competition_objects/$(arg object).urdf.xacro'"/>
+
+
+<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -z 1  -model $(arg object) -param object_description"/>
+
+</launch>
