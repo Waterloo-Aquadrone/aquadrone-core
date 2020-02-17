@@ -109,7 +109,7 @@ class EKF:
         '''
 
         self.n = 13 # Number of state elements
-        self.m = 8 # Number of inputs
+        self.m = config.get_num_thrusters() # Number of inputs
 
         self.x = np.zeros((self.n, 1))
         self.x[IDx.Ow] = 1
@@ -408,13 +408,3 @@ class EKF:
             self.update_state_msg()
             self.state_pub.publish(self.sub_state_msg)
             
-            
-
-if __name__ == "__main__":
-    rospy.init_node("simple_state_estimation")
-
-    config = V28Configuration()
-    config.initialize()
-
-    ekf = EKF(config)
-    ekf.run()

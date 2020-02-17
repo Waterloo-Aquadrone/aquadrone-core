@@ -29,6 +29,7 @@ if __name__ == "__main__":
         num = 8
     else:
         print("Error: unknown model for controls: %s" % str(model))
+        exit()
 
     config.initialize()
 

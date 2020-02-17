@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     th_spec = UUVSimThruster()
     th_spec.initialize()
-    specs = [th_spec for i in range(0, 8)]
+    specs = [th_spec for i in range(0, num)]
 
     stc = SimThrusterController(config, mcc, interface, specs)
     stc.run()
