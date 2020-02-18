@@ -113,14 +113,15 @@ class EKF:
         self.n = IDx.NUM # Number of state elements
         self.m = config.get_num_thrusters() # Number of inputs
 
-        self.x = np.zeros((self.n, 1))
-        self.x[IDx.Ow] = 1
+        self.x = None
+        self.P = None
+        self.initialize_state()
 
         self.u = np.zeros((self.m,1))
 
         self.B = np.array(config.get_thrusts_to_wrench_matrix())
 
-        self.P = np.eye(self.n)
+        
         self.Q = np.eye(self.n) * 0.01 # Uncertanty in dynamics model
 
         self.depth_sub = PressureSensorListener()
