@@ -11,6 +11,8 @@ from autograd import grad, jacobian, elementwise_grad
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from sensor_msgs.msg import Imu, FluidPressure
 
+from std_srvs.srv import Trigger, TriggerResponse
+
 from thruster_control.configurations.v28_configuration import V28Configuration
 from aquadrone_msgs.msg import SubState, MotorControls
 
@@ -108,7 +110,7 @@ class EKF:
 
         '''
 
-        self.n = 13 # Number of state elements
+        self.n = IDx.NUM # Number of state elements
         self.m = config.get_num_thrusters() # Number of inputs
 
         self.x = np.zeros((self.n, 1))
@@ -138,7 +140,15 @@ class EKF:
 
         self.motor_sub = rospy.Subscriber("motor_command", MotorControls, self.motor_cb)
 
+        self.reset_service = rospy.Service('reset_sub_state_estimation', Trigger,self.initialize_state)
+
         self.last_prediction_t = self.get_t()
+
+    def initialize_state(self, msg=None):
+        self.x = np.zeros((self.n, 1))
+        self.x[IDx.Ow] = 1
+        self.P = np.eye(self.n)
+        return TriggerResponse(success=True, message="reset")
 
     def motor_cb(self, msg):
         self.u = np.array(msg.motorThrusts)
@@ -234,16 +244,16 @@ class EKF:
         dt = t - self.last_prediction_t
         self.last_prediction_t = t
 
-        new_pos = np.array([x[IDx.Px] + dt*x[IDx.Vx],
-                            x[IDx.Py] + dt*x[IDx.Vy],
-                            x[IDx.Pz] + dt*x[IDx.Vz]])
-
         mass = 10.0
         accel = (self.calculate_linear_forces(x, u)) * 1.0 / mass
 
         new_vel = np.array([x[IDx.Vx],
                             x[IDx.Vy],
                             x[IDx.Vz] ]) + dt*accel
+
+        new_pos = np.array([x[IDx.Px],
+                            x[IDx.Py],
+                            x[IDx.Pz] ]) + dt*new_vel + 0.5*dt*dt*accel 
 
 
         new_or = self.update_orientation_quaternion(x)
@@ -254,7 +264,7 @@ class EKF:
                                 x[IDx.Ay],
                                 x[IDx.Az]])
 
-        x_out = np.vstack([new_pos, new_vel, new_or, new_ang_vel])
+        x_out = np.vstack([new_pos, new_vel, accel, new_or, new_ang_vel])
 
 
         #return np.dot(1.0*np.eye(n), x) + np.dot(2.0*np.eye(m), u)
