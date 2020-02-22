@@ -27,12 +27,24 @@ def observe(topic, msg_type, data_series, data_name, data_from_msg_fnc):
 def publish(publiser_name, msg):
     PUB[publiser_name].publish(msg)
 
+def group_data(data_dict):
+    ind = None
+    dep = []
+    control = []
+    for series, values in data_dict:
+        if series.startswith('_'):
+            ind = series.trim('_'), values
+        elif series.endswith('ctrl'):
+            control.append((series, values))
+        else:
+            dep.append((series, values))
+    return ind, dep, control
 
 # - - - TEST SPECIFICATIONS:
 # Data Series:
 DATA = {
-    'depth:tf': {'time': [], 'metres': [] },
-    'depth:ctrl': {'time': [], 'metres': [] },
+    'depth:tf': {'_time': [], 'metres': [] },
+    'depth:ctrl': {'_time': [], 'metres': [] },
     }
 # Oberservations:
 observe('/aquadrone/fake/news', Float32, 'depth:tf', 'metres', lambda msg: abs(msg.pose[1].position.z))
@@ -87,19 +99,30 @@ print('\n---ENDING TEST')
 print('plotting results...')
 
 colours = ['g','r','c','m' ,'y']
-for obs in self.obsrs:
-    series = obs.data_series
-    # allocates colors to each series
-    if len(colours) == 0:
-        colour = 'k'
-    else:
-        colour = colours.pop(0)
-    plot.plot(series.x_values, series.y_values, '.-' + colour, label='OBS:'+series.ylabel)
+for name, data in DATA.items():
+    ind, dep, control = group_data(data)
+    for series, values in dep:
+        # allocates colors to each series
+        if len(colours) == 0:
+            colour = 'k'
+        else:
+            colour = colours.pop(0)
+            
+        plot.plot(ind[1], values, '.-' + colour, label=series)
+   
+   for series, values in control:
+        # allocates colors to each series
+        if len(colours) == 0:
+            colour = 'k'
+        else:
+            colour = colours.pop(0)
+            
+        plot.plot(ind[1], values, '.-' + colour, label=series)
 
-if self.cmdr is not None:
-    series = self.cmdr.data_series
-    plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
-    plot.xlabel(series.xlabel)
+
+plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
+plot.xlabel(series.xlabel)
+
 
 plot.legend(title="LEGEND", fontsize='x-small')
 plot.show()
