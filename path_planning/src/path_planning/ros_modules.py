@@ -47,7 +47,7 @@ class ROSStateEstimationModule:
     def sub_state_callback(self, msg):
         self.sub_state = msg
 
-    def get_submarinne_state(self):
+    def get_submarine_state(self):
 
         def make_vector(msg):
             out = DS.Vector(0, 0, 0)
