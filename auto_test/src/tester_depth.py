@@ -7,7 +7,7 @@ import sys
 import rospy
 from math import *
 # Specific:
-from std_msgs import *
+from std_msgs.msg import *
 # - - - IMPORTS.
 
 # CORE VARIABLES:
@@ -17,12 +17,15 @@ SUB = {}  # Subscribers
 
 
 def input_data(data_series, data_name, data):
-    if 'time' in DATA[data_series].keys():
-        DATA[data_series]['time'].append(rospy.get_time() - TIME_START)
+    if TIME_START is None:
+        # if test has not started do not accept data
+        return
+    if '_time' in DATA[data_series].keys():
+        DATA[data_series]['_time'].append(rospy.get_time() - TIME_START)
     DATA[data_series][data_name].append(data)
 
 def observe(topic, msg_type, data_series, data_name, data_from_msg_fnc):
-    SUB[data_series] = rospy.Subsriber(topic, msg_type, lambda msg: input_data(data_series, data_name, data_from_msg_fnc(msg)))
+    SUB[data_series] = rospy.Subscriber(topic, msg_type, lambda msg: input_data(data_series, data_name, data_from_msg_fnc(msg)))
 
 def publish(publiser_name, msg):
     PUB[publiser_name].publish(msg)
@@ -31,9 +34,9 @@ def group_data(data_dict):
     ind = None
     dep = []
     control = []
-    for series, values in data_dict:
+    for series, values in data_dict.items():
         if series.startswith('_'):
-            ind = series.trim('_'), values
+            ind = series.strip('_'), values
         elif series.endswith('ctrl'):
             control.append((series, values))
         else:
@@ -47,10 +50,10 @@ DATA = {
     'depth:ctrl': {'_time': [], 'metres': [] },
     }
 # Oberservations:
-observe('/aquadrone/fake/news', Float32, 'depth:tf', 'metres', lambda msg: abs(msg.pose[1].position.z))
+observe('/aquadrone/fake/out', Float32, 'depth:tf', 'metres', lambda msg: abs(msg.data))
 # Publishers:
 PUB = {
-    'depth:ctrl': rospy.Publisher('/aquadrone/no/ctrl', Float32),
+    'depth:ctrl': rospy.Publisher('/aquadrone/no/ctrl', Float32, queue_size=10),
     }
 # - - - TEST SPECIFICATIONS.
 
@@ -75,26 +78,25 @@ rospy.sleep(2)  # delay for startup (specifically gazebo)
 
 print('\n=======TEST=======')
 
-for key, sub in SUB.items():
-    print('[OBSERVING] ' + sub.topic)
 
-for key, pub in PUB.items():
-    print('[CONTROL] ' + pub.topic)
-
-START_TIME = rospy.get_time()  # t = 0
+TIME_START = rospy.get_time()  # t = 0
 
 print('---BEGINING TEST\n')
 
-duration = ARGS['duration']
+duration = float(ARGS['duration'])
 
 rate = rospy.Rate(10)
-while not rospy.is_shutdown() and rospy.rostime.get_time() < t0 + duration:  # TEST CONTROL LOOP
+while not rospy.is_shutdown() and rospy.rostime.get_time() < TIME_START + duration:  # TEST CONTROL LOOP
 
     publish('depth:ctrl', Float32(10.2))
 
     rate.sleep()
 
 print('\n---ENDING TEST')
+
+#print(SUB)
+#print(DATA)
+#print(PUB)
 
 print('plotting results...')
 
@@ -110,18 +112,17 @@ for name, data in DATA.items():
             
         plot.plot(ind[1], values, '.-' + colour, label=series)
    
-   for series, values in control:
-        # allocates colors to each series
-        if len(colours) == 0:
-            colour = 'k'
-        else:
-            colour = colours.pop(0)
-            
-        plot.plot(ind[1], values, '.-' + colour, label=series)
+for series, values in control:
+    # allocates colors to each series
+    if len(colours) == 0:
+        colour = 'k'
+    else:
+        colour = colours.pop(0)
+        
+    plot.plot(ind[1], values, '.-' + colour, label=series)
+    plot.step(ind[1], values, 'o--b', where='post', label='CTRL:'+series)
 
-
-plot.step(series.x_values, series.y_values, 'o--b', where='post', label='CTRL:'+series.ylabel)
-plot.xlabel(series.xlabel)
+#plot.xlabel(series.xlabel)
 
 
 plot.legend(title="LEGEND", fontsize='x-small')
