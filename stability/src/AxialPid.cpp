@@ -12,12 +12,11 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	//initializing PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 1;
 	MARGIN = 0.5;
 	//setting output limits
-	rollControl.setOutputLimits(OUT_LIMIT);
-	pitchControl.setOutputLimits(OUT_LIMIT);
-	yawControl.setOutputLimits(OUT_LIMIT);	
+	rollControl.setOutputLimits(1);
+	pitchControl.setOutputLimits(1);
+	yawControl.setOutputLimits(1);	
 	//setting pid targets
 	rollControl.setSetpoint(0);
 	pitchControl.setSetpoint(0);
@@ -32,12 +31,11 @@ RotPIDController::RotPIDController(float newRKp, float newRKi, float newRKd, flo
 	//setting PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 1;
 	MARGIN = 0.5;
 	//setting pid limits
-	rollControl.setOutputLimits(OUT_LIMIT);
-	pitchControl.setOutputLimits(OUT_LIMIT);
-	yawControl.setOutputLimits(OUT_LIMIT);
+	rollControl.setOutputLimits(1);
+	pitchControl.setOutputLimits(1);
+	yawControl.setOutputLimits(1);
 
 	//setting pid targets
 	rollControl.setSetpoint(0);
@@ -53,12 +51,14 @@ RotPIDController::RotPIDController():
 	//initializing PID controllers
 	rollControl(rollKp, rollKi, rollKd), pitchControl(pitchKp, pitchKi, pitchKd), yawControl(yawKp, yawKi, yawKd)
 {
-	OUT_LIMIT = 1;
+	OUT_LIMIT_R = 1;
+	OUT_LIMIT_P = 1;
+	OUT_LIMIT_Y = 1;
 	MARGIN = 0.5;
 	//setting pid limits
-	rollControl.setOutputLimits(OUT_LIMIT);
-	pitchControl.setOutputLimits(OUT_LIMIT);
-	yawControl.setOutputLimits(OUT_LIMIT);
+	rollControl.setOutputLimits(OUT_LIMIT_R);
+	pitchControl.setOutputLimits(OUT_LIMIT_P);
+	yawControl.setOutputLimits(OUT_LIMIT_Y);
 
 	//setting pid targets
 	rollControl.setSetpoint(0);
@@ -66,7 +66,6 @@ RotPIDController::RotPIDController():
 	yawControl.setSetpoint(0);
 
 	rollFlip = pitchFlip = yawFlip = false;
-	std::cout<<"a"<<std::endl;
 }
 
 	
@@ -163,29 +162,35 @@ void RotPIDController::flipYaw()
 }
 
 //set pid tunings
-void RotPIDController::setRollPID(float kp, float ki, float kd)
+void RotPIDController::setRollPID(float kp, float ki, float kd, double limit)
 {
 	rollKp = kp;
 	rollKi = ki;
 	rollKd = kd;
+	OUT_LIMIT_R = limit;
 
 	rollControl.setPID(kp, ki, kd);
+	rollControl.setOutputLimits(OUT_LIMIT_R);
 }
-void RotPIDController::setPitchPID(float kp, float ki, float kd)
+void RotPIDController::setPitchPID(float kp, float ki, float kd, double limit)
 {
 	pitchKp = kp;
 	pitchKi = ki;
 	pitchKd = kd;
+	OUT_LIMIT_P = limit;
 
 	pitchControl.setPID(kp, ki, kd);
+	pitchControl.setOutputLimits(OUT_LIMIT_P);
 }
-void RotPIDController::setYawPID(float kp, float ki, float kd)
+void RotPIDController::setYawPID(float kp, float ki, float kd, double limit)
 {
 	yawKp = kp;
 	yawKi = ki;
 	yawKd = kd;
+	OUT_LIMIT_Y = limit;
 
 	yawControl.setPID(kp, ki, kd);
+	yawControl.setOutputLimits(OUT_LIMIT_Y);
 }
 
 //set pid target values

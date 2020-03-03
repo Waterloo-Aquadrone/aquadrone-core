@@ -96,18 +96,18 @@ class V28Configuration(ThrusterConfiguration):
 
     def get_thrusts_to_wrench_matrix(self):
         # Up-Down Thrusters
-        th_0 = gh.get_thruster_wrench_vector(x=self.dX,    y=self.dY,    z=-self.dZ,  roll=0,  pitch=a2,  yaw=0)
-        th_1 = gh.get_thruster_wrench_vector(x=self.dX,    y=-self.dY,   z=-self.dZ,  roll=0,  pitch=a2,  yaw=0)
-        th_2 = gh.get_thruster_wrench_vector(x=-self.dX,   y=self.dY,    z=-self.dZ,  roll=0,  pitch=a2,  yaw=0)
-        th_3 = gh.get_thruster_wrench_vector(x=-self.dX,   y=-self.dY,   z=-self.dZ,  roll=0,  pitch=a2,  yaw=0)
+        th_0 = gh.get_thruster_wrench_vector(x=0.2,    y=0.285,    z=0.1,  roll=0,  pitch=a2,  yaw=0)
+        th_1 = gh.get_thruster_wrench_vector(x=0.2,    y=-0.285,   z=0.1,  roll=0,  pitch=a2,  yaw=0)
+        th_2 = gh.get_thruster_wrench_vector(x=-0.2,   y=0.285,    z=0.1,  roll=0,  pitch=a2,  yaw=0)
+        th_3 = gh.get_thruster_wrench_vector(x=-0.2,   y=-0.285,   z=0.1,  roll=0,  pitch=a2,  yaw=0)
 
         # Forwards-Backwards Thrsuters
-        th_4 = gh.get_thruster_wrench_vector(x=0,         y=self.dY,   z=0,  roll=0,  pitch=0,        yaw=0)
-        th_5 = gh.get_thruster_wrench_vector(x=0,         y=-self.dY,  z=0,  roll=0,  pitch=0,        yaw=0)
+        th_4 = gh.get_thruster_wrench_vector(x=0,         y=0.285,   z=0.1,  roll=0,  pitch=0,        yaw=0)
+        th_5 = gh.get_thruster_wrench_vector(x=0,         y=-0.285,  z=0.1,  roll=0,  pitch=0,        yaw=0)
 
         # Lef-Right Thrusters
-        th_6 = gh.get_thruster_wrench_vector(x=self.dX,    y=0,    z=self.dZ,  roll=0,  pitch=0,  yaw=-a2)
-        th_7 = gh.get_thruster_wrench_vector(x=-self.dX,   y=0,    z=self.dZ,  roll=0,  pitch=0,  yaw=-a2)
+        th_6 = gh.get_thruster_wrench_vector(x=0,    y=0.17,    z=0,  roll=0,  pitch=0,  yaw=-a2)
+        th_7 = gh.get_thruster_wrench_vector(x=0,   y=-0.17,    z=0,  roll=0,  pitch=0,  yaw=-a2)
 
 
         return np.column_stack((th_0, th_1, th_2, th_3, th_4, th_5, th_6, th_7))
