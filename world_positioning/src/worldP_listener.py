@@ -192,7 +192,7 @@ class ZedCamListener(BaseListener):
 
     def state_to_measurement_h(self, x, u):
         #currently 3 element point
-        z = np.array([x[0],x[1],x[2]])
+        z = np.array([x[13],x[14],x[15]])  # from substate + 3 points
         return z
 
     def cam_cb(self, msg):
@@ -202,5 +202,5 @@ class ZedCamListener(BaseListener):
 
         self.obj_pos_var = np.array([msg.point_covariance[0],
                                     msg.point_covariance[1],
-                                    msg.point_covariance[2]]) #not sure whether this is right
+                                    msg.point_covariance[2]]) #not sure whether this is right, i guess it depends on what the camera message is like
         self.last_time = rospy.Time.now().to_sec()
