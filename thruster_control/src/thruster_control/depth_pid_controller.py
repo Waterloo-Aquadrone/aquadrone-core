@@ -13,13 +13,12 @@ import aquadrone_math_utils.orientation_math as OH
 
 class DepthPIDController:
 
-    def __init__(self):
-        rospy.init_node('depth_control')
+    def __init__(self, Kp=1, Kd=1, Ki=0):
         self.depth = 0
 
-        self.Kp = 3
-        self.Kd = 10
-        self.Ki = 0.05
+        self.Kp = Kp
+        self.Kd = Kd
+        self.Ki = Ki
 
         self.loop_rate = 10.0
         self.rate = rospy.Rate(self.loop_rate)
