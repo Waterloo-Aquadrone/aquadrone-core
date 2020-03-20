@@ -74,7 +74,7 @@ class EKF:
         x = state
         u = inputs (sub position and orientation, object position in camera)
         z = outputs (sub and object position)
-        P = unvertainty/variance matrix of state x
+        P = uncertainty/variance matrix of state x
 
         Dynamics: x[k+1] = f(x[k], u[k])
         Outputs:    z[k] = h(x[k], u[k])
@@ -127,10 +127,7 @@ class EKF:
 
         self.calc_F = jacobian(self.f)
 
-        #self.world_pos_msg = NotImplemented #implement worldpositioning message
-        self.world_pub = rospy.Publisher("world state", NotImplemented, queue_size = 1)
-        #should be in listener already
-        #self.sub_state_sub = rospy.Subscriber("state estimation", NotImplemented, NotImplemented)
+        self.world_pub = rospy.Publisher("world state", WorldState, queue_size = 1)
 
         self.last_prediction_t = self.get_t()
 
@@ -145,9 +142,8 @@ class EKF:
         print("Fx", Fx)
 
         #update x and P
-        self.x = self.f(self.x, self.u)  #where is this f coming from
-        inter = np.dot(Fx, self.P)
-        self.P = np.dot(inter, np.transpose(Fx)) + self.Q
+        self.x = self.f(self.x, self.u)
+	self.P = np.linalg.multidot(Fx,self.P, np.transpose(Fx)) + self.Q
 
     def Yaw(self, y):
         return np.matrix([
