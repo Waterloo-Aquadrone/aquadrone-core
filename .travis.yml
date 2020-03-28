@@ -85,7 +85,7 @@ before_install:
   - sudo apt-get install -y --allow-unauthenticated python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-ros-base
   - sudo apt-get install -y --allow-unauthenticated ros-$ROS_DISTRO-xacro ros-$ROS_DISTRO-uuv* ros-kinetic-message-to-tf
   - sudo apt-get install -y --allow-unauthenticated python-pip
-  - sudo pip install ir pip_requirements.txt
+  - sudo pip install -r pip_requirements.txt
   - source /opt/ros/$ROS_DISTRO/setup.bash
   # Prepare rosdep to install dependencies.
   - sudo rosdep init
