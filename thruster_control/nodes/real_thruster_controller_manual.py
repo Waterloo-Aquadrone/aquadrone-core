@@ -33,16 +33,20 @@ if __name__ == "__main__":
 
     config.initialize()
 
-    th_spec = BlueRoboticsT100()
+    interface = V28ThrusterInterface()
+    
+    th_spec = BlueRoboticsT100(interface.get_frequency())
     th_spec.initialize()
     specs = [th_spec for i in range(0, 8)]
 
-    interface = V28ThrusterInterface()
+
     interface.init_gpio()
+    
     interface.init_thrusters(specs)
 
-    
-
     stc = RealThrusterController(config, mcc, interface, specs)
-    stc.run()
+    #stc.run()
+    print("Running Thruster Control")
+    while not rospy.is_shutdown():
+        rospy.sleep(1.0)
    

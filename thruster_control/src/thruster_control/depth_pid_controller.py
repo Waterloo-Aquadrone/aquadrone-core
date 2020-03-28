@@ -13,7 +13,7 @@ import aquadrone_math_utils.orientation_math as OH
 
 class DepthPIDController:
 
-    def __init__(self, Kp=1, Kd=1, Ki=0):
+    def __init__(self, Kp=5, Kd=10, Ki=0.1):
         self.depth = 0
 
         self.Kp = Kp

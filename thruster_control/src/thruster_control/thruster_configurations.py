@@ -1,11 +1,55 @@
 import numpy as np
 import math
 
-import geometry_helper as gh
+#import geometry_helper as gh
+
+from geometry_msgs.msg import Wrench
+
+import aquadrone_math_utils.orientation_math as OH
+
+import thruster_control.geometry_helper as gh
 
 a2 = math.pi / 2.0
 a4 = math.pi / 4.0
 in2m = 2.54 * 0.01
+'''
+class GeometryHelper:
+
+
+    def vector_to_wrench(v):
+        w = Wrench()
+        w.force.x = v[0]
+        w.force.y = v[1]
+        w.force.z = v[2]
+        w.torque.x = v[0]
+        w.torque.y = v[1]
+        w.torque.z = v[2]
+        return w
+
+    def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
+        # 6d vector, with force on top, moment on bottom
+        force = get_thruster_force(roll, pitch, yaw)
+
+       # Moment is r x f
+       offset = np.array([x, y, z])
+       offset.shape = (3,1)
+       moment = np.cross(offset, force, axis=0)
+
+       return np.vstack((force, moment))
+
+    def get_thruster_force(r, p, y):
+       return np.dot(OH.RPY_Matrix(r,p,y), thruster_force_dir_vec())
+
+    def thruster_force_dir_vec():
+        # Constant direction that a thruster applies force in
+        # Local to the thruster's own body
+        v = np.array([1, 0, 0])
+        v.shape = (3,1)
+        return v
+'''
+
+#gh = GeometryHelper()
+
 
 class ThrusterConfiguration:
     def __init__(self):
