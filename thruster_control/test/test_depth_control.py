@@ -63,4 +63,5 @@ class TestDepthPIDController(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    rospy.init_node('test_depth_control')
     rostest.rosrun('thruster_control', 'test_depth_pid_control', TestDepthPIDController)

@@ -22,7 +22,9 @@ private:
 	float yawKp, yawKi, yawKd;
 
 	//pid output limits
-	int OUT_LIMIT;
+	double OUT_LIMIT_R;
+	double OUT_LIMIT_P;
+	double OUT_LIMIT_Y;
 
 	//pid target closeness constant
 	int MARGIN;
@@ -93,9 +95,9 @@ public:
 	void flipYaw();
 
 	//set pid tunings
-	void setRollPID(float kp, float ki, float kd);
-	void setPitchPID(float kp, float ki, float kd);
-	void setYawPID(float kp, float ki, float kd);
+	void setRollPID(float kp, float ki, float kd, double limit);
+	void setPitchPID(float kp, float ki, float kd, double limit);
+	void setYawPID(float kp, float ki, float kd, double limit);
 
 	//set pid target values
 	void setRollTarget(float newTarget);
