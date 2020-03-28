@@ -110,6 +110,9 @@ class IMUSensorListener(BaseSensorListener):
         super(IMUSensorListener, self).__init__()
         self.imu_sub = rospy.Subscriber("aquadrone/out/imu", Imu, self.imu_cb)
 
+        self.accel = np.array([0, 0, 0])
+        self.accel_var = np.array([1, 1, 1])
+
         self.orientation = np.array([1, 0, 0, 0])
         self.orientation_var = np.array([1, 1, 1, 1])
 
@@ -122,30 +125,39 @@ class IMUSensorListener(BaseSensorListener):
     def get_p(self):
         # 4 orientation elements in quaternion form
         # 3 angular velocities
-        # Can add linear accelerations later
-        return 7
+        # 3 linear accelerations
+        return 10
 
     def get_measurement_z(self):
         vec = np.zeros((self.get_p(),1))
-        for i in range(0, 4):
-            vec[i] = self.orientation[i]
 
         for i in range(0, 3):
-            vec[i+4] = self.ang_vel[i]
+            vec[i] = self.accel[i]
+
+        for i in range(0, 4):
+            vec[i+3] = self.orientation[i]
+
+        for i in range(0, 3):
+            vec[i+7] = self.ang_vel[i]
 
         return vec
 
     def get_R(self):
         # Variance of measurements
         var = np.zeros((self.get_p(),self.get_p()))
-        for i in range(0, 4):
-            var[i,i] = self.orientation_var[i]
         for i in range(0, 3):
-            var[i+3, i+3] = self.ang_vel_variance[i]
+            var[i,i] = self.accel_var[i]
+        for i in range(0, 4):
+            var[i+3,i+3] = self.orientation_var[i]
+        for i in range(0, 3):
+            var[i+7, i+7] = self.ang_vel_variance[i]
         return var
 
     def state_to_measurement_h(self, x, u):
-        z =  np.array( [ x[IDx.Ow],
+        z =  np.array( [ x[IDx.Accx],
+                         x[IDx.Accy],
+                         x[IDx.Accz] + 9.81,
+                         x[IDx.Ow],
                          x[IDx.Ox],
                          x[IDx.Oy],
                          x[IDx.Oz],
@@ -156,6 +168,16 @@ class IMUSensorListener(BaseSensorListener):
         return z
 
     def imu_cb(self, msg):
+
+        self.accel = np.array([msg.linear_acceleration.x,
+                               msg.linear_acceleration.y,
+                               msg.linear_acceleration.z])[np.newaxis]
+        self.accel.shape = (3, 1)
+
+        self.accel_var = np.array([msg.linear_acceleration_covariance[0],
+                                   msg.linear_acceleration_covariance[0],
+                                   msg.linear_acceleration_covariance[0]])
+
         self.orientation = np.array([ msg.orientation.w,
                                       msg.orientation.x,
                                       msg.orientation.y,

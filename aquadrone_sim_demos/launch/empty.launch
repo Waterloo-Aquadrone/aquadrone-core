@@ -20,6 +20,6 @@
     </include>
 
     <param name="model" value="$(arg model_name)"/>
-    <node name="state_est" pkg="state_estimation" type="ekf_node.py"/>
+    <node name="state_est" pkg="state_estimation" type="ekf_node.py" output="screen" required="True"/>
 
 </launch>
