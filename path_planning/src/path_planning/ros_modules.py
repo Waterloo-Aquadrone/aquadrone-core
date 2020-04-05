@@ -4,7 +4,6 @@ import numpy as np
 import time
 
 from std_msgs.msg import Float64
-from std_srvs.srv import Trigger, TriggerRequest
 from geometry_msgs.msg import Vector3, Wrench
 from sensor_msgs.msg import Image
 
@@ -45,9 +44,6 @@ class ROSStateEstimationModule:
         self.sub_state_sub = rospy.Subscriber("/state_estimation", SubState, self.sub_state_callback)
         self.sub_state = SubState()
 
-        rospy.wait_for_service('reset_sub_state_estimation')
-        self.state_est_reset_service = rospy.ServiceProxy('reset_sub_state_estimation', Trigger)
-
     def sub_state_callback(self, msg):
         self.sub_state = msg
 
@@ -78,10 +74,6 @@ class ROSStateEstimationModule:
         out.set_uncertainties(position_var, velocity_var, orientation_quat_var, orientation_rpy_var, ang_vel_var)
 
         return out
-
-    def reset_state_estimation(self):
-        req = TriggerRequest()
-        self.state_est_reset_service(req)
 
 
 class ROSSensorDataModule:
