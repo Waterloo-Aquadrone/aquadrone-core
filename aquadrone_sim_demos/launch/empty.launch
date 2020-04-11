@@ -1,10 +1,8 @@
 <launch>
     <arg name="model_name" default="v28"/>
-    <arg name="computation_factor" default="1"/>
 
     <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
         <arg name="paused" value="false"/>
-        <arg name="computation_factor" value="$(arg computation_factor)"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/upload_sub.launch">
@@ -20,6 +18,6 @@
     </include>
 
     <param name="model" value="$(arg model_name)"/>
-    <node name="state_est" pkg="state_estimation" type="ekf_node.py" output="screen" required="True"/>
+    <node name="state_est" pkg="state_estimation" type="ekf_node.py"/>
 
 </launch>
