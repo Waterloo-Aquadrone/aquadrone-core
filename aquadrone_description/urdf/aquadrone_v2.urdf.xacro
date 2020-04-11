@@ -21,45 +21,16 @@
   <!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
 
 
-
-<!--
-
-
-Mass = 50.21 pounds
-Volume = 1009.04 cubic inches
-Surface area = 9076.65 square inches
-Center of mass: ( inches )
-	X = -0.30
-	Y = -0.06
-	Z = 3.71
-Principal axes of inertia and principal moments of inertia: ( pounds * square inches )
-Taken at the center of mass.
-	 Ix = ( 0.97, -0.07,  0.24)   	Px = 2940.79
-	 Iy = ( 0.07,  1.00,  0.04)   	Py = 3445.89
-	 Iz = (-0.24, -0.02,  0.97)   	Pz = 4069.04
-Moments of inertia: ( pounds * square inches )
-Taken at the center of mass and aligned with the output coordinate system.
-	Lxx = 3008.06	Lxy = -39.13	Lxz = 261.66
-	Lyx = -39.13	Lyy = 3443.46	Lyz = 4.14
-	Lzx = 261.66	Lzy = 4.14	Lzz = 4004.21
-Moments of inertia: ( pounds * square inches )
-Taken at the output coordinate system.
-	Ixx = 3699.83	Ixy = -38.18	Ixz = 206.63
-	Iyx = -38.18	Iyy = 4139.40	Iyz = -7.85
-	Izx = 206.63	Izy = -7.85	Izz = 4008.79
-
-
--->
-
-
   <!-- Fluid density -->
   <xacro:property name="rho" value="1028"/>
 
-  <xacro:property name="displaced_volume" value="${0.02074192626}"/>
-  <xacro:property name="bouyancy_fudge_factor" value="1.08"/>
+  <!-- Describing the dimensions of the vehicle's bounding box -->
+  <xacro:property name="length" value="0.9144"/>
+  <xacro:property name="width"  value="0.3048"/>
+  <xacro:property name="height" value="0.2"/>
 
-  <xacro:property name="mass" value="22.75"/>
-
+  <xacro:property name="volume" value="${width * length * height}"/>
+  <xacro:property name="mass" value="${width * length * height * rho}"/>
 
   <!-- Vehicle macro -->
   <xacro:macro name="aquadrone_base" params="debug cog cob">
@@ -68,71 +39,25 @@ Taken at the output coordinate system.
     <link name="base_link">
       <inertial>
         <mass value="${mass}" />
-        <origin xyz="-0.0076 -0.0015 0.094" rpy="0 0 0"/>
-        <!--  taken at the center of mass and aligned with the output coordinate system (Lxx) -->
-        <inertia ixx="3008" ixy="-39.13" ixz="261.66"
-                 iyy="3443.46" iyz="4.14"
-                 izz="4004" />
+        <origin xyz="${cog}" rpy="0 0 0"/>
+        <inertia ixx="1000" ixy="0" ixz="0"
+                 iyy="1000" iyz="0"
+                 izz="1" />
       </inertial>
 
-      <!-- Top Plate -->
       <visual>
-        <origin xyz="0 0 ${(height - strut_thickness)/2.0}" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <box size="${length} ${width} ${strut_thickness}"/>
+          <box size="${length} ${width} ${height}"/>
         </geometry>
       </visual>
 
-      <!-- Bottom Plate -->
       <visual>
-        <origin xyz="0 0 ${-(height - strut_thickness)/2.0}" rpy="0 0 0"/>
+        <origin xyz="${length/2} 0 0" rpy="0 0 0"/>
         <geometry>
-          <box size="${length} ${width} 0.02"/>
+          <sphere radius="${width/2}"/>
         </geometry>
       </visual>
-
-      <!-- Verticals -->
-      <visual>
-        <origin xyz="${(length - strut_thickness)/2.0} ${(width - strut_thickness)/2.0} 0" rpy="0 0 0"/>
-        <geometry>
-          <box size="${strut_thickness} ${strut_thickness} ${height}"/>
-        </geometry>
-      </visual>
-      <visual>
-        <origin xyz="${-(length - strut_thickness)/2.0} ${(width - strut_thickness)/2.0} 0" rpy="0 0 0"/>
-        <geometry>
-          <box size="${strut_thickness} ${strut_thickness} ${height}"/>
-        </geometry>
-      </visual>
-      <visual>
-        <origin xyz="${(length - strut_thickness)/2.0} ${-(width - strut_thickness)/2.0} 0" rpy="0 0 0"/>
-        <geometry>
-          <box size="${strut_thickness} ${strut_thickness} ${height}"/>
-        </geometry>
-      </visual>
-      <visual>
-        <origin xyz="${-(length - strut_thickness)/2.0} ${-(width - strut_thickness)/2.0} 0" rpy="0 0 0"/>
-        <geometry>
-          <box size="${strut_thickness} ${strut_thickness} ${height}"/>
-        </geometry>
-      </visual>
-
-      <!-- Back Block -->
-      <visual>
-        <origin xyz="${-(length - 0.13)/2.0} 0 ${(height + 0.08)/2.0}" rpy="0 0 0"/>
-        <geometry>
-          <box size="0.13 0.4 0.08"/>
-        </geometry>
-      </visual>
-
-      <!-- Cylinder -->
-      <visual>
-        <origin xyz="${length/2.0 - 0.08 - 0.23/2.0} 0 ${0.11 + height/2.0}" rpy="0 ${pi/2} 0"/>
-        <geometry>
-          <cylinder radius="0.11" length="0.23"/>
-        </geometry>
-      </visual>
-
 
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -158,14 +83,10 @@ Taken at the output coordinate system.
 
         <link name="base_link">
           <!-- This flag will make the link neutrally buoyant -->
+          
           <neutrally_buoyant>0</neutrally_buoyant>
-
           <center_of_buoyancy>${cob}</center_of_buoyancy>
-
-          <!-- Treat our bouyant area as a box -->
-          <!-- Width and length match the sub's box part-->
-          <!-- Height adapts to match the proper vloume -->
-          <volume>${displaced_volume*bouyancy_fudge_factor}</volume>
+          <volume>${volume*1.005}</volume>
           <box>
             <width>${width}</width>
             <length>${length}</length>
@@ -184,23 +105,13 @@ Taken at the output coordinate system.
               0 0 0 0 0 0
               0 0 0 0 0 0
             </added_mass>
-
-
             <!--
             The linear damping coefficients can be provided as a diagonal (6 elements)
             or a full matrix (36 coefficients), like the added-mass coefficients above
             -->
-            <!--
-            The quadratic damping coefficients can be provided as a diagonal (6 elements)
-            or a full matrix (36 coefficients), like the added-mass coefficients above
-            -->
-
-            <!-- From UUV_SIM rex_rov model: Linear damping: see p.31 in Berg2012 -->
-            <linear_damping>-74.82 -69.48 -728.4 -268.8 -309.77 -105</linear_damping>
-            <!-- From UUV_SIM rex_rov model: Non-linear damping: see p.30 in Berg2012 -->
-             <quadratic_damping>-748.22 -992.53 -1821.01 -672 -774.44 -523.27</quadratic_damping>
-
-
+            <linear_damping>
+              -3 -3 -3 -1 -1 -1
+            </linear_damping>
             <!--
             The linear damping coefficients proportional to the forward speed
             can be provided as a diagonal (6 elements) or a full matrix (36 coefficients),
@@ -210,8 +121,13 @@ Taken at the output coordinate system.
             <linear_damping_forward_speed>
               0 0 0 0 0 0
             </linear_damping_forward_speed>
-            
-
+            <!--
+            The quadratic damping coefficients can be provided as a diagonal (6 elements)
+            or a full matrix (36 coefficients), like the added-mass coefficients above
+            -->
+            <quadratic_damping>
+              -1 -1 -1 -1 -1 -1
+            </quadratic_damping>
 
           <!-- Link's bounding box, it is used to recalculate the immersed
           volume when close to the surface.

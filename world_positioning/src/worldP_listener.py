@@ -8,7 +8,10 @@ from autograd import grad, jacobian, elementwise_grad
 
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from aquadrone_msgs.msg import SubState
+<<<<<<< HEAD
 from orientation_math import Yaw, Pitch, Roll, RPY_Matrix
+=======
+>>>>>>> 76111fabde6a837faf3a6e679fcea7e427cc96ba
 
 from worldP_indicies import IDx as IDx
 
@@ -195,6 +198,7 @@ class ZedCamListener(BaseListener):
             var[i,i] = self.obj_pos_var[i]
         return var
 
+<<<<<<< HEAD
     def quat_to_euler(self, q):
         # From wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
         # Copied from state estimation
@@ -251,6 +255,12 @@ class ZedCamListener(BaseListener):
             ret[i] = transformed[0]
             ret[i+1] = transformed[1]
             ret[i+2] = transformed[2]
+=======
+    def state_to_measurement_h(self, x, u):
+        ret = np.array.zeros((3*self.numObjects,1))
+        for i in range(0,3*self.numObjects):
+            ret[i] = x[13+i]
+>>>>>>> 76111fabde6a837faf3a6e679fcea7e427cc96ba
         return ret
 
     def cam_cb(self, msg):
