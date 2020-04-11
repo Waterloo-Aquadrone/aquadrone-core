@@ -11,7 +11,6 @@ from autograd import grad, jacobian, elementwise_grad
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from sensor_msgs.msg import Imu, FluidPressure
 
-from thruster_control.configurations.v28_configuration import V28Configuration
 from aquadrone_msgs.msg import SubState, MotorControls
 
 from ekf_indices import IDx as IDx
