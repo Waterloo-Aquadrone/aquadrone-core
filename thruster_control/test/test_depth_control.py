@@ -5,6 +5,7 @@ import rostest
 import unittest
 from mock import MagicMock
 
+import thruster_control
 from thruster_control.depth_pid_controller import DepthPIDController
 
 from sensor_msgs.msg import FluidPressure
