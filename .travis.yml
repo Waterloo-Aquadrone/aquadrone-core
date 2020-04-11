@@ -108,7 +108,9 @@ install:
   - cd ~/catkin_ws/src
   - echo $CI_SOURCE_PATH
   - ls $CI_SOURCE_PATH
-  - ln -s $CI_SOURCE_PATH .
+  - mv -r $CI_SOURCE_PATH .
+  - ls .
+  - chmod -R a+rwx .
 
 # Install all dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
