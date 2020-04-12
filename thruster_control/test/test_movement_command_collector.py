@@ -7,10 +7,6 @@ from mock import MagicMock
 
 from thruster_control.movement_command_collector import MovementCommandCollector, CommandSubscriber
 
-from sensor_msgs.msg import FluidPressure
-from geometry_msgs.msg import Wrench
-from aquadrone_msgs.msg import SubState
-
 
 class TestCommandSubscriber(unittest.TestCase):
     def test_contruction(self):
