@@ -108,7 +108,7 @@ install:
   - cd ~/catkin_ws/src
   - echo $CI_SOURCE_PATH
   - ls $CI_SOURCE_PATH
-  - mv -r $CI_SOURCE_PATH .
+  - mv $CI_SOURCE_PATH .
   - ls .
   - chmod -R a+rwx .
 
