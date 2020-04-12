@@ -134,6 +134,7 @@ before_script:
 script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - cd ~/catkin_ws
+  - source devel/setup.bash
   - catkin_build --cmake-args -DPYTHON_VERSION=2.7
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
