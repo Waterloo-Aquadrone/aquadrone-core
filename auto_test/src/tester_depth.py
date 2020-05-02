@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#roslaunch auto_test basic_test.launch testctl:=tester_depth duration:=20
+#roslaunch auto_test basic_tester.launch testctl:=tester_depth duration:=20
 
 # - - - IMPORTS:
 # Basic:
