@@ -1,9 +1,11 @@
 <launch>
     <arg name="testctl"/>
     <arg name="duration" default="5"/>
+    <arg name="model_name" default="v28"/>
     
     <include file="$(find aquadrone_sim_demos)/launch/empty.launch">
-        <arg name="model_name" value="v28"/>
+        <arg name="model_name" value="$(arg model_name)"/>
+        <arg name="gui" value="false"/>
     </include>
     
     <!-- TEST ELEMENTS: -->

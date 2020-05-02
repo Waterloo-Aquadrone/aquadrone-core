@@ -1,9 +1,11 @@
 <launch>
     <arg name="model_name" default="v2"/>
     <arg name="control_file" default="$(arg model_name)_control.launch"/>
+    <arg name="gui" default="true"/>
 
     <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
         <arg name="paused" value="false"/>
+        <arg name="gui" value="$(arg gui)"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/upload_sub.launch">
