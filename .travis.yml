@@ -72,20 +72,22 @@ env:
     - ROS_PARALLEL_JOBS='-j8 -l6'
     # Set the python path manually to include /usr/-/python2.7/dist-packages
     # as this is where apt-get installs python packages.
-    - PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
+    - PYTHONPATH=/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages:$PYTHONPATH
 
 ################################################################################
 
 # Install system dependencies, namely a very barebones ROS setup.
 before_install:
+  - ls /usr/lib/python2.7
+  - echo $PYTHONPATH
   - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
-  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+  - sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   - sudo apt-get update -qq
-  - sudo apt-get install dpkg
+  - sudo apt-get install -y dpkg
   - sudo apt-get install -y --allow-unauthenticated python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-ros-base
   - sudo apt-get install -y --allow-unauthenticated ros-$ROS_DISTRO-xacro ros-$ROS_DISTRO-uuv* ros-kinetic-message-to-tf
-  - sudo apt-get install -y --allow-unauthenticated python-pip
-  - sudo pip install mock simple-pid
+  - sudo apt-get install -y --allow-unauthenticated python-pip python-catkin-tools
+  - sudo python2.7 -m pip install -r pip_requirements.txt
   - source /opt/ros/$ROS_DISTRO/setup.bash
   # Prepare rosdep to install dependencies.
   - sudo rosdep init
@@ -99,13 +101,16 @@ install:
   # Create the devel/setup.bash (run catkin_make with an empty workspace) and
   # source it to set the path variables.
   - cd ~/catkin_ws
-  - catkin_make
+  - source /opt/ros/$ROS_DISTRO/setup.bash
+  - catkin build --cmake-args -DPYTHON_VERSION=2.7
   - source devel/setup.bash
   # Add the package under integration to the workspace using a symlink.
   - cd ~/catkin_ws/src
   - echo $CI_SOURCE_PATH
   - ls $CI_SOURCE_PATH
-  - ln -s $CI_SOURCE_PATH .
+  - mv $CI_SOURCE_PATH .
+  - ls .
+  - chmod -R a+rwx .
 
 # Install all dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
@@ -129,7 +134,8 @@ before_script:
 script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - cd ~/catkin_ws
-  - catkin_make $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
+  - source devel/setup.bash
+  - catkin build --cmake-args -DPYTHON_VERSION=2.7
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
-  - catkin_make run_tests && catkin_test_results
+  - catkin run_tests && catkin_test_results

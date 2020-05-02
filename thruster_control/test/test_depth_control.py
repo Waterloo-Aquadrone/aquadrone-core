@@ -5,6 +5,7 @@ import rostest
 import unittest
 from mock import MagicMock
 
+import thruster_control
 from thruster_control.depth_pid_controller import DepthPIDController
 
 from sensor_msgs.msg import FluidPressure
@@ -63,4 +64,5 @@ class TestDepthPIDController(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    rospy.init_node('test_depth_control')
     rostest.rosrun('thruster_control', 'test_depth_pid_control', TestDepthPIDController)
