@@ -1,136 +1,183 @@
 #!/usr/bin/env python
+#roslaunch auto_test basic_test.launch testctl:=tester_depth duration:=20
 
 # - - - IMPORTS:
 # Basic:
 import matplotlib.pyplot as plot
 import sys
 import rospy
-from math import *
+import sched
+from numpy import interp
 # Specific:
 from std_msgs.msg import *
+from gazebo_msgs.msg import *
 # - - - IMPORTS.
 
 # CORE VARIABLES:
 TIME_START = None
+DURATION = 10
+
+ARGS = {}
+
+DATA = {}
+# DATA[<data_set>][<variable>]
+# {'data_set': {'variable': [], ...}, ...}
+# e.g.: DATA['depth:ctrl']['_time'].append(rospy.get_time() - TIME_START)
+# '_' at the begining indicates that the variable is independent
+
 SUB = {}  # Subscribers
+PUB = {} # Publishers
 # CORE VARIABLES.
 
+# SECONDARY VARIABLES:
+COLOURS = ['g','r','c','m' ,'y']
+# SECONDARY VARIABLES.
 
-def input_data(data_series, data_name, data):
+
+# Creates a data set(s) with variables in var_names.
+def create_data(data_set_names, var_names):
+    if isinstance(data_set_names, list):
+        for data_set in data_set_names:
+            create_data(data_set, var_names)
+        return
+    data = {}
+    for var in var_names:
+        data[var] = []
+    DATA[data_set_names] = data
+
+
+# Takes data and stores it in DATA. Indexed by data set and variable name.
+# Automatically adds independant variable values such as time.
+# e.g. append_value('depth', 'metres', 1.75) which also does append_value('depth', '_time', rospy.get_time() - TIME_START)
+def append_value(data_set_name, var_name, value):
     if TIME_START is None:
         # if test has not started do not accept data
         return
-    if '_time' in DATA[data_series].keys():
-        DATA[data_series]['_time'].append(rospy.get_time() - TIME_START)
-    DATA[data_series][data_name].append(data)
+    if '_time' is not var_name and '_time' in DATA[data_set_name].keys(): # automatically adds time value
+        append_value(data_set_name, '_time', rospy.get_time() - TIME_START)
+    try:
+        DATA[data_set_name][var_name].append(value)
+    except:
+        create_data(data_set_name, [var_name,])
+        DATA[data_set_name][var_name].append(value)
 
-def observe(topic, msg_type, data_series, data_name, data_from_msg_fnc):
-    SUB[data_series] = rospy.Subscriber(topic, msg_type, lambda msg: input_data(data_series, data_name, data_from_msg_fnc(msg)))
 
-def publish(publiser_name, msg):
-    PUB[publiser_name].publish(msg)
+# Sets up a subscriber that simply observes data, dumping it into DATA using append_value.
+def observe(data_set_name, var_name, topic, msg_type, value_from_msg_fnc):
+    SUB[data_set_name] = rospy.Subscriber(topic, msg_type, lambda msg: append_value(data_set_name, var_name, value_from_msg_fnc(msg)))
 
-def group_data(data_dict):
-    ind = None
-    dep = []
-    control = []
-    for series, values in data_dict.items():
-        if series.startswith('_'):
-            ind = series.strip('_'), values
-        elif series.endswith('ctrl'):
-            control.append((series, values))
-        else:
-            dep.append((series, values))
-    return ind, dep, control
 
-# - - - TEST SPECIFICATIONS:
-# Data Series:
-DATA = {
-    'depth:tf': {'_time': [], 'metres': [] },
-    'depth:ctrl': {'_time': [], 'metres': [] },
-    }
+# Publishes a control message & appends the appropriate data
+def publish(data_set_name, var_name, msg, num_value):
+    if data_set_name not in PUB:
+        print("ERROR: PUB does not contain data set:" + data_set_name)
+        return
+    PUB[data_set_name].publish(msg)
+    append_value(data_set_name, var_name, num_value)
+
+
+# Plots observational data from DATA as a line of unique colour.
+def plot_data(data_set_name, x_var_name, y_var_name):
+    colour = 'k'if len(COLOURS) == 0 else COLOURS.pop(0)
+    plot.plot(DATA[data_set_name][x_var_name], DATA[data_set_name][y_var_name], '.-' + colour, label=data_set_name)
+
+
+# Plots observational data from DATA as a stepped line of unique colour.
+def plot_control_data(data_set_name, x_var_name, y_var_name):
+    colour = 'k'if len(COLOURS) == 0 else COLOURS.pop(0)
+    plot.step(DATA[data_set_name][x_var_name], DATA[data_set_name][y_var_name], 'o--b', where='post', label=data_set_name)
+
+
+# Encapsulation of the print function so it can be passed as a event action (function argument).
+def fprint(text):
+    print(text)
+
+
+# - - - TEST SETUP:
+# Data Sets:
+depth_vars = ['_time', 'metres']
+create_data('depth', depth_vars)
+create_data('depth:ctrl', depth_vars)
 # Oberservations:
-observe('/aquadrone/fake/out', Float32, 'depth:tf', 'metres', lambda msg: abs(msg.data))
+#observe adds a subcriber to SUB[data_set_name] with the callback function that automatically appends the data passing it through the lambda function.
+observe('depth', 'metres', '/gazebo/model_states', ModelStates, lambda msg: -msg.pose[1].position.z)
 # Publishers:
-PUB = {
-    'depth:ctrl': rospy.Publisher('/aquadrone/no/ctrl', Float32, queue_size=10),
-    }
-# - - - TEST SPECIFICATIONS.
+PUB['depth:ctrl'] = rospy.Publisher('/depth_control/goal_depth', Float64, queue_size=10)
+# - - - TEST SETUP.
 
-# ARGUMENTS:
-ARGS = {}
+# - - - ARGUMENTS:
 for arg in sys.argv[1:]:
     sep = arg.partition(":=")
     ARGS[sep[0]] = sep[2]
 # Excepted Arguments: duration
 
-rospy.init_node('test_controller') #initialize node
+try:
+    DURATION = float(ARGS['duration'])
+except Exception:
+    print("TEST: Defaulted to 10s duration.")
+    DURATION = 10
 
-print('\n')
-
-rospy.sleep(2)  # delay for startup (specifically gazebo)
-
+# - - - ARGUMENTS.
 
 # - - - MAIN:
 
+rospy.init_node('test_controller') #initialize node
 
-#TODO fixed control signal interval
-
+print('\n')
+rospy.sleep(2)  # delay for startup
 print('\n=======TEST=======')
 
+ctl = sched.scheduler(rospy.get_time, rospy.sleep)
 
-TIME_START = rospy.get_time()  # t = 0
+# CONTROL EVENTS:
+t = 0
+while t < DURATION:
+    depth = 2 + .2 * t
+    ctl.enter(t, 1, publish, ('depth:ctrl', 'metres', Float64(depth), depth))
+    t += 1/.2
+# CONTROL EVENTS.
 
-print('---BEGINING TEST\n')
+# Completion report events
+for i in range(1, 5):
+    ctl.enter(i / 4.0 * DURATION, 1, fprint, ('-TEST: %d%% COMPLETE' % (i / 4.0 * 100),))
 
-duration = float(ARGS['duration'])
+print('---TEST: BEGINING\n')
 
-rate = rospy.Rate(10)
-while not rospy.is_shutdown() and rospy.rostime.get_time() < TIME_START + duration:  # TEST CONTROL LOOP
+TIME_START = rospy.get_time()
+ctl.run()
+while rospy.get_time() < TIME_START + DURATION:
+    rospy.sleep(.005)
 
-    publish('depth:ctrl', Float32(10.2))
-
-    rate.sleep()
-
-print('\n---ENDING TEST')
+print('\n---TEST: ENDED')
 
 #print(SUB)
 #print(DATA)
 #print(PUB)
 
-print('plotting results...')
+# - - - MAIN.
 
-colours = ['g','r','c','m' ,'y']
-for name, data in DATA.items():
-    ind, dep, control = group_data(data)
-    for series, values in dep:
-        # allocates colors to each series
-        if len(colours) == 0:
-            colour = 'k'
-        else:
-            colour = colours.pop(0)
-            
-        plot.plot(ind[1], values, '.-' + colour, label=series)
-   
-for series, values in control:
-    # allocates colors to each series
-    if len(colours) == 0:
-        colour = 'k'
-    else:
-        colour = colours.pop(0)
-        
-    plot.plot(ind[1], values, '.-' + colour, label=series)
-    plot.step(ind[1], values, 'o--b', where='post', label='CTRL:'+series)
+# - - - PLOTTING:
 
-#plot.xlabel(series.xlabel)
+print('---TEST: PLOTTING RESULTS...')
 
+# Plots:
+plot_data('depth', '_time', 'metres')
+plot_control_data('depth:ctrl', '_time', 'metres')
 
+# Labels:
+plot.xlabel('time (s)')
+plot.ylabel('metres (m)')
+
+# Configuration:
 plot.legend(title="LEGEND", fontsize='x-small')
+
 plot.show()
 
-print("Ready to exit...")
+# - - - PLOTTING.
 
-# - - - MAIN.
+print("---TEST: READY TO EXIT...")
+
+
 
     
 
