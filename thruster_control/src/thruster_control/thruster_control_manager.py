@@ -4,13 +4,15 @@ import rospy
 
 from aquadrone_msgs.msg import MotorControls 
 
+
 # TODO see if this can be used for both real and fake cases
 class SimThrusterController:
-    def __init__(self, config, mcc, interface, thruster_specs):
+    def __init__(self, config, mcc, interface, thruster_specs, do_control_loop=True):
         self.config = config
         self.mcc = mcc
         self.interface = interface
         self.thruster_specs = thruster_specs
+        self.do_control_loop = do_control_loop  # if True then the control loop will run
 
         # Will need motor commands published for state estimation
         self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=0)
@@ -18,17 +20,18 @@ class SimThrusterController:
         # Listen to what we publish, so that we can also turn controls off
         self.subscriber = rospy.Subscriber("motor_command", MotorControls, callback=self.process_thrust_command)
 
-
     def run(self):
-        while not rospy.is_shutdown():
-            self.control_loop()
-            rospy.sleep(0.1)
+        if self.do_control_loop:
+            while not rospy.is_shutdown():
+                self.control_loop()
+                rospy.sleep(0.1)
+        else:
+            rospy.spin()
 
     def control_loop(self):
         w = self.mcc.get_recent_thrusts()
         thrusts = self.wrench_to_thrust_list(w)
         self.publish_command(thrusts)
-
 
     def process_thrust_command(self, msg):
         thrusts = msg.motorThrusts

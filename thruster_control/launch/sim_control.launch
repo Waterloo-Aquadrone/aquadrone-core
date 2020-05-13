@@ -2,6 +2,7 @@
     <arg name="model"/>
 
     <param name="model" value="$(arg model)"/>
+    <param name="control_loop" value="$(arg control_loop)"/>
 
     <node name="thruster_controller" pkg="thruster_control" type="sim_thruster_controller.py" output="screen"/>
     <node name="depth_pid" pkg="thruster_control" type="demo_depth_control.py" output="screen"/>

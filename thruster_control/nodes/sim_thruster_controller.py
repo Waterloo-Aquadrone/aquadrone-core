@@ -39,6 +39,6 @@ if __name__ == "__main__":
     th_spec.initialize()
     specs = [th_spec for i in range(0, num)]
 
-    stc = SimThrusterController(config, mcc, interface, specs)
+    do_control_loop = rospy.get_param("control_loop", True)
+    stc = SimThrusterController(config, mcc, interface, specs, do_control_loop=do_control_loop)
     stc.run()
-   
