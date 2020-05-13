@@ -8,6 +8,8 @@ catkin_ws/.catkin_workspace
 *.pyc
 
 *.vscode
+.idea/
+venv/
 
 .bash_history
 .cache
