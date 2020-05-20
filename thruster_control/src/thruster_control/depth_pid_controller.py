@@ -13,7 +13,7 @@ import aquadrone_math_utils.orientation_math as OH
 
 class DepthPIDController:
 
-    def __init__(self, Kp=1, Kd=1, Ki=0):
+    def __init__(self, Kp=1, Kd=3, Ki=0):
         self.depth = 0
 
         self.Kp = Kp
@@ -44,12 +44,15 @@ class DepthPIDController:
         self.yaw = 0
 
     def goal_cb(self, msg):
+	if msg.data > 0:
+	    print('Warning: depth > 0 corresponds to above water!')
         self.depth_goal = msg.data
         self.pid.setpoint = self.depth_goal
 
 
     def state_cb(self, msg):
-        self.depth = -msg.position.z
+        # Depth will be negative when underwater, this should be as is for consistency with the rest of the system
+        self.depth = msg.position.z
 
         self.roll = msg.orientation_RPY.x
         self.pitch = msg.orientation_RPY.y

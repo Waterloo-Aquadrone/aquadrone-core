@@ -15,7 +15,7 @@ class PoleFinderDemo:
         self.state = States.InitialState()
         self.state.initialize(self.t, self.controls, self.sub_state, None, self.sensors)
 
-        self.goal_depth = 3
+        self.goal_depth = -3
         # BGR
         red = (80, 80, 255)
         green = (80, 255, 80)

@@ -13,7 +13,6 @@ from sensor_msgs.msg import Imu, FluidPressure
 
 from std_srvs.srv import Trigger, TriggerResponse
 
-from thruster_control.configurations.v28_configuration import V28Configuration
 from aquadrone_msgs.msg import SubState, MotorControls
 
 from ekf_indices import IDx as IDx

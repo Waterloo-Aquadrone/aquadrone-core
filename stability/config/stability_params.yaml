@@ -17,4 +17,4 @@ stability:
     depth:
         Kp: 10
         Ki: 0.0
-        Kd: 10
+        Kd: 300
