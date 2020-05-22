@@ -54,6 +54,8 @@ find_package(catkin REQUIRED COMPONENTS
    MotorControls.msg
    SubState.msg
    Vision.msg
+   Vision_Array.msg
+   #Vision.msg
 #   Message2.msg
  )
 
