@@ -2,7 +2,7 @@
 
 import rospy
 
-from geometry_msgs.msg import Point, Pose
+from geometry_msgs.msg import Point, Pose, Vector3
 from std_msgs.msg import String
 from gazebo_msgs.msg import ModelStates
 from aquadrone_msgs.msg import Vision_Array, Vision
@@ -21,6 +21,7 @@ class Omniscient_Vision:
 		self.relative_pos = []
 		self.rate = rospy.Rate(20)
 		self.pub_msg = Vision_Array()
+		self.testing = True
 
 	def get_obj_pos(self, data):
 		names = data.name
@@ -28,13 +29,18 @@ class Omniscient_Vision:
 		temp_obj = []
 		temp_sub = []
 		temp_ident = []
-		if(len(names) != 0):
-		    for i in range(len(names)):
-				if(names[i] != "aquadrone"):
-					temp_obj.append([model_pos[i].x, model_pos[i].y, model_pos[i].z])
-					temp_ident.append(names[i])
-				else:
-					temp_sub = [model_pos[i].x, model_pos[i].y, model_pos[i].z]
+		if(not self.testing):
+			if(len(names) != 0):
+				for i in range(len(names)):
+					if(names[i] != "aquadrone"):
+						temp_obj.append([model_pos[i].x, model_pos[i].y, model_pos[i].z])
+						temp_ident.append(names[i])
+					else:
+						temp_sub = [model_pos[i].x, model_pos[i].y, model_pos[i].z]
+		else:
+			temp_obj = [[0,0,1],[0,0,1],[0,0,1],[0,0,1]]
+			temp_sub = [0,0,0]
+			temp_ident = ["a","a","a","a"]
 		self.object_pos = temp_obj
 		self.sub_pos = temp_sub
 		self.object_ident = temp_ident
@@ -51,13 +57,18 @@ class Omniscient_Vision:
 			self.relative_pos = [[0,0,0]]
     
 	def get_pub_msg(self):
+		#print(self.object_pos)
 		message = Vision_Array()
 		#initializing message
 		if(len(self.relative_pos) != 0 and len(self.object_ident) != 0):
 			message.data = []		
 			for i in range(len(self.relative_pos)):
 				message.data.append(Vision())	
-				message.data[i].obj_data.position = self.relative_pos[i]
+				new_data = Vector3()
+				new_data.x = self.relative_pos[i][0]
+				new_data.y = self.relative_pos[i][1]
+				new_data.z = self.relative_pos[i][2]
+				message.data[i].obj_data = new_data
 				message.data[i].identifier = self.object_ident[i]
 		
 		self.pub_msg = message

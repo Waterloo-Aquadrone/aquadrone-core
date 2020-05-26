@@ -1,2 +1,2 @@
-geometry_msgs/Pose obj_data
+geometry_msgs/Vector3 obj_data
 string identifier
