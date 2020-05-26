@@ -32,9 +32,9 @@
     </light>
 
     <physics name="default_physics" default="true" type="ode">
-      <max_step_size>$(arg max_step_size)</max_step_size>
+      <max_step_size>0.01</max_step_size>
       <real_time_factor>1.0</real_time_factor>
-      <real_time_update_rate>$(arg real_time_update_rate)</real_time_update_rate>
+      <real_time_update_rate>500</real_time_update_rate>
       <ode>
         <solver>
           <type>quick</type>

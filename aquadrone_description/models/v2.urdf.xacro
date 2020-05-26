@@ -6,13 +6,6 @@
   <!-- Input debug flag -->
   <xacro:arg name="debug" default="0"/>
 
-   
-  <!-- Describing the dimensions of the vehicle's bounding box -->
-  <xacro:property name="strut_thickness" value="0.02"/>
-  <xacro:property name="length" value="0.51"/>
-  <xacro:property name="width"  value="0.46"/>
-  <xacro:property name="height" value="0.2"/>
-  
 
   <!-- Include the ROV macro file -->
   <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
