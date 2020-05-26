@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import math
 import scipy.linalg
@@ -6,11 +8,11 @@ import autograd.numpy as np
 from autograd import grad, jacobian, elementwise_grad
 
 from geometry_msgs.msg import Point, Vector3, Quaternion
-from aquadrone_msgs.msg import SubState, WorldState
+from aquadrone_msgs.msg import SubState, WorldState, Vision_Array, Vision
 
 from worldP_indicies import IDx as IDx
 from worldP_listener import SubStateListener, ZedCamListener
-from orientation_math import Yaw, Pitch, Roll, RPY_Matrix
+from aquadrone_math_utils.orientation_math import Yaw, Pitch, Roll, RPY_Matrix
 
 def quat_msg_to_array(q):
     return np.array([q.w, q.x, q.y, q.z])
@@ -112,7 +114,7 @@ class EKF:
 
         self.u = np.zeros((self.m, 1))
 
-        self.B = np.array() #input modification matrix
+        self.B = np.zeros((self.nState,1)) #input modification matrix
 
         self.P = np.eye(self.n)
         self.Q = np.eye(self.n) * 0.01 #uncert in dynamics model
@@ -121,7 +123,7 @@ class EKF:
         self.state_info = SubStateListener()
 
         self.state_msg = SubState()
-        self.camera_msg = Camera() #need to implement this for camera
+        self.camera_msg = Vision_Array() 
         self.world_msg = WorldState()
 
         self.rate = 20
@@ -129,7 +131,7 @@ class EKF:
 
         self.calc_F = jacobian(self.f)
 
-        self.world_pub = rospy.Publisher("world state", WorldState, queue_size = 1)
+        self.world_pub = rospy.Publisher("world_state", WorldState, queue_size = 1)
 
         self.last_prediction_t = self.get_t()
 
@@ -141,12 +143,13 @@ class EKF:
         F = self.calc_F(self.x, self.u)
         F = np.reshape(F,(self.n ,self.n))
         Fx = F[0:self.n, 0:self.n]
-        print("Fx", Fx)
+        #print(Fx)
 
         #update x and P
         self.x = self.f(self.x, self.u)
 
-	self.P = np.linalg.multidot(Fx,self.P, np.transpose(Fx)) + self.Q
+        self.P = np.linalg.multi_dot([Fx,self.P, np.transpose(Fx)]) + self.Q
+        
 
     def update(self):
         #update world based on sub state
@@ -158,8 +161,10 @@ class EKF:
 
         def add_block_diag(H,newH):
             if H.shape[0] == 0:
-                ans = np.diag(newH)
-                ans.shape = (newH.shape[0],newH.shape[0])
+                #ans = np.diag(newH)
+                ans = newH
+                #print(ans)
+                ans.reshape((newH.shape[0],newH.shape[0]))
                 return ans
             return scipy.linalg.block_diag(H,newH)
 
@@ -169,15 +174,19 @@ class EKF:
             return np.vstack([H,newH])
 
         def read_listener(listener, z, h, H, R):
+            
             if listener.is_valid():
                 meas = listener.get_measurement_z()
                 z = np.append(z,np.array([meas]))
                 pred = listener.state_to_measurement_h(self.x, self.u)
-                h=np.append(h,np.array([pred]))
-
+                h = np.append(h,np.array([pred]))
+                
+                #print(self.x)
+                #print("test")
                 H = add_block_vert(H, listener.get_H(self.x, self.u))
+                #print(listener, listener.is_valid())
                 R = add_block_diag(R, listener.get_R())
-
+                
                 return z,h,H,R
         """
         def read_listener_camera(listener, z,h,H,R):
@@ -220,20 +229,14 @@ class EKF:
 
                 return z,h,H,R
         """
-        for listener in (SubStateListener, ZedCamListener):
+
+        for listener in (self.state_info, self.camera_info):  
             try:
                 z,h,H,R = read_listener(listener,z,h,H,R)
             except TypeError as e:
                 print(e)
                 return
-        
-        """
-        try: 
-            z,h,H,R = read_listener_camera(self.camera_info,z,h,H,R)
-        except TypeError as e:
-            print(e)
-            return
-        """
+
         if R.shape[0] == 0:
             return
 
@@ -242,9 +245,10 @@ class EKF:
         y.shape = (y.shape[0],1)
 
         #calc kalman gain
-        Ht = np.transpose[H]
+        Ht = np.transpose(H)
         S = np.dot(np.dot(H,self.P),Ht)+R
-        K = np.dot(np.dot(self.P,Ht),np.linalg.inv(S))
+        #print(S)
+        K = np.dot(np.dot(self.P,Ht),np.linalg.inv(S)) #TODO with "proper" rotation and stuff of the input data, we get a singular matrix, so its just using the raw data for now, which is technically correct for the fake omniscient node thing
 
         KH = np.dot(K,H)
         I = np.eye(KH.shape[0])
@@ -261,7 +265,7 @@ class EKF:
 
         #update time and calc dt
         t = self.get_t()
-        dt = t-self.last_prediction_t()
+        dt = t - self.last_prediction_t
         self.last_prediction_t = t
                 
         #find new position
@@ -274,10 +278,14 @@ class EKF:
         new_vel = np.array([x[IDx.SVx],x[IDx.SVy],x[IDx.SVz]])
         new_ang_vel = np.array([x[IDx.Ax],x[IDx.Ay],x[IDx.Az]])
 
+        
         #find new object position (essentially the same spot since they dont move)
-        new_obj_pos = np.array.zeros(x.shape[0]-self.nState)
-        for i in range(self.nState,x.shape[0]):
-            new_obj_pos[i-self.nState] = x[i]
+        new_obj_pos = np.array(x[self.nState:x.shape[0]])
+
+
+        #new_obj_pos = np.zeros((x.shape[0]-self.nState,1))
+        #for i in range(self.nState,x.shape[0]):
+        #    new_obj_pos[i-self.nState] = x.tolist()
 
         return_val = np.vstack([new_pos,new_vel, new_orient, new_ang_vel, new_obj_pos])
         return return_val
@@ -345,41 +353,54 @@ class EKF:
 
         #final = camP*rotation_matrix+ subP
 
-        val.x = x[i0] #absolute position of objects
-        val.y = x[i0 + 1]
-        val.z = x[i0 + 2]
+        #val = Vector3()
+
+        val.x = x[i0][0] #absolute position of objects
+        val.y = x[i0 + 1][0]
+        val.z = x[i0 + 2][0]
+        
+        #print("val",x[i0][0])
 
         # calculate varience of objects' position
         
         v = np.array([P[i0],P[i0+1],P[i0+2]])
-        var_final = v*rotation_matrix
+        var_final = np.linalg.multi_dot([v.T,rotation_matrix])
         
-        var.x = var_final[0]
-        var.y = var_final[1]
-        var.z = var_final[2]
+        #var = Vector3()
+
+        var.x = var_final[0][0]
+        var.y = var_final[1][0]
+        var.z = var_final[2][0]
 
         
     def update_world_msg(self):
         #position msg part
+        self.world_msg = WorldState()
         self.fill_vector_value_variance(self.world_msg.position,
                                         self.world_msg.pos_variance,
-                                        self.x, self.P, IDx.Px)
+                                        self.x, self.P, IDx.SPx)
         #orientation msg part
         quat = Quaternion()
         quat.x = self.x[IDx.Ox]
         quat.y = self.x[IDx.Oy]
         quat.z = self.x[IDx.Oz]
         quat.w = self.x[IDx.Ow]
-        self.sub_state_msg.orientation_quat = quat
-        self.sub_state_msg.orientation_quat_variance.w = self.P[IDx.Ow, IDx.Ow]
-        self.sub_state_msg.orientation_quat_variance.x = self.P[IDx.Ox, IDx.Ox]
-        self.sub_state_msg.orientation_quat_variance.y = self.P[IDx.Oy, IDx.Oy]
-        self.sub_state_msg.orientation_quat_variance.z = self.P[IDx.Oz, IDx.Oz]
+
+        self.world_msg.orientation_quat = quat
+        self.world_msg.orientation_quat_variance.w = self.P[IDx.Ow, IDx.Ow]
+        self.world_msg.orientation_quat_variance.x = self.P[IDx.Ox, IDx.Ox]
+        self.world_msg.orientation_quat_variance.y = self.P[IDx.Oy, IDx.Oy]
+        self.world_msg.orientation_quat_variance.z = self.P[IDx.Oz, IDx.Oz]
 
         #obj position msg part
+        #print(self.x[self.nState:self.nState+(self.numObjects-1)*3])
+        self.world_msg.obj_positions = []
+        self.world_msg.obj_pos_variances = []
         for i in range(0,self.numObjects):
+            self.world_msg.obj_positions.append(Point())
+            self.world_msg.obj_pos_variances.append(Vector3())
             self.fill_vector_value_variance_objects(self.world_msg.obj_positions[i],
-                                            self.world_msg.obj_variances[i],
+                                            self.world_msg.obj_pos_variances[i],
                                             self.x, self.P, self.nState + i*3)
 
     def run(self):
