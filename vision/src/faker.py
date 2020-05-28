@@ -21,7 +21,7 @@ class Omniscient_Vision:
 		self.relative_pos = []
 		self.rate = rospy.Rate(20)
 		self.pub_msg = Vision_Array()
-		self.testing = True
+		self.testing = False
 
 	def get_obj_pos(self, data):
 		names = data.name
