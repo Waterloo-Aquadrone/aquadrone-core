@@ -2,7 +2,7 @@
 
 import rospy
 from aquadrone_msgs.msg import MotorControls
-from thruster_control.movement_command_collector import MovementCommandCollector
+from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
 
 
 class ThrustComputer:

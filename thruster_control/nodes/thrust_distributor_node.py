@@ -3,7 +3,7 @@
 import rospy
 
 from thruster_control.thruster_configurations import get_thruster_count
-from thruster_control.ThrustDistributor import ThrustDistributor
+from thruster_control.thrust_distibutor import ThrustDistributor
 
 
 """

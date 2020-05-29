@@ -5,7 +5,7 @@ import rostest
 import unittest
 from mock import MagicMock
 
-from thruster_control.thruster_types import BlueRoboticsT100, UUVSimThruster
+from thruster_control.real_thrusters.thruster_types import BlueRoboticsT100, UUVSimThruster
 
 
 class TestT100Thruster(unittest.TestCase):

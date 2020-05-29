@@ -5,12 +5,12 @@ import rostest
 import unittest
 from mock import MagicMock
 
-from thruster_control.thruster_control_manager import ThrusterController
+from thruster_control.thrust_computer.thrust_computer import ThrustComputer
 
 
 class TestThrustComputer(unittest.TestCase):
     def test_contruction(self):
-        c = ThrusterController(None, None)
+        c = ThrustComputer(None, None)
 
 
 if __name__ == '__main__':

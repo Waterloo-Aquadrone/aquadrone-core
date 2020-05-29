@@ -3,7 +3,7 @@
 import numpy as np
 
 import geometry_helper as gh
-from thruster_control.T100Thruster import T100Thruster
+from thruster_control.real_thrusters.thruster_types import T100Thruster
 
 
 a2 = np.pi / 2.0
