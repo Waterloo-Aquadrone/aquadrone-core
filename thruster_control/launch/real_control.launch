@@ -1,11 +1,5 @@
 <launch>
-    <arg name="model"/>
+    <include file="$(find thruster_control)/launch/sim_control.launch"/>
 
-    <param name="model" value="$(arg model)"/>
-
-    <node name="thruster_controller" pkg="thruster_control" type="real_thruster_controller.py" output="screen"/>
-    <node name="depth_pid" pkg="thruster_control" type="demo_depth_control.py" output="screen"/>
-    
-    <rosparam command="load" file="$(find stability)/config/stability_params.yaml"/>
-    <node name="axial_pid" pkg="stability" type="stability_node" output="screen"/>
+    <node name="real_thruster_output" pkg="thruster_control" type="real_thruster_output.py" output="screen"/>
 </launch>

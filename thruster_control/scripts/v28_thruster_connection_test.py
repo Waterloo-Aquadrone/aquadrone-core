@@ -28,7 +28,7 @@ if __name__ == "__main__":
     
 
     def send_command(i, T):
-        sig = spec.thrust_to_signal(T)
+        sig = spec.apply_thrust(T)
         interface.command(i, sig)
 
     THRUST = 0.5

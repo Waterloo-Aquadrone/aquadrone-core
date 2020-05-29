@@ -14,6 +14,6 @@ if __name__ == "__main__":
     spec.initialize()
 
     for i in range(-5, 5):
-        spec.thrust_to_signal(i)
+        spec.apply_thrust(i)
 
 
