@@ -6,6 +6,14 @@ from thruster_control.thruster_configurations import get_thruster_count
 from thruster_control.ThrustDistributor import ThrustDistributor
 
 
+"""
+This class is responsible for listening to the motor_command topic where the thrusts for all the thrusters are published
+and distributing the individual thrusts to all the individual thrusters' topics. The topic names are used by both Gazebo
+and the real thrusters. This node is necessary, because sometimes the ThrustComputer node may be bypassed 
+and controls may be directly sent here.
+"""
+
+
 if __name__ == "__main__":
     rospy.init_node('thrust_distributor')
 
