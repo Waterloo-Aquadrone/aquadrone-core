@@ -1,5 +1,5 @@
 <launch>
-    <arg name="model"/>
+    <arg name="model" default="v28"/>
     <param name="model" value="$(arg model)"/>
 
     <node name="thruster_controller" pkg="thruster_control" type="thruster_controller.py" output="screen"/>
