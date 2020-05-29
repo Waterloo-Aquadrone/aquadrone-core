@@ -56,7 +56,7 @@ class Omniscient_Vision:
 		else:
 			self.relative_pos = [[0,0,0]]
     
-	def get_pub_msg(self):
+	def get_pub_msg(self): #currently outputting the absolute vectors between objects, not in the perspective of the sub 
 		#print(self.object_pos)
 		message = Vision_Array()
 		#initializing message
