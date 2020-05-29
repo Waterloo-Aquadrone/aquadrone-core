@@ -1,5 +1,4 @@
 <launch>
-  <test test-name="test_depth" pkg="thruster_control" type="test_depth_control.py" />
   <test test-name="test_mcc" pkg="thruster_control" type="test_movement_command_collector.py" />
   <test test-name="test_configurations" pkg="thruster_control" type="test_thruster_configurations.py" />
   <test test-name="test_control_manager" pkg="thruster_control" type="test_thruster_control_manager.py" />

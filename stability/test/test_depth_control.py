@@ -5,16 +5,13 @@ import rostest
 import unittest
 from mock import MagicMock
 
-import thruster_control
-from thruster_control.depth_pid_controller import DepthPIDController
+from stability.depth_pid_controller import DepthPIDController
 
-from sensor_msgs.msg import FluidPressure
 from geometry_msgs.msg import Wrench
 from aquadrone_msgs.msg import SubState
 
 
 class TestDepthPIDController(unittest.TestCase):
-
     def test_contruction(self):
         pid = DepthPIDController()
 
@@ -47,7 +44,7 @@ class TestDepthPIDController(unittest.TestCase):
 
     def test_updates_current_depth(self):
         pid = DepthPIDController()
-        pid.depth = 0 # Make sure we have init condition
+        pid.depth = 0  # Make sure we have init condition
 
         # Set up message
         in_depth = 5.0
@@ -60,9 +57,7 @@ class TestDepthPIDController(unittest.TestCase):
         # No need to mock, since the method updates a variable we can access
         self.assertAlmostEqual(in_depth, pid.depth)
 
-        
-
 
 if __name__ == '__main__':
     rospy.init_node('test_depth_control')
-    rostest.rosrun('thruster_control', 'test_depth_pid_control', TestDepthPIDController)
+    rostest.rosrun('stability', 'test_depth_pid_control', TestDepthPIDController)

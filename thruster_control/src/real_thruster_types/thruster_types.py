@@ -65,3 +65,11 @@ class T100Thruster(RealThruster):
         # print("Pulse s: %f" % pulse_s)
         # print("Perc: %f" % pulse_perc)
         # print("Duty: %d" % pulse_duty)
+
+
+class UUVThruster(RealThruster):
+    def __init__(self):
+        raise NotImplementedError('UUV Thruster not implemented!')
+
+    def apply_thrust(self, float_stamped):
+        raise NotImplementedError('UUV Thruster not implemented!')
