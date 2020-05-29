@@ -5,7 +5,7 @@ import rostest
 import unittest
 from mock import MagicMock
 
-from thrust_computer.thruster_configurations import V1Configuration, V2Configuration, V28Configuration
+from thruster_control.thruster_configurations import V1Configuration, V2Configuration, V28Configuration
 
 
 class TestV1Configuration(unittest.TestCase):
