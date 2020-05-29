@@ -2,6 +2,7 @@
 import rospy
 from simple_pid import PID
 
+from stability import *
 from stability.depth_control.depth_pid_controller import DepthPIDController
 
 

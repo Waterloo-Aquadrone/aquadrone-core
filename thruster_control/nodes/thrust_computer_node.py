@@ -2,8 +2,8 @@
 
 import rospy
 
-from thrust_computer.thruster_configurations import get_configuration
-from thrust_computer.thrust_computer import ThrustComputer
+from thruster_control.thrust_computer.thruster_configurations import get_configuration
+from thruster_control.thrust_computer.thrust_computer import ThrustComputer
 
 """
 This node is responsible for listening to all the relevant sources for thrust commands (each of which is a Wrench)
@@ -21,4 +21,5 @@ if __name__ == "__main__":
     config.initialize()
 
     thrust_computer = ThrustComputer(config)
+    thrust_computer.initialize()
     thrust_computer.run()

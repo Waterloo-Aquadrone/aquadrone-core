@@ -4,7 +4,7 @@ import rospy
 import rospkg
 import json
 
-from thruster_control.thruster_configurations import get_thruster_count, get_thruster_class
+from thruster_control.thrust_computer.thruster_configurations import get_thruster_count, get_thruster_class
 
 
 """

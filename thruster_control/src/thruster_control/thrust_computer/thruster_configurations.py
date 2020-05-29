@@ -3,7 +3,6 @@
 import numpy as np
 
 import geometry_helper as gh
-from thruster_control.real_thrusters.thruster_types import T100Thruster
 
 
 a2 = np.pi / 2.0
@@ -68,6 +67,7 @@ class ThrusterConfiguration:
                                Must be the case that 0 <= thruster_index < get_num_thrusters())
         :return: The class that should be used for handling the given thruster index.
         """
+        from thruster_control.real_thrusters.thruster_types import T100Thruster
         # Currently, only the T100Thruster is implemented
         return T100Thruster
 
@@ -208,7 +208,7 @@ class V28Configuration(ThrusterConfiguration):
         full_thrust_vec = np.dot(self.bigA_inv, self.full_w_vec)
 
         thrusts = full_thrust_vec[0:8]
-        thrusts.shape = (1, 8)
+        # thrusts.shape = (1, 8)
         return thrusts
 
     @staticmethod
