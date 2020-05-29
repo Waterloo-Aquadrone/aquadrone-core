@@ -1,5 +1,5 @@
 <launch>
     <include file="$(find thruster_control)/launch/sim_control.launch"/>
 
-    <node name="real_thruster_output" pkg="thruster_control" type="real_thruster_output.py" output="screen"/>
+    <node name="real_thruster_output" pkg="thruster_control" type="real_thruster_pwm_node.py" output="screen"/>
 </launch>
