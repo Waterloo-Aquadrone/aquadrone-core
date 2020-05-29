@@ -208,7 +208,6 @@ class V28Configuration(ThrusterConfiguration):
         full_thrust_vec = np.dot(self.bigA_inv, self.full_w_vec)
 
         thrusts = full_thrust_vec[0:8]
-        # thrusts.shape = (1, 8)
         return thrusts
 
     @staticmethod
