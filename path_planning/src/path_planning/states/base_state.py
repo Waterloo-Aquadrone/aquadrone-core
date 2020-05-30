@@ -44,12 +44,20 @@ class BaseState:
         pass
 
     def has_completed(self):
+        """
+        When this function returns True, the state should exit.
+        Control may be passed to another state if this is part of a state machine.
+        The reason for exiting should be documented and returned in the exit_code funciton.
+
+        :return:
+        """
         pass
 
     def exit_code(self):
         """
+        Indicates the reason that the state has exitted.
+        The code 0 signifies that the state completed its objective and exitted successfully.
         The code -1 signifies that ros was shutdown.
-
-        :return:
+        Other codes should be numbered 1 and higher, and their explanations should be documented.
         """
         return 0
