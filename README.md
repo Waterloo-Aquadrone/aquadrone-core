@@ -54,3 +54,13 @@ command: chmod +x \<file name>.py
 - /motor_command send a list of thrusts for each of the individual thrusters
 - /aquadrone/thrusters/0/input send a command to the 0th thruster (same for thrusters 1-7)
 - /gazebo/model_states get the state of all objects in the Gazebo simulation
+
+## List of Nodes
+- ekf_state_estimation listens to sensor data and /motor_commands and publishes estimates of the sub's position to /state_estimation
+- omniscient_ekf_state_estimation listens to the sub's position from /gazebo/model_states and publishes it directly to /state_estimation
+- real_thruster_output listens to /motor_command and sends the PWM signals to control the real thrusters
+- thrust_computer listens to various Wrench commands, aggregates them, and publishes the required thruster outputs to /motor_command
+- thrust_distributor listens to /motor_command separates the thrusts for each motor and publishes them individually to /aquadrone/thrusters/0/input (same for thrusters 1-7)
+- depth_pid listens to /state_estimation and /depth_control/goal_depth and computes the required Wrench based on a PID, and publishes it to /depth_command
+- stability listens to /state_estimation and /orientation_target and computes the required Wrench based on a PID, and publishes it to /stability_command
+- omniscient_vision_node listens to /gazebo/model_states and computes the exact relative position of objects in the world and publishes them to /Vision_Data
