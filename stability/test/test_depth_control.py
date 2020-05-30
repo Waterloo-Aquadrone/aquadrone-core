@@ -5,7 +5,7 @@ import rostest
 import unittest
 from mock import MagicMock
 
-from stability.depth_pid_controller import DepthPIDController
+from stability.depth_control.depth_pid_controller import DepthPIDController
 
 from geometry_msgs.msg import Wrench
 from aquadrone_msgs.msg import SubState

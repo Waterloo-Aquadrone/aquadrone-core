@@ -21,5 +21,5 @@ class TestUUVThruster(unittest.TestCase):
 if __name__ == '__main__':
     rospy.init_node('test_real_thrusters')
     rostest.rosrun('thruster_control', 'test_T100_thruster', TestT100Thruster)
-    # rostest.rosrun('thruster_control', 'test_UUV_thruster', TestUUVThruster)
+    rostest.rosrun('thruster_control', 'test_UUV_thruster', TestUUVThruster)
 
