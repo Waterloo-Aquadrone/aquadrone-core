@@ -3,7 +3,7 @@
 from path_planning.states.base_state import BaseState
 
 
-class LinearStateMachine(BaseState):
+class SequentialStateMachine(BaseState):
     """
     The exit code of this state machine is just the exit code of its last state.
     """
