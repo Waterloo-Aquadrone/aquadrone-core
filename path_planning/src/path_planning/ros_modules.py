@@ -85,6 +85,7 @@ class ROSControlsModule:
         and cannot be controlled again until everything is restarted.
         """
         # TODO: setup thrust_distributor.py to have a service that sets all thrusts to 0, then disables future requests.
+        #  Alternatively, use a shutdown hook
         pass
 
 
