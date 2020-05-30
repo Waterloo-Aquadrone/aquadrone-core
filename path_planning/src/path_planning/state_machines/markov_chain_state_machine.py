@@ -11,6 +11,10 @@ class MarkovChainStateMachine(BaseState):
 
     def __init__(self, name, states, state_mapping_dictionaries, starting_index=0):
         """
+        Note it might be easier to construct the states and state_mapping_dictionaries as follows:
+        states, mappings = zip((state1, mapping1),
+                               (state2, mapping2),
+                               (state3, mapping3))
 
         :param states:
         :param state_mapping_dictionaries: A list of dictionaries mapping exit codes of the corresponding state to the

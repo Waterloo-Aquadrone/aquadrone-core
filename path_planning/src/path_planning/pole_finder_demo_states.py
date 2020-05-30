@@ -38,7 +38,6 @@ class ColoredPoleFinderState(BaseState):
 
         print("Num: %d" % num)
 
-        
         cv2.imshow('image', image)
         cv2.imshow('mask', mask)
         cv2.waitKey(1)
