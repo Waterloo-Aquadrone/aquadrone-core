@@ -21,13 +21,13 @@ if __name__ == "__main__":
     blue_low = (60, 0, 0)
     blue_high = (255, 10, 10)
 
-    states, mappings = zip((GoToDepthState(goal_depth),                        {0: 1}),
-                           (ColoredPoleFinderState(red_low, red_high),         {0: 2}),
-                           (ColoredPoleApproacherState(red_low, red_high),     {0: 3, 1: 1}),
-                           (ColoredPoleFinderState(green_low, green_high),     {0: 4}),
-                           (ColoredPoleApproacherState(green_low, green_high), {0: 5, 1: 3}),
-                           (ColoredPoleFinderState(blue_low, blue_high),       {0: 6}),
-                           (ColoredPoleApproacherState(blue_low, blue_high),   {0: 2, 1: 5}))
+    states, mappings = zip((GoToDepthState(goal_depth),                        {0: 1}),        # 0
+                           (ColoredPoleFinderState(red_low, red_high),         {0: 2}),        # 1
+                           (ColoredPoleApproacherState(red_low, red_high),     {0: 3, 1: 1}),  # 2
+                           (ColoredPoleFinderState(green_low, green_high),     {0: 4}),        # 3
+                           (ColoredPoleApproacherState(green_low, green_high), {0: 5, 1: 3}),  # 4
+                           (ColoredPoleFinderState(blue_low, blue_high),       {0: 6}),        # 5
+                           (ColoredPoleApproacherState(blue_low, blue_high),   {0: 2, 1: 5}))  # 6
 
     machine = MarkovChainStateMachine('pole_finder_demo', states, mappings)
 
