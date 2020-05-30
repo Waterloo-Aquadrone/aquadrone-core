@@ -1,5 +1,5 @@
 import rospy
-import path_planning.ros_modules as ROS_Modules
+from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModule, ROSSensorDataModule
 
 
 def t():
@@ -7,9 +7,9 @@ def t():
 
 
 def run_state(state, rate=rospy.Rate(5)):
-    controls = ROS_Modules.ROSControlsModule()
-    sub_state = ROS_Modules.ROSStateEstimationModule()
-    sensors = ROS_Modules.ROSSensorDataModule()
+    controls = ROSControlsModule()
+    sub_state = ROSStateEstimationModule()
+    sensors = ROSSensorDataModule()
 
     state.initialize(t(), controls, sub_state, None, sensors)
     while not rospy.is_shutdown():

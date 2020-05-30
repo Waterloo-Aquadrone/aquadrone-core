@@ -1,4 +1,4 @@
 <launch>
   <test test-name="test_ros_modules" pkg="path_planning" type="test_ros_modules.py" />
-  <test test-name="test_pole_finding" pkg="path_planning" type="test_pole_finder_states.py" />
+  <test test-name="test_pole_finding" pkg="path_planning" type="go_to_depth_state.py" />
 </launch>
