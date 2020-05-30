@@ -1,17 +1,17 @@
+import numpy as np
+
+
 class Vector:
     def __init__(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
 
-
     def magnitude(self):
         return np.linalg.norm([x_i for x_i in [self.x, self.y, self.z] if x_i is not None])
 
-    
     def mean(*vectors):
         return sum(vectors) / len(vectors)
-
 
     def std_mean(*vectors):
         """
@@ -24,29 +24,24 @@ class Vector:
         self.y = msg.y
         self.z = msg.z
 
-
-    def __add__(self, vector):
+    def __add__(self, other):
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
-
-    def __sub__(self, vector):
+    def __sub__(self, other):
         return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
-
 
     def __mul__(self, scalar):
         return Vector(self.x * scalar, self.y * scalar, self.z * scalar)
 
-
-    def __truediv__(sefl, scalar):
+    def __truediv__(self, scalar):
         return Vector(self.x / scalar, self.y / scalar, self.z / scalar)
-
 
     def __pow__(self, exponent):
         return Vector(self.x ** exponent, self.y ** exponent, self.z ** exponent)  # exponentiation is component-wise
 
 
 class Quaternion:
-    def __inite__(self, w, x, y, z):
+    def __init__(self, w, x, y, z):
         self.w = w
         self.x = x
         self.y = y
@@ -57,6 +52,7 @@ class Quaternion:
         self.x = msg.x
         self.y = msg.y
         self.z = msg.z
+
 
 class Submarine:
     def __init__(self, position,
@@ -77,7 +73,6 @@ class Submarine:
         self.velocity_var = None
         self.angular_velocity_var = None
 
-
     def set_uncertainties(self, position, velocity, orientation_quat, orientation_rpy, angular_velocity):
         self.position_var = position
         self.velocity_var = velocity
@@ -93,7 +88,6 @@ class Gate:
         self.top_corners = top_corners
         self.bottom_corners = bottom_corners
         self.position = Vector.mean(top_corners[0], top_corners[1], bottom_corners[0], bottom_corners[1])
-
 
     def set_uncertainties(self, top_corners, bottom_corners):
         self.top_corners_std = top_corners
@@ -112,7 +106,6 @@ class DirectionalMarker:
         self.postition_std = None
         self.direction_std = None
 
-
     def set_uncertainties(self, raw_points):
         self.postition_std = raw_points[1]
         self.direction_std = Vector.std_mean(raw_points[2], raw_points[1])
@@ -122,7 +115,6 @@ class Pole:
     def __init__(self, x, y):
         self.postition = Vector(x, y, None)
         self.position_std = None
-
 
     def set_uncertainties(self, x, y):
         self.position_std = Vector(x, y, None)
@@ -135,7 +127,6 @@ class Wall:
         self.b = b
         self.m_std = None
         self.b_std = None
-
 
     def set_uncertainties(self, m, b):
         self.m_std = None
@@ -150,18 +141,14 @@ class CompetitionMap:
         self.pole = None
         self.walls = []
 
-
     def set_gate(self, gate):
         self.gate = gate
-
 
     def set_directional_marker(self, directional_marker):
         self.directional_marker = directional_marker
 
-
     def set_pole(self, pole):
         self.pole = pole
-
 
     def add_wall(self, wall):
         self.walls.append(wall)
