@@ -28,7 +28,7 @@ if __name__ == "__main__":
                                (SequentialStateMachine(success_states),  {0: -1}),       # 2
                                (SequentialStateMachine(failure_states),  {0: -1}))       # 3
     machine = MarkovChainStateMachine('barrel_roll_test', states, dictionaries)
-    success = run_state(machine)
+    success = run_state(machine, rospy.Rate(5))
 
     if success == 0:
         print('Successfully completed barrel roll!')
