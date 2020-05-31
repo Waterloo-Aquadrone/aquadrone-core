@@ -44,4 +44,4 @@ class SequentialStateMachine(BaseState):
 
     def exit_code(self):
         # return the exit code of the last state
-        return self.state.exit_code()
+        return self.states[-1].exit_code()
