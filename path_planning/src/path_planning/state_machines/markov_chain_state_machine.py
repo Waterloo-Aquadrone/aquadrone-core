@@ -42,12 +42,13 @@ class MarkovChainStateMachine(BaseState):
         if state.has_completed():
             state.finalize(t, controls, sub_state, world_state, sensors)
 
-            self.idx = self.state_mapping_dictionaries[self.idx][state.exit_code()]
-            if self.idx == -1:
+            new_idx = self.state_mapping_dictionaries[self.idx][state.exit_code()]
+            if new_idx == -1:
                 self.completed = True
                 print(self.name, 'completed via', state.state_name(), 'sub-state!')
                 return
 
+            self.idx = new_idx
             new_state = self.states[self.idx]
             print(self.name, 'switching from', state.state_name(), 'to', new_state.state_name())
             new_state.initialize(t, controls, sub_state, world_state, sensors)
