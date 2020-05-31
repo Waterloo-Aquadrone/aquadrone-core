@@ -32,6 +32,7 @@ class GoToDepthState(BaseState):
         v_z = sub_state.get_submarine_state().velocity.z
         if depth_err < 0.25 and abs(v_z) < 0.1:
             self.completed = True
+            print(self.state_name(), 'completed!')
 
     def has_completed(self):
         return self.completed

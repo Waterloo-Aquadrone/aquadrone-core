@@ -44,10 +44,12 @@ class BarrelRoll(BaseState):
             if not self.crossed_90:
                 if np.pi / 2 < roll < np.pi:
                     self.crossed_90 = True
+                    print(self.state_name(), 'completed 90 degrees!')
                 target_angle = roll + np.pi / 2
             elif not self.crossed_270:
                 if 3 * np.pi / 2 < roll < 2 * np.pi:
                     self.crossed_270 = True
+                    print(self.state_name(), 'completed 270 degrees!')
                     target_angle = 0
                 else:
                     target_angle = roll + np.pi / 2
@@ -55,22 +57,26 @@ class BarrelRoll(BaseState):
                 # If within 5 deg of level and |roll_rate| < 2 deg/s
                 if self.is_stable(roll, roll_rate):
                     self.completed = True
+                    print(self.state_name(), 'completed barrel roll!')
                 # target angle was already set to 0, so we don't need to send it again
                 return
         else:
             if not self.crossed_90:
                 if np.pi < roll < 3 * np.pi / 2:
                     self.crossed_90 = True
+                    print(self.state_name(), 'completed 90 degrees!')
                 target_angle = roll - np.pi / 2
             elif not self.crossed_270:
                 if 0 < roll < np.pi / 2:
                     self.crossed_270 = True
+                    print(self.state_name(), 'completed 270 degrees!')
                     target_angle = 0
                 else:
                     target_angle = roll - np.pi / 4
             else:
                 if self.is_stable(roll, roll_rate):
                     self.completed = True
+                    print(self.state_name(), 'completed barrel roll!')
                 # target angle was already set to 0, so we don't need to send it again
                 return
         controls.set_roll_goal(target_angle)

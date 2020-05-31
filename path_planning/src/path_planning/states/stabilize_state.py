@@ -30,6 +30,7 @@ class StabilizeState(BaseState):
                 np.abs(self.y - state.orientation_rpy.z) < self.tolerance and \
                 state.angular_velocity.magnitude() < self.velocity_tolerance:
             self.completed = True
+            print(self.state_name, 'stabilized!')
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         pass

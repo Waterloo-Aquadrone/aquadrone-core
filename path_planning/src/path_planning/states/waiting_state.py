@@ -21,6 +21,7 @@ class WaitingState(BaseState):
     def process(self, t, controls, sub_state, world_state, sensors):
         if t - self.start_time > self.delay:
             self.completed = True
+            print(self.state_name(), 'completed waiting!')
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         pass

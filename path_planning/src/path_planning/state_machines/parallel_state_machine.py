@@ -40,6 +40,7 @@ class ParallelStateMachine(BaseState):
         for state in self.states:
             if not state.has_completed():
                 return False
+        print(self.state_name(), 'completed!')
         return True
 
     def exit_code(self):

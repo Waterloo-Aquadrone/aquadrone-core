@@ -29,10 +29,11 @@ class SequentialStateMachine(BaseState):
             self.idx += 1
             if self.idx == len(self.states):
                 self.completed = True
+                print(self.name, 'completed!')
                 return
 
             new_state = self.states[self.idx]
-            print("Switching from %s to %s..." % (state.state_name(), new_state.state_name()))
+            print(self.name, 'switching from', state.state_name(), 'to', new_state.state_name())
             new_state.initialize(t, controls, sub_state, world_state, sensors)
             new_state.process(t, controls, sub_state, world_state, sensors)
 

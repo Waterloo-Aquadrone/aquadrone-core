@@ -26,6 +26,7 @@ class TimedStateMachine(BaseState):
     def process(self, t, controls, sub_state, world_state, sensors):
         if t - self.start_time > self.timeout:
             self.timed_out = True
+            print(self.state.state_name(), 'timed out after', self.timeout, 'seconds!')
         else:
             self.state.process(t, controls, sub_state, world_state, sensors)
 
