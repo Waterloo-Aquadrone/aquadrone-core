@@ -6,7 +6,7 @@ def t():
     return rospy.Time.now().to_sec()
 
 
-def run_state(state, rate):
+def run_state(state, rate=rospy.Rate(5)):
     controls = ROSControlsModule()
     sub_state = ROSStateEstimationModule()
     sensors = ROSSensorDataModule()

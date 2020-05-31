@@ -2,10 +2,10 @@
 
 import rospy
 
-from path_planning.states.waitingstate import WaitingState
+from path_planning.states.waiting_state import WaitingState
 from path_planning.states.stabilize_state import StabilizeState
 from path_planning.states.go_to_depth import GoToDepthState
-from path_planning.states.barrel_roll import BarellRoll
+from path_planning.states.barrel_roll import BarrelRoll
 from path_planning.states.exit_code_state import ExitCodeState
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     timeout = 60  # seconds
 
     starting_states = [WaitingState(10), StabilizeState(), GoToDepthState(6)]
-    timed_barrel_roll_state = TimedStateMachine(BarellRoll(), timeout, timeout_exit_code=1)
+    timed_barrel_roll_state = TimedStateMachine(BarrelRoll(), timeout, timeout_exit_code=1)
     success_states = [GoToDepthState(0), WaitingState(10), ExitCodeState(0)]
     failure_states = [StabilizeState(), GoToDepthState(0), WaitingState(10), ExitCodeState(1)]
 
