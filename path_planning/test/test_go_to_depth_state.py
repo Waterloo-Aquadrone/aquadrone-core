@@ -4,6 +4,7 @@ import rospy
 import rostest
 import unittest
 from mock import MagicMock
+from std_srvs.srv import Trigger
 
 from aquadrone_msgs.msg import SubState
 from path_planning.states.go_to_depth import GoToDepthState
@@ -39,6 +40,11 @@ class TestGoToDepth(unittest.TestCase):
         assert(s.has_completed())
 
 
+def initialize_state(msg):
+    pass
+
+
 if __name__ == '__main__':
     rospy.init_node('test_pole_finder_states')
+    mock_reset_service = rospy.Service('reset_sub_state_estimation', Trigger, initialize_state)
     rostest.rosrun('path_planning', 'test_goto_depth', TestGoToDepth)
