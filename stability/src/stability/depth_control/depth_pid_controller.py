@@ -42,6 +42,8 @@ class DepthPIDController:
         self.yaw = 0
 
     def goal_cb(self, msg):
+        if msg.data < 0:
+            print('Warning: depth < 0 corresponds to above water!')
         self.depth_goal = msg.data
         self.pid.setpoint = self.depth_goal
 
