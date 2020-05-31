@@ -26,9 +26,9 @@ class ParallelStateMachine(BaseState):
                ']'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
+        print(self.state_name(), 'starting to execute', len(self.states), 'states in parallel')
         for state in self.states:
             state.initialize(t, controls, sub_state, world_state, sensors)
-        print(self.state_name(), 'starting to execute', len(self.states), 'states in parallel')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         for idx, (state, finalized) in enumerate(zip(self.states, self.finalized_states)):

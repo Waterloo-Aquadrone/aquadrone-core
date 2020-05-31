@@ -32,8 +32,8 @@ class MarkovChainStateMachine(BaseState):
         return self.name + '/' + self.states[self.idx].state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
-        self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
         print(self.state_name(), 'starting to execute a markov chain with', len(self.states), 'states')
+        self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
         state = self.states[self.idx]

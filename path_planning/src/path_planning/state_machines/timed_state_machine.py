@@ -20,9 +20,9 @@ class TimedStateMachine(BaseState):
         return 'timeout_wrapper/' + self.state.state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
+        print(self.state_name(), 'starting to execute with timeout of', self.timeout, 'seconds')
         self.start_time = t
         self.state.initialize(t, controls, sub_state, world_state, sensors)
-        print(self.state_name(), 'starting to execute with timeout of', self.timeout, 'seconds')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         if t - self.start_time > self.timeout:
