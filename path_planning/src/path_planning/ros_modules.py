@@ -107,6 +107,10 @@ class ROSStateEstimationModule:
         orientation_rpy = DS.Vector.from_msg(self.sub_state.orientation_RPY)
         ang_vel = DS.Vector.from_msg(self.sub_state.ang_vel)
 
+        orientation_rpy.x = ROSControlsModule.normalize_angle(orientation_rpy.x)
+        orientation_rpy.y = ROSControlsModule.normalize_angle(orientation_rpy.y)
+        orientation_rpy.z = ROSControlsModule.normalize_angle(orientation_rpy.z)
+
         position_var = DS.Vector.from_msg(self.sub_state.pos_variance)
         velocity_var = DS.Vector.from_msg(self.sub_state.vel_variance)
         orientation_quat_var = DS.Quaternion.from_msg(self.sub_state.orientation_quat_variance)
