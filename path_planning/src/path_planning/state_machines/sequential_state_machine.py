@@ -27,6 +27,8 @@ class SequentialStateMachine(BaseState):
 
         if state.has_completed():
             state.finalize(t, controls, sub_state, world_state, sensors)
+
+            # Do not modify self.idx if it will result in -1!
             if self.idx == len(self.states) - 1:
                 self.completed = True
                 print(self.name, 'completed!')

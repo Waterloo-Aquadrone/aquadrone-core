@@ -42,6 +42,7 @@ class MarkovChainStateMachine(BaseState):
         if state.has_completed():
             state.finalize(t, controls, sub_state, world_state, sensors)
 
+            # Do not modify self.idx if it will result in -1!
             new_idx = self.state_mapping_dictionaries[self.idx][state.exit_code()]
             if new_idx == -1:
                 self.completed = True
@@ -62,4 +63,4 @@ class MarkovChainStateMachine(BaseState):
 
     def exit_code(self):
         # return the exit code of the last state
-        return self.state.exit_code()
+        return self.states[self.idx].exit_code()
