@@ -14,16 +14,13 @@ class ThrustComputer:
     diagnostic test.
     """
 
-    def __init__(self, config, rate=10):
+    def __init__(self, config, rate=None):
         self.config = config
         self.mcc = MovementCommandCollector()
-        self.rate = rate
+        self.rate = rate if rate is not None else rospy.Rate(10)
 
         # Will need motor commands published for state estimation
         self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=0)
-
-    def initialize(self):
-        self.rate = rospy.Rate(self.rate)
 
     def run(self):
         while not rospy.is_shutdown():
