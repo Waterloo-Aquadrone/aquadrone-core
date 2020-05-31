@@ -21,5 +21,4 @@ if __name__ == "__main__":
     config.initialize()
 
     thrust_computer = ThrustComputer(config)
-    thrust_computer.initialize()
     thrust_computer.run()
