@@ -24,10 +24,11 @@ class StabilizeState(BaseState):
         controls.set_orientation_goal(r=self.r, p=self.p, y=self.y)
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        if np.abs(self.r - sub_state.orientation_rpy.x) < self.tolerance and \
-                np.abs(self.p - sub_state.orientation_rpy.y) < self.tolerance and \
-                np.abs(self.y - sub_state.orientation_rpy.z) < self.tolerance and \
-                sub_state.angular_velocity.magnitude() < self.velocity_tolerance:
+        state = sub_state.get_submarine_state()
+        if np.abs(self.r - state.orientation_rpy.x) < self.tolerance and \
+                np.abs(self.p - state.orientation_rpy.y) < self.tolerance and \
+                np.abs(self.y - state.orientation_rpy.z) < self.tolerance and \
+                state.angular_velocity.magnitude() < self.velocity_tolerance:
             self.completed = True
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
