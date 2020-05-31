@@ -18,6 +18,7 @@ class ParallelStateMachine(BaseState):
         self.states = states
         self.idx = 0
         self.completed = False
+        self.finalized_states = [False] * len(states)
 
     def state_name(self):
         return self.name + \
@@ -27,14 +28,22 @@ class ParallelStateMachine(BaseState):
     def initialize(self, t, controls, sub_state, world_state, sensors):
         for state in self.states:
             state.initialize(t, controls, sub_state, world_state, sensors)
+        print(self.state_name(), 'starting to execute', len(self.states), 'states in parallel')
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        for state in self.states:
-            state.process(t, controls, sub_state, world_state, sensors)
+        for idx, (state, finalized) in enumerate(zip(self.states, self.finalized_states)):
+            if finalized:
+                continue
+            if state.has_completed():
+                state.finalize(t, controls, sub_state, world_state, sensors)
+                self.finalized_states[idx] = True
+            else:
+                state.process(t, controls, sub_state, world_state, sensors)
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        for state in self.states:
-            state.finalize(t, controls, sub_state, world_state, sensors)
+        for state, finalized in zip(self.states, self.finalized_states):
+            if not finalized:
+                state.finalize(t, controls, sub_state, world_state, sensors)
 
     def has_completed(self):
         for state in self.states:

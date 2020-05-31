@@ -22,6 +22,7 @@ class StabilizeState(BaseState):
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         controls.set_orientation_goal(r=self.r, p=self.p, y=self.y)
+        print(self.state_name(), 'starting to stabilize to (r, p, y)=(', self.r, ',', self.p, ',', self.y, ')')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         state = sub_state.get_submarine_state()
@@ -30,7 +31,7 @@ class StabilizeState(BaseState):
                 np.abs(self.y - state.orientation_rpy.z) < self.tolerance and \
                 state.angular_velocity.magnitude() < self.velocity_tolerance:
             self.completed = True
-            print(self.state_name, 'stabilized!')
+            print(self.state_name(), 'stabilized!')
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         pass

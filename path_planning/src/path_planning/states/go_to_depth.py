@@ -19,6 +19,7 @@ class GoToDepthState(BaseState):
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         controls.set_depth_goal(self.depth_goal)
+        print(self.state_name(), 'starting to go to depth', self.depth_goal, 'm')
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         pass

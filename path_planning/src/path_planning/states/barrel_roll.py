@@ -33,6 +33,8 @@ class BarrelRoll(BaseState):
             print('Sub not in valid position to start barrel roll!')
             controls.halt_and_catch_fire()
             return
+        print(self.state_name(), 'starting to barrel roll in',
+              'positive' if self.positive_dir else 'negative', 'x direction')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         if self.completed:
