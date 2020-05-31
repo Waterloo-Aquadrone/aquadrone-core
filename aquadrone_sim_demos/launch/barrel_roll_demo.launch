@@ -12,10 +12,12 @@
         <arg name="model" value="aquadrone"/>
     </include>
 
-    <include file="$(find thruster_control)/launch/v28_control.launch"/>
+    <include file="$(find thruster_control)/launch/sim_control.launch"/>
+    <include file="$(find stability)/launch/stability.launch" />
 
     <node name="state_est" pkg="state_estimation" type="ekf_node.py"/>
+    <node name="omniscient_vision_node" pkg="vision" type="faker.py" />
 
-    <!--<node name="demo" pkg="path_planning" type="barrel_roll_test.py"/>-->
+    <node name="demo" pkg="path_planning" type="barrel_roll_test.py"/>
 
 </launch>
