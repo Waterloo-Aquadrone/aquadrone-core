@@ -1,5 +1,6 @@
 import rospy
 from simple_pid import PID
+import numpy as np
 
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Wrench
@@ -8,15 +9,16 @@ from sensor_msgs.msg import FluidPressure
 
 from aquadrone_msgs.msg import SubState
 
+import aquadrone_math_utils.orientation_math as OH
+
 class DepthPIDController:
 
-    def __init__(self):
-        rospy.init_node('depth_control')
+    def __init__(self, Kp=1, Kd=1, Ki=0):
         self.depth = 0
 
-        self.Kp = 3
-        self.Kd = 10
-        self.Ki = 0.05
+        self.Kp = Kp
+        self.Kd = Kd
+        self.Ki = Ki
 
         self.loop_rate = 10.0
         self.rate = rospy.Rate(self.loop_rate)
@@ -37,6 +39,10 @@ class DepthPIDController:
         self.depth_goal=3
         self.pid.setpoint = self.depth_goal
 
+        self.roll = 0
+        self.pitch = 0
+        self.yaw = 0
+
     def goal_cb(self, msg):
         self.depth_goal = msg.data
         self.pid.setpoint = self.depth_goal
@@ -44,6 +50,10 @@ class DepthPIDController:
 
     def state_cb(self, msg):
         self.depth = -msg.position.z
+
+        self.roll = msg.orientation_RPY.x
+        self.pitch = msg.orientation_RPY.y
+        self.yaw = msg.orientation_RPY.z
         
 
     def pressure_to_m(self, p):
@@ -61,6 +71,14 @@ class DepthPIDController:
 
 
     def publish_wrench(self, u):
+
+        vec = np.array([[0], [0], [u]])
+
+        vec = np.dot(OH.RPY_Matrix(self.roll, self.pitch, self.yaw).transpose(), vec)
+        #print(vec)
+
         msg = Wrench()
-        msg.force.z = u
+        msg.force.x = vec[0]
+        msg.force.y = vec[1]
+        msg.force.z = vec[2]
         self.w_pub.publish(msg)

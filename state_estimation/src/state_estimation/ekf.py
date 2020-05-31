@@ -11,67 +11,18 @@ from autograd import grad, jacobian, elementwise_grad
 from geometry_msgs.msg import Point, Vector3, Quaternion
 from sensor_msgs.msg import Imu, FluidPressure
 
-from thruster_control.configurations.v28_configuration import V28Configuration
+from std_srvs.srv import Trigger, TriggerResponse
+
 from aquadrone_msgs.msg import SubState, MotorControls
 
 from ekf_indices import IDx as IDx
 from ekf_sensors import IMUSensorListener, PressureSensorListener
-
-def quat_msg_to_vec(q):
-    return np.array([q.w, q.x, q.y, q.z])
-
-def rpy_vec_to_msg(vec):
-    angles = Vector3()
-    angles.x = vec[0]
-    angles.y = vec[1]
-    angles.z = vec[2]
-    return angles
-
-def msg_quaternion_to_euler(quat):
-    q_vec = quat_msg_to_vec(quat)
-    rpy_vec = quaternion_to_euler(q_vec)
-    return rpy_vec_to_msg(rpy_vec)
-
-def quaternion_to_euler(quat_vec):
-        # From wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
-
-        w = quat_vec[0]
-        x = quat_vec[1]
-        y = quat_vec[2]
-        z = quat_vec[3]
-
-        angles = np.array([0, 0 ,0])
-
-        # roll (x-axis rotation)
-        sinr_cosp = +2.0 * (w * x + y * z)
-        cosr_cosp = +1.0 - 2.0 * (x * x + y * y)
-        #angles[0] = np.arctan2(sinr_cosp, cosr_cosp)
-        
-
-        # yaw (z-axis rotation)
-        siny_cosp = +2.0 * (w * z + x * y)
-        cosy_cosp = +1.0 - 2.0 * (y * y + z * z)
-        #angles[2] = math.atan2(siny_cosp, cosy_cosp)
-
-        # pitch (y-axis rotation)
-        sinp = +2.0 * (w * y - z * x)
-        if np.abs(sinp) >= 1:
-            #angles[1] = np.sign(sinp) * math.pi # use 90 degrees if out of range
-            return np.array([ np.arctan2(sinr_cosp, cosr_cosp),
-                              np.sign(sinp) * math.pi,
-                              np.arctan2(siny_cosp, cosy_cosp)
-                              ])
-        else:
-            #angles[1] = math.asin(sinp)
-            return np.array([ np.arctan2(sinr_cosp, cosr_cosp),
-                              np.arcsin(sinp),
-                              np.arctan2(siny_cosp, cosy_cosp)
-                              ])
-
-        return angles
+import aquadrone_math_utils.orientation_math as OMath
 
 
-quat_to_euler_jacobian = jacobian(quaternion_to_euler)
+
+
+quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
 
 
 
@@ -108,17 +59,18 @@ class EKF:
 
         '''
 
-        self.n = 13 # Number of state elements
-        self.m = 8 # Number of inputs
+        self.n = IDx.NUM # Number of state elements
+        self.m = config.get_num_thrusters() # Number of inputs
 
-        self.x = np.zeros((self.n, 1))
-        self.x[IDx.Ow] = 1
+        self.x = None
+        self.P = None
+        self.initialize_state()
 
         self.u = np.zeros((self.m,1))
 
         self.B = np.array(config.get_thrusts_to_wrench_matrix())
 
-        self.P = np.eye(self.n)
+        
         self.Q = np.eye(self.n) * 0.01 # Uncertanty in dynamics model
 
         self.depth_sub = PressureSensorListener()
@@ -138,7 +90,15 @@ class EKF:
 
         self.motor_sub = rospy.Subscriber("motor_command", MotorControls, self.motor_cb)
 
+        self.reset_service = rospy.Service('reset_sub_state_estimation', Trigger,self.initialize_state)
+
         self.last_prediction_t = self.get_t()
+
+    def initialize_state(self, msg=None):
+        self.x = np.zeros((self.n, 1))
+        self.x[IDx.Ow] = 1
+        self.P = np.eye(self.n)
+        return TriggerResponse(success=True, message="reset")
 
     def motor_cb(self, msg):
         self.u = np.array(msg.motorThrusts)
@@ -234,16 +194,29 @@ class EKF:
         dt = t - self.last_prediction_t
         self.last_prediction_t = t
 
-        new_pos = np.array([x[IDx.Px] + dt*x[IDx.Vx],
-                            x[IDx.Py] + dt*x[IDx.Vy],
-                            x[IDx.Pz] + dt*x[IDx.Vz]])
-
         mass = 10.0
         accel = (self.calculate_linear_forces(x, u)) * 1.0 / mass
 
         new_vel = np.array([x[IDx.Vx],
                             x[IDx.Vy],
                             x[IDx.Vz] ]) + dt*accel
+
+
+        quat = [self.x[IDx.Ow],
+                self.x[IDx.Ox],
+                self.x[IDx.Oy],
+                self.x[IDx.Oz]]
+        rpy = OMath.quaternion_to_euler(quat)
+
+        R = OMath.RPY_Matrix(float(rpy[0]), float(rpy[1]), float(rpy[2]))
+        R = np.asarray(R)
+
+        dp_v = dt * np.dot(R, new_vel)
+        dp_a = 0.5*dt*dt* np.dot(R, accel) 
+
+        new_pos = np.array([x[IDx.Px],
+                            x[IDx.Py],
+                            x[IDx.Pz] ]) + dp_v + dp_a
 
 
         new_or = self.update_orientation_quaternion(x)
@@ -254,7 +227,7 @@ class EKF:
                                 x[IDx.Ay],
                                 x[IDx.Az]])
 
-        x_out = np.vstack([new_pos, new_vel, new_or, new_ang_vel])
+        x_out = np.vstack([new_pos, new_vel, accel, new_or, new_ang_vel])
 
 
         #return np.dot(1.0*np.eye(n), x) + np.dot(2.0*np.eye(m), u)
@@ -364,7 +337,7 @@ class EKF:
         self.sub_state_msg.orientation_quat_variance.z = self.P[IDx.Oz, IDx.Oz]
 
 
-        self.sub_state_msg.orientation_RPY = msg_quaternion_to_euler(quat)
+        self.sub_state_msg.orientation_RPY = OMath.msg_quaternion_to_euler(quat)
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
@@ -373,7 +346,7 @@ class EKF:
                       self.sub_state_msg.orientation_quat_variance.y,
                       self.sub_state_msg.orientation_quat_variance.z])
 
-        quat_vec = quat_msg_to_vec(self.sub_state_msg.orientation_quat)
+        quat_vec = OMath.quat_msg_to_vec(self.sub_state_msg.orientation_quat)
         G = quat_to_euler_jacobian(quat_vec)
         G.shape = (3,4)
 
@@ -408,13 +381,3 @@ class EKF:
             self.update_state_msg()
             self.state_pub.publish(self.sub_state_msg)
             
-            
-
-if __name__ == "__main__":
-    rospy.init_node("simple_state_estimation")
-
-    config = V28Configuration()
-    config.initialize()
-
-    ekf = EKF(config)
-    ekf.run()

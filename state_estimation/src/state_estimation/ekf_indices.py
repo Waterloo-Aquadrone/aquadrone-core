@@ -11,13 +11,21 @@ class IDx:
     Vy = 4
     Vz = 5
 
+    # Acceleration
+    Accx = 6
+    Accy = 7
+    Accz = 8
+
     # Orientation - Quaternion
-    Ow = 6
-    Ox = 7
-    Oy = 8
-    Oz = 9
+    Ow = 9
+    Ox = 10
+    Oy = 11
+    Oz = 12
 
     # Angular Velocity
-    Ax = 10
-    Ay = 11
-    Az = 12
+    Ax = 13
+    Ay = 14
+    Az = 15
+
+    # Number of states
+    NUM = 16

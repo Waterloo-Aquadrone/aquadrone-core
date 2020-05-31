@@ -1,0 +1,65 @@
+<launch>
+    <arg name="gui" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="set_timeout" default="false"/>
+    <arg name="timeout" default="0.0"/>
+    <arg name="debug" default="false"/>
+
+    <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="worlds/empty_underwater.world"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="verbose" value="true"/>
+    </include>
+
+    <include file="$(find uuv_assistants)/launch/publish_world_ned_frame.launch"/>
+
+
+    <node name="publish_world_models"
+        pkg="uuv_assistants"
+        type="publish_world_models.py"
+        output="screen">
+        <rosparam subst_value="true">
+            meshes:
+                seafloor:
+                    plane: [20, 20, 0.1]
+                    pose:
+                        position: [0, 0, -10]
+                north:
+                    plane: [0.1, 20, 10]
+                    pose:
+                        position: [10, 0, -5]
+                south:
+                    plane: [0.1, 20, 10]
+                    pose:
+                        position: [-10, 0, -5]
+                west:
+                    plane: [20, 0.1, 10]
+                    pose:
+                        position: [0, -10, -5]
+                east:
+                    plane: [20, 0.1, 10]
+                    pose:
+                        position: [0, 10, -5]
+        </rosparam>
+    </node>
+
+    <group if="$(arg set_timeout)">
+        <include file="$(find uuv_assistants)/launch/set_simulation_timer.launch">
+            <arg name="timeout" value="$(arg timeout)"/>
+        </include>
+    </group>
+
+<param name="gate_description" command="$(find xacro)/xacro.py '$(find aquadrone_sim_worlds)/competition_objects/2019/gate.urdf.xacro'"/>
+<node name="gate_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -x 4 -z -10 -Y 1.5707 -model 2019/gate -param gate_description"/>
+
+<param name="pole_description" command="$(find xacro)/xacro.py '$(find aquadrone_sim_worlds)/competition_objects/2019/pole.urdf.xacro'"/>
+<node name="pole_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -x 15 -z -10 -Y 1.5707  -model 2019/pole -param pole_description"/>
+
+</launch>

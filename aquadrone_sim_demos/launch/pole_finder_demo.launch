@@ -14,7 +14,7 @@
 
     <include file="$(find thruster_control)/launch/v28_control.launch"/>
 
-    <node name="state_est" pkg="state_estimation" type="ekf.py"/>
+    <node name="state_est" pkg="state_estimation" type="ekf_node.py"/>
 
     <!--<node name="demo" pkg="path_planning" type="pole_finder_demo.py"/>-->
 
