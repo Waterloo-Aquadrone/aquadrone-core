@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Vector:
-    def __init__(self, x, y, z):
+    def __init__(self, x=0, y=0, z=0):
         self.x = x
         self.y = y
         self.z = z
@@ -10,19 +10,20 @@ class Vector:
     def magnitude(self):
         return np.linalg.norm([x_i for x_i in [self.x, self.y, self.z] if x_i is not None])
 
+    @staticmethod
     def mean(*vectors):
         return sum(vectors) / len(vectors)
 
+    @staticmethod
     def std_mean(*vectors):
         """
         :@return: the component-wise standard deviation of the mean of a set of vectors with the given standard deviations
         """
         return sum(v ** 2 for v in vectors) ** 0.5 / len(vectors)
 
-    def from_msg(self, msg):
-        self.x = msg.x
-        self.y = msg.y
-        self.z = msg.z
+    @staticmethod
+    def from_msg(msg):
+        return Vector(msg.x, msg.y, msg.z)
 
     def __add__(self, other):
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -47,11 +48,9 @@ class Quaternion:
         self.y = y
         self.z = z
 
-    def from_msg(self, msg):
-        self.w = msg.w
-        self.x = msg.x
-        self.y = msg.y
-        self.z = msg.z
+    @staticmethod
+    def from_msg(msg):
+        return Quaternion(msg.w, msg.x, msg.y, msg.z)
 
 
 class Submarine:
@@ -88,6 +87,9 @@ class Gate:
         self.top_corners = top_corners
         self.bottom_corners = bottom_corners
         self.position = Vector.mean(top_corners[0], top_corners[1], bottom_corners[0], bottom_corners[1])
+        self.top_corners_std = None
+        self.bottom_corners_std = None
+        self.position_std = None
 
     def set_uncertainties(self, top_corners, bottom_corners):
         self.top_corners_std = top_corners
@@ -101,7 +103,7 @@ class DirectionalMarker:
         :param raw_points: The 3 points that make up the directional marker in the order [near, middle, far] where the marker is pointing from near to far
         """
         self.raw_points = raw_points
-        self.position = postition[1]
+        self.position = raw_points[1]
         self.direction = raw_points[2] - raw_points[1]
         self.postition_std = None
         self.direction_std = None
@@ -113,11 +115,11 @@ class DirectionalMarker:
 
 class Pole:
     def __init__(self, x, y):
-        self.postition = Vector(x, y, None)
+        self.postition = Vector(x, y)
         self.position_std = None
 
     def set_uncertainties(self, x, y):
-        self.position_std = Vector(x, y, None)
+        self.position_std = Vector(x, y)
 
 
 class Wall:
@@ -129,8 +131,8 @@ class Wall:
         self.b_std = None
 
     def set_uncertainties(self, m, b):
-        self.m_std = None
-        self.b_std = None
+        self.m_std = m
+        self.b_std = b
 
 
 class CompetitionMap:

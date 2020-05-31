@@ -101,27 +101,17 @@ class ROSStateEstimationModule:
         self.sub_state = msg
 
     def get_submarine_state(self):
-        def make_vector(msg):
-            out = DS.Vector(0, 0, 0)
-            out.from_msg(msg)
-            return out
+        position = DS.Vector.from_msg(self.sub_state.position)
+        velocity = DS.Vector.from_msg(self.sub_state.velocity)
+        orientation_quat = DS.Quaternion.from_msg(self.sub_state.orientation_quat)
+        orientation_rpy = DS.Vector.from_msg(self.sub_state.orientation_RPY)
+        ang_vel = DS.Vector.from_msg(self.sub_state.ang_vel)
 
-        def make_quat(msg):
-            out = DS.Quaternion()
-            out.from_msg(msg)
-            return out
-
-        position = make_vector(self.sub_state.position)
-        velocity = make_vector(self.sub_state.velocity)
-        orientation_quat = make_quat(self.sub_state.orientation_quat)
-        orientation_rpy = make_vector(self.sub_state.orientation_RPY)
-        ang_vel = make_vector(self.sub_state.ang_vel)
-
-        position_var = make_vector(self.sub_state.pos_variance)
-        velocity_var = make_vector(self.sub_state.vel_variance)
-        orientation_quat_var = make_quat(self.sub_state.orientation_quat_variance)
-        orientation_rpy_var = make_vector(self.sub_state.orientation_RPY_variance)
-        ang_vel_var = make_vector(self.sub_state.ang_vel_variance)
+        position_var = DS.Vector.from_msg(self.sub_state.pos_variance)
+        velocity_var = DS.Vector.from_msg(self.sub_state.vel_variance)
+        orientation_quat_var = DS.Quaternion.from_msg(self.sub_state.orientation_quat_variance)
+        orientation_rpy_var = DS.Vector.from_msg(self.sub_state.orientation_RPY_variance)
+        ang_vel_var = DS.Vector.from_msg(self.sub_state.ang_vel_variance)
 
         out = DS.Submarine(position, velocity, orientation_quat, orientation_rpy, ang_vel)
         out.set_uncertainties(position_var, velocity_var, orientation_quat_var, orientation_rpy_var, ang_vel_var)
