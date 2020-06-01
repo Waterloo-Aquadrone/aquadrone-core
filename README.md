@@ -12,6 +12,7 @@ https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&previe
 - roslaunch \<package name> \<launch file>
 - roslaunch \<package name> \<launch file> \<arg name>:=\<arg value>
 - rqt_graph
+- roscore
 - rosnode list
 - rostopic list
 - rostopic echo \<topic name>
