@@ -10,7 +10,9 @@ https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&previe
 6. (optional) Open a terminal and type: "gedit ~/.bashrc". Add the following lines to the bottom of the file:
 
 \# Source Aquadrone ROS workspace
+
 source ~/aquadrone2020dev_workspace/catkin_ws/devel/setup.bash
+
 cd ~/aquadrone2020dev_workspace/catkin_ws/src/aquadrone2020
 
 ## Common Commands
