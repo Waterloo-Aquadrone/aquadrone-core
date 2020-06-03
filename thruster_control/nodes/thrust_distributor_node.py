@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
-    num = get_configuration(model).get_thruster_count()
+    num = get_configuration(model).get_num_thrusters()
 
     distributor = ThrustDistributor(num, namespace="aquadrone")
     distributor.run()

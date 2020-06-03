@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     pwm_frequency = 400
     thrusters = []
-    for i in range(config.get_thruster_count()):
+    for i in range(config.get_num_thrusters()):
         ThrusterClass = config.get_thruster_class(i)
         thrusters.append(ThrusterClass(pwm_frequency, i, gpio_config[i]['gpio']))
 
