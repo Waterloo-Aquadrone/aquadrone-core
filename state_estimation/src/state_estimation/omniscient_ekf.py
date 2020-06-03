@@ -3,6 +3,7 @@
 import rospy
 from aquadrone_msgs.msg import SubState
 from gazebo_msgs.msg import ModelStates
+from std_srvs.srv import Trigger, TriggerResponse
 import aquadrone_math_utils.orientation_math as OMath
 
 
@@ -11,6 +12,11 @@ class OmniscientEKF:
         self.sub_model_name = sub_model_name
         rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos, queue_size=1)
         self.state_pub = rospy.Publisher("state_estimation", SubState, queue_size=1)
+
+        rospy.Service('reset_sub_state_estimation', Trigger, self.reset_ekf)
+
+    def reset_ekf(self, msg):
+        return TriggerResponse(success=True, message="reset")
 
     def get_obj_pos(self, model_states):
         for name, pose, twist in zip(model_states.name, model_states.pose, model_states.twist):
