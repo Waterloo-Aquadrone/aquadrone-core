@@ -1,85 +1,8 @@
-import math
 import cv2
 import numpy as np
-import scipy.misc
 from simple_pid import PID
 
-class BaseState(object):
-    def __init__(self):
-        pass
-
-    def state_name(self):
-        return "base_state"
-
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        # Set up anything that needs initializing
-        # Run EACH time the state is chosen as the next state
-        # process(...) will be called with the next available data
-        pass
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        # Clean up anything necessary
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        # Regular tick at some rate
-        pass
-
-    # Expose functions to identify when a state should exit
-    # Ex: has_timed_out, has_lost_track_of_[some object]
-
-
-class InitialState(object):
-    def __init__(self):
-        pass
-
-    def state_name(self):
-        return "init_state"
-
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-
-class GoToDepthState(BaseState):
-    def __init__(self, d):
-        self.depth_goal = d
-        self.current_depth = 0
-
-        self.time_at_depth = 0
-        self.last_t = 0
-
-    def state_name(self):
-        return "go_to_depth_state"
-
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        controls.set_depth_goal(self.depth_goal)
-        self.last_t = t
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        self.current_depth = -sub_state.get_submarinne_state().position.z
-        dt = t - self.last_t
-        self.last_t = t
-
-        depth_err = abs(self.current_depth - self.depth_goal)
-
-        if depth_err < 0.25:
-            self.time_at_depth = self.time_at_depth + dt
-        else:
-            self.time_at_depth = 0
-
-        print("Depth err (abs): %f" % depth_err)
-
-    def depth_is_reached(self):
-        return self.time_at_depth > 5
+from path_planning.states.base_state import BaseState
 
 
 class ColoredPoleFinderState(BaseState):
@@ -98,16 +21,12 @@ class ColoredPoleFinderState(BaseState):
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.last_t = t
 
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        self.num_matching_pixels = 0
-        controls.planar_move_command(Fy=0)
-
     def process(self, t, controls, sub_state, world_state, sensors):
         dt = t - self.last_t
         self.last_t = t
 
-        yaw = sub_state.get_submarinne_state().orientation_rpy.z
-        controls.set_yaw_goal(yaw + dt * 2*math.pi * 0.05)
+        yaw = sub_state.get_submarine_state().orientation_rpy.z
+        controls.set_yaw_goal(yaw + dt * 2*np.pi * 0.05)
         controls.planar_move_command(Fy=0, Fx=0.05)
 
         image = sensors.get_main_cam_image()
@@ -119,14 +38,15 @@ class ColoredPoleFinderState(BaseState):
 
         print("Num: %d" % num)
 
-        
         cv2.imshow('image', image)
         cv2.imshow('mask', mask)
         cv2.waitKey(1)
-        
 
+    def finalize(self, t, controls, sub_state, world_state, sensors):
+        self.num_matching_pixels = 0
+        controls.planar_move_command(Fy=0)
 
-    def have_found_pole(self):
+    def has_completed(self):
         return self.num_matching_pixels > 5000
 
 
@@ -153,16 +73,12 @@ class ColoredPoleApproacherState(BaseState):
         self.last_t = t
         self.time_close = 0
 
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        self.num_matching_pixels = 0
-        controls.planar_move_command(Fx=0)
-
     def process(self, t, controls, sub_state, world_state, sensors):
         dt = t - self.last_t
         self.last_t = t
 
-        #yaw = sub_state.get_submarinne_state().orientation_rpy.z
-        #controls.set_yaw_goal(yaw - dt * 2*math.pi * 0.05)
+        #yaw = sub_state.get_submarine_state().orientation_rpy.z
+        #controls.set_yaw_goal(yaw - dt * 2*np.pi * 0.05)
 
         image = sensors.get_main_cam_image()
         mask = cv2.inRange(image, self.color_low, self.color_high)
@@ -172,8 +88,8 @@ class ColoredPoleApproacherState(BaseState):
 
         dx = (avg_x - 320) / 320.0
 
-        yaw = sub_state.get_submarinne_state().orientation_rpy.z
-        d_yaw = -dt * 2*math.pi * 0.1 * dx
+        yaw = sub_state.get_submarine_state().orientation_rpy.z
+        d_yaw = -dt * 2*np.pi * 0.1 * dx
         print("d_yaw: %f" % d_yaw)
 
         if not np.isnan(d_yaw):
@@ -199,6 +115,22 @@ class ColoredPoleApproacherState(BaseState):
         cv2.imshow('image', image)
         cv2.imshow('mask', mask)
         cv2.waitKey(1)
+
+    def finalize(self, t, controls, sub_state, world_state, sensors):
+        controls.planar_move_command(Fx=0)
+
+    def completed(self):
+        return self.has_lost_pole() or self.at_pole()
+
+    def exit_code(self):
+        """
+
+        :return: 0 if the pole was successfully reached, 1 if the pole was lost.
+        """
+        if self.at_pole():
+            return 0
+        else:
+            return 1
         
     def has_lost_pole(self):
         return self.num_matching_pixels < 4000
