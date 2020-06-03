@@ -4,7 +4,7 @@ import rospy
 import rospkg
 import json
 
-from thruster_control.thrust_computer.thruster_configurations import get_thruster_count, get_thruster_class
+from thruster_control.thrust_computer.thruster_configurations import get_configuration
 
 
 """
@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
-    num = get_thruster_count(model)
+    config = get_configuration(model)
 
     rospack = rospkg.RosPack()
     with open(rospack.get_path('thruster_control') + "/config/thruster_gpio.json") as gpio_json:
@@ -28,8 +28,8 @@ if __name__ == "__main__":
 
     pwm_frequency = 400
     thrusters = []
-    for i in range(num):
-        ThrusterClass = get_thruster_class(i)
+    for i in range(config.get_thruster_count()):
+        ThrusterClass = config.get_thruster_class(i)
         thrusters.append(ThrusterClass(pwm_frequency, i, gpio_config[i]['gpio']))
 
     rospy.spin()

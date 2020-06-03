@@ -2,7 +2,7 @@
 
 import rospy
 
-from thruster_control.thrust_computer.thruster_configurations import get_thruster_count
+from thruster_control.thrust_computer.thruster_configurations import get_configuration
 from thruster_control.thrust_distributor.thrust_distributor import ThrustDistributor
 
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
-    num = get_thruster_count(model)
+    num = get_configuration(model).get_thruster_count()
 
     distributor = ThrustDistributor(num, namespace="aquadrone")
     distributor.run()

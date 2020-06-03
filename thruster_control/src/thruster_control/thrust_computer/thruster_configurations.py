@@ -24,17 +24,6 @@ def get_configuration(model):
         raise Exception("Error: unknown model for controls: %s" % str(model))
 
 
-def get_thruster_count(model):
-    if model == "v1":
-        return V1Configuration.get_num_thrusters()
-    elif model == "v2":
-        return V2Configuration.get_num_thrusters()
-    elif model == "v28":
-        return V28Configuration.get_num_thrusters()
-    else:
-        raise Exception("Error: unknown model for controls: %s" % str(model))
-
-
 class ThrusterConfiguration:
     """
     Subclasses of this class define all the relevant data for dealing with different thruster configurations.
