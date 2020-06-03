@@ -7,6 +7,10 @@ https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&previe
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose Ubuntu1604ROSKineticSmall.vbox in the file chooser dialog.
 5. Click the Ubuntu1604ROSKineticSmall tab that just appeared. Click Start.
+6. (optional) Open a terminal and type: "gedit ~/.bashrc". Add the following lines to the bottom of the file:
+`# Source Aquadrone ROS workspace
+source ~/aquadrone2020dev_workspace/catkin_ws/devel/setup.bash
+cd ~/aquadrone2020dev_workspace/catkin_ws/src/aquadrone2020
 
 ## Common Commands
 - roslaunch \<package name> \<launch file>
@@ -26,13 +30,11 @@ This is required whenever new python packages are created, c++ code is updated, 
 
 1. Open a terminal in the aquadrone2020dev_workspace/catkin_ws/ directory
 2. Build the catkin workspace with the following command: catkin build
-3. Source the workspace in all terminals with the following command: source devel/setup.bash
+3. Remember to resource the workspace in all terminals with the following command: source devel/setup.bash
 
 ## Debugging/Notes
 - To run any ROS commands from a terminal (rostopic, roslaunch, rosnode etc), the catkin workspace must be sourced from 
-that terminal via the following command: source devel/setup.bash. The VM is configured to do this whenever a new 
-terminal is created. If the catkin workspace is rebuilt (with the following command: catkin build), this must be redone
-in each terminal.
+that terminal via the following command: source devel/setup.bash. If the catkin workspace is rebuilt (with the following command: catkin build), this must be redone in each terminal. You can configure your VM to do this whenever a new terminal is created (but not when the workspace is rebult) by following step 6 in **First Time Setup and Usage instructions**.
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 
 that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following 
 command: chmod +x \<file name>.py 
