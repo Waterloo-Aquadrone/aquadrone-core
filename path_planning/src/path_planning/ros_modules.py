@@ -83,7 +83,7 @@ class ROSControlsModule:
     def send_direct_motor_thrusts(self, thrusts):
         """
         This command will only work if the thrust_computer node is not running.
-        Otherwise, this command will be immediately be overwritten.
+        Otherwise, this command will immediately be overwritten.
 
         :param thrusts: Array of 8 floats for the 8 motors.
         """
