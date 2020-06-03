@@ -97,7 +97,7 @@ class EKF:
     def initialize_state(self, msg=None):
         self.x = np.zeros((self.n, 1))
         self.x[IDx.Ow] = 1
-        # Shouldn't x and y variance be initialized to 0, since the sub is by definition starting a (0, 0)
+        # Shouldn't x and y variance be initialized to 0, since the sub is by definition starting at (0, 0)
         self.P = np.eye(self.n)
         return TriggerResponse(success=True, message="reset")
 
