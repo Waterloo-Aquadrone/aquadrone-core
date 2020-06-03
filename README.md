@@ -40,7 +40,7 @@ This is required whenever new python packages are created, c++ code is updated, 
 that terminal via the following command: source devel/setup.bash. If the catkin workspace is rebuilt (with the following command: catkin build), this must be redone in each terminal. You can configure your VM to do this whenever a new terminal is created (but not when the workspace is rebult) by following step 6 in **First Time Setup and Usage instructions**.
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 
 that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following 
-command: chmod +x \<file name>.py 
+command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on a windows computer) via git with the command: git update-index --chmod=+x \<file name>.py
 
 ## Coding Standards
 - Topic names should be lowercase, separated by underscores
