@@ -2,7 +2,7 @@
 
 ## First Time Setup and Usage instructions
 1. Download VirtualBox from this link: https://www.virtualbox.org/wiki/Downloads
-2. Download the Virtual Machine (VM) files from this link (large download): 
+2. Download the Virtual Machine (VM) files from this link (4.2 GB): 
 https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&preview=Ubuntu1604ROSKineticSmall.zip
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose Ubuntu1604ROSKineticSmall.vbox in the file chooser dialog.
