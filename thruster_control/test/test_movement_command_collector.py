@@ -5,7 +5,7 @@ import rostest
 import unittest
 from mock import MagicMock
 
-from thruster_control.movement_command_collector import MovementCommandCollector, CommandSubscriber
+from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector, CommandSubscriber
 
 
 class TestCommandSubscriber(unittest.TestCase):
@@ -13,9 +13,7 @@ class TestCommandSubscriber(unittest.TestCase):
         cs = CommandSubscriber('test_topic')
 
 
-
 class TestMovementCommandCollector(unittest.TestCase):
-
     def test_contruction(self):
         mcc = MovementCommandCollector()
 

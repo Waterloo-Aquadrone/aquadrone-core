@@ -10,7 +10,7 @@ from sensor_msgs.msg import Image
 
 import data_structures as DS
 
-from aquadrone_msgs.msg import SubState
+from aquadrone_msgs.msg import SubState, MotorControls
 
 
 class ROSControlsModule:
@@ -18,6 +18,7 @@ class ROSControlsModule:
         self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
+        self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
@@ -79,6 +80,17 @@ class ROSControlsModule:
         w.torque.z = Tz
         self.planar_move_pub.publish(w)
 
+    def send_direct_motor_thrusts(self, thrusts):
+        """
+        This command will only work if the thrust_computer node is not running.
+        Otherwise, this command will immediately be overwritten.
+
+        :param thrusts: Array of 8 floats for the 8 motors.
+        """
+        msg = MotorControls()
+        msg.motorThrusts = thrusts
+        self.motor_command_pub.publish(msg)
+
     def halt_and_catch_fire(self):
         """
         Immediately stops all thruster outputs. The sub will naturally rise to the surface via buoyancy,
@@ -129,7 +141,8 @@ class ROSStateEstimationModule:
 
 class ROSSensorDataModule:
     def __init__(self):
-        self.main_cam_image_sub = rospy.Subscriber("/aquadrone/out/front_cam/image_raw", Image, self.image_callback)
+        # This line was causing Gazebo to crash, not sure why
+        # self.main_cam_image_sub = rospy.Subscriber("/aquadrone/out/front_cam/image_raw", Image, self.image_callback)
         self.main_cam_image = None
         print("init'd")
 

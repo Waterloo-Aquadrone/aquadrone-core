@@ -1,0 +1,10 @@
+[
+    {"description": "front_right",    "gpio":  10},
+    {"description": "front_left",     "gpio":  11},
+    {"description": "back_right",     "gpio":  12},
+    {"description": "back_left",      "gpio":  13},
+    {"description": "center_right",   "gpio":  14},
+    {"description": "center_left",    "gpio":  15},
+    {"description": "sideways_right", "gpio":  16},
+    {"description": "sideways_left",  "gpio":  17}
+]

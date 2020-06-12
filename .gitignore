@@ -3,10 +3,10 @@ catkin_ws/.catkin_tools/*
 catkin_ws/.catkin_workspace
 catkin_ws/devel
 catkin_ws/logs
-/.idea
-/venv
 
 *.pyc
+/.idea
+/venv
 
 *.vscode
 

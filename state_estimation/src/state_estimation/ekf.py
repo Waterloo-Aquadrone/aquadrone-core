@@ -60,13 +60,13 @@ class EKF:
         '''
 
         self.n = IDx.NUM # Number of state elements
-        self.m = config.get_num_thrusters() # Number of inputs
+        self.m = config.get_num_thrusters()  # Number of inputs
 
         self.x = None
         self.P = None
         self.initialize_state()
 
-        self.u = np.zeros((self.m,1))
+        self.u = np.zeros((self.m, 1))
 
         self.B = np.array(config.get_thrusts_to_wrench_matrix())
 
@@ -97,6 +97,7 @@ class EKF:
     def initialize_state(self, msg=None):
         self.x = np.zeros((self.n, 1))
         self.x[IDx.Ow] = 1
+        # Shouldn't x and y variance be initialized to 0, since the sub is by definition starting at (0, 0)
         self.P = np.eye(self.n)
         return TriggerResponse(success=True, message="reset")
 
