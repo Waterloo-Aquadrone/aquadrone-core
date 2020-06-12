@@ -15,6 +15,18 @@ source ~/aquadrone2020_dev_workspace/catkin_ws/devel/setup.bash
 
 cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
 
+7. (optional) Open a terminal and run the following commands:
+
+cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
+
+git reset --hard && git pull
+
+cd ~/aquadrone2020_dev_workspace/catkin_ws
+
+catkin clean -y && catkin build
+
+8. (optional) On the VM homescreen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
+9. (optional) Run the following command to see the submarine do a barrell roll: "roslaunch aquadrone_sim_demos barrel_roll_demo.launch"
 ## Common Commands
 - roslaunch \<package name> \<launch file>
 - roslaunch \<package name> \<launch file> \<arg name>:=\<arg value>
@@ -32,7 +44,7 @@ cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
 This is required whenever new python packages are created, c++ code is updated, etc.
 
 1. Open a terminal in the aquadrone2020dev_workspace/catkin_ws/ directory
-2. Build the catkin workspace with the following command: catkin build
+2. Build the catkin workspace with the following command: "catkin build". If stuff is behaving weird and you want to recreate everything to try to avoid potential issues, run the following command instead: "catkin clean -y && catkin build".
 3. Remember to resource the workspace in all terminals with the following command: source devel/setup.bash
 
 ## Debugging/Notes
