@@ -141,7 +141,7 @@ class ROSStateEstimationModule:
 
 class ROSSensorDataModule:
     def __init__(self):
-        self.main_cam_image_sub = rospy.Subscriber("/aquadrone/out/front_cam/image_raw", Image, self.image_callback)
+        # self.main_cam_image_sub = rospy.Subscriber("/aquadrone/out/front_cam/image_raw", Image, self.image_callback)
         self.main_cam_image = None
         print("init'd")
 

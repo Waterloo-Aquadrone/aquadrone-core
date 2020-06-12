@@ -19,8 +19,8 @@ if __name__ == "__main__":
 
     timeout = 120  # seconds
 
-    stabilise_at_depth_machine = ParallelStateMachine('stabilise_at_depth', [StabilizeState(), GoToDepthState(5)])
-    dive_machine = SequentialStateMachine('dive', [WaitingState(10), stabilise_at_depth_machine])
+    stabilise_at_depth_machine = ParallelStateMachine('stabilise_at_depth', [StabilizeState(), GoToDepthState(3)])
+    dive_machine = SequentialStateMachine('dive', [WaitingState(20), stabilise_at_depth_machine])
     timed_barrel_roll_state = TimedStateMachine(BarrelRoll(), timeout, timeout_exit_code=1)
     success_surface_machine = SequentialStateMachine('surface', [GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
     failure_surface_machine = SequentialStateMachine('stabilize_and_surface', [StabilizeState(), GoToDepthState(0),
