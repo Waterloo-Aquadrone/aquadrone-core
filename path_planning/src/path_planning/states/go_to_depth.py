@@ -8,7 +8,7 @@ class GoToDepthState(BaseState):
     system during initialization (which will remain active after finalization as well).
     """
 
-    def __init__(self, depth, verbose=True):
+    def __init__(self, depth, verbose=False):
         self.depth_goal = depth
         self.completed = False
         self.verbose = verbose
