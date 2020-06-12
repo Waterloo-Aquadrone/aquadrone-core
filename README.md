@@ -11,9 +11,9 @@ https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&previe
 
 \# Source Aquadrone ROS workspace
 
-source ~/aquadrone2020dev_workspace/catkin_ws/devel/setup.bash
+source ~/aquadrone2020_dev_workspace/catkin_ws/devel/setup.bash
 
-cd ~/aquadrone2020dev_workspace/catkin_ws/src/aquadrone2020
+cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
 
 ## Common Commands
 - roslaunch \<package name> \<launch file>
