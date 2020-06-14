@@ -11,7 +11,7 @@ from path_planning.state_machines.parallel_state_machine import ParallelStateMac
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.branching_state_machine import BranchingStateMachine
-from path_planning.states.base_state import run_state
+from path_planning.state_executor import StateExecutor
 
 
 if __name__ == "__main__":
@@ -30,9 +30,11 @@ if __name__ == "__main__":
 
     machine = BranchingStateMachine('barrel_roll_test', dive_and_roll_machine, success_surface_machine,
                                     failure_surface_machine)
-    success = run_state(machine, rospy.Rate(5))
 
-    if success == 0:
+    executor = StateExecutor(machine, rospy.Rate(5))
+    executor.run()
+
+    if executor.exit_code() == 0:
         print('Successfully completed barrel roll!')
     else:
         print('Aborted barrel roll attempt!')

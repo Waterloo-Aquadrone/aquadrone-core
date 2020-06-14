@@ -31,9 +31,11 @@ class BranchingStateMachine(BaseState):
         state.process(t, controls, sub_state, world_state, sensors)
 
         if state.has_completed():
-            state.finalize(t, controls, sub_state, world_state, sensors)
-
             if self.idx == 0:
+                # Only manually finalize the decision state
+                # The success/failure state will be finalized when this state machine is finalized
+                state.finalize(t, controls, sub_state, world_state, sensors)
+
                 self.idx = 1 if state.exit_code() == self.success_code else 2
                 new_state = self.states[self.idx]
                 print(self.name, 'switching from', state.state_name(), 'to', new_state.state_name())
@@ -45,7 +47,7 @@ class BranchingStateMachine(BaseState):
                 return
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
+        self.states[self.idx].finalize(t, controls, sub_state, world_state, sensors)
 
     def has_completed(self):
         return self.completed

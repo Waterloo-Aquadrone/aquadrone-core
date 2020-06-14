@@ -26,6 +26,10 @@ class ParallelStateMachine(BaseState):
                ']'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
+        self.idx = 0
+        self.completed = False
+        self.finalized_states = [False] * len(self.states)
+
         print(self.state_name(), 'starting to execute', len(self.states), 'states in parallel')
         for state in self.states:
             state.initialize(t, controls, sub_state, world_state, sensors)

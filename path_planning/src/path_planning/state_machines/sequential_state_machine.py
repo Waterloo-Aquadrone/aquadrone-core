@@ -18,6 +18,9 @@ class SequentialStateMachine(BaseState):
         return self.name + '/' + self.states[self.idx].state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
+        self.idx = 0
+        self.completed = False
+
         print(self.state_name(), 'starting to execute', len(self.states), 'states sequentially')
         self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
@@ -26,13 +29,15 @@ class SequentialStateMachine(BaseState):
         state.process(t, controls, sub_state, world_state, sensors)
 
         if state.has_completed():
-            state.finalize(t, controls, sub_state, world_state, sensors)
-
             # Do not modify self.idx if it will result in -1!
             if self.idx == len(self.states) - 1:
                 self.completed = True
                 print(self.name, 'completed!')
                 return
+
+            # Only manually finalize the state if it is not the last one
+            # If the state is the last one, it will be finalized when this state machine is finalized
+            state.finalize(t, controls, sub_state, world_state, sensors)
 
             self.idx += 1
             new_state = self.states[self.idx]
@@ -41,7 +46,7 @@ class SequentialStateMachine(BaseState):
             new_state.process(t, controls, sub_state, world_state, sensors)
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
+        self.states[self.idx].finalize(t, controls, sub_state, world_state, sensors)
 
     def has_completed(self):
         return self.completed

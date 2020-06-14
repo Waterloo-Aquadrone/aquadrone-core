@@ -23,11 +23,11 @@ class BarrelRoll(BaseState):
     def state_name():
         return "barrel_roll"
 
-    # noinspection PyMethodMayBeStatic
     def initialize(self, t, controls, sub_state, world_state, sensors):
-        # Set up anything that needs initializing
-        # Run EACH time the state is chosen as the next state
-        # process(...) will be called with the next available data
+        self.crossed_90 = False
+        self.crossed_270 = False
+        self.completed = False
+
         angle = sub_state.get_submarine_state().orientation_rpy.x
         if np.pi / 4 < angle < 3 * np.pi / 4:
             print('Sub not in valid position to start barrel roll!')

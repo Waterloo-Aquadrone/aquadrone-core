@@ -30,15 +30,12 @@ class LeaderFollowerStateMachine(BaseState):
             state.initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        if self.leader.has_completed():
-            self.finalize(t, controls, sub_state, world_state, sensors)
-        else:
-            self.leader.process(t, controls, sub_state, world_state, sensors)
-            self.follower.process(t, controls, sub_state, world_state, sensors)
+        self.leader.process(t, controls, sub_state, world_state, sensors)
+        self.follower.process(t, controls, sub_state, world_state, sensors)
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        self.states[0].finalize(t, controls, sub_state, world_state, sensors)
-        self.states[1].finalize(t, controls, sub_state, world_state, sensors)
+        self.leader.finalize(t, controls, sub_state, world_state, sensors)
+        self.follower.finalize(t, controls, sub_state, world_state, sensors)
 
     def has_completed(self):
         return self.leader.has_completed()
