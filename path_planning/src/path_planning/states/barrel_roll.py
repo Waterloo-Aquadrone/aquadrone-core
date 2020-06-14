@@ -12,7 +12,7 @@ class BarrelRoll(BaseState):
 
     def __init__(self, positive_dir=True):
         """
-        :param positive_dir: If True, then the sub will in the direction corresponding to positive x.
+        :param positive_dir: If True, then the sub will roll in the direction corresponding to positive x.
         """
         self.positive_dir = positive_dir
         self.crossed_90 = False  # True once the sub has rotated 90 deg

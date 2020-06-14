@@ -3,6 +3,9 @@
 from path_planning.states.base_state import BaseState
 
 
+HALT = -1
+
+
 class MarkovChainStateMachine(BaseState):
     """
     The exit code of this state machine is just the exit code of its last state. If you want different exit codes in
@@ -44,7 +47,7 @@ class MarkovChainStateMachine(BaseState):
 
             # Do not modify self.idx if it will result in -1!
             new_idx = self.state_mapping_dictionaries[self.idx][state.exit_code()]
-            if new_idx == -1:
+            if new_idx == HALT:
                 self.completed = True
                 print(self.name, 'completed via', state.state_name(), 'sub-state!')
                 return

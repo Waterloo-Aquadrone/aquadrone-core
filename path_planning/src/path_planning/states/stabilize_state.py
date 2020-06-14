@@ -13,7 +13,7 @@ class StabilizeState(BaseState):
         self.p = p
         self.y = y
         self.tolerance = np.radians(tolerance_degrees)
-        self.velocity_tolerance = np.radians(2)  # rad/s
+        self.velocity_tolerance = np.radians(2)  # deg/s
         self.completed = False
 
     @staticmethod

@@ -1,0 +1,8 @@
+<launch>
+    <arg name="model" default="v28"/>
+    <param name="model" value="$(arg model)"/>
+
+    <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py" output="screen"/>
+    <node name="real_thruster_output" pkg="thruster_control" type="real_thruster_pwm_node.py" output="screen"/>
+    <node name="thruster_test" pkg="path_planning" type="thruster_test.py" output="screen"/>
+</launch>
