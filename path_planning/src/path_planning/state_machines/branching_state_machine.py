@@ -44,7 +44,6 @@ class BranchingStateMachine(BaseState):
             else:
                 self.completed = True
                 print(self.name, 'completed!')
-                return
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         self.states[self.idx].finalize(t, controls, sub_state, world_state, sensors)
