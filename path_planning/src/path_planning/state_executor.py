@@ -3,6 +3,10 @@ from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModul
 
 
 class StateExecutor:
+    """
+    This class is for executing a single top level state or state machine.
+    """
+
     def __init__(self, state, rate):
         self.state = state
         self.rate = rate if rate is not None else rospy.rate(5)
