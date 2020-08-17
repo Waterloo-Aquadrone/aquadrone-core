@@ -11,7 +11,7 @@ from path_planning.state_machines.parallel_state_machine import ParallelStateMac
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.markov_chain_state_machine import MarkovChainStateMachine
-from path_planning.states.base_state import run_state
+from path_planning.state_executor import StateExecutor
 
 
 if __name__ == "__main__":
@@ -31,9 +31,10 @@ if __name__ == "__main__":
                                (success_surface_machine, {0: -1}),       # 2
                                (failure_surface_machine, {1: -1}))       # 3
     machine = MarkovChainStateMachine('barrel_roll_test', states, dictionaries)
-    success = run_state(machine, rospy.Rate(5))
+    executor = StateExecutor(machine, rospy.Rate(5))
+    executor.run()
 
-    if success == 0:
+    if executor.exit_code() == 0:
         print('Successfully completed barrel roll!')
     else:
         print('Aborted barrel roll attempt!')
