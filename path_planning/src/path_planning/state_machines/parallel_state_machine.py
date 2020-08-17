@@ -10,32 +10,40 @@ class ParallelStateMachine(BaseState):
     Ideally, there should be at most one state that interacts with each of
     the depth control, orientation stability, and movement command systems.
 
-    The exit code of this state machine is the exit code of the state machine that is last in the list provided.
+    Daemon states (similar to a daemon thread in Java) can optionally be provided.
+    Daemon states will not prevent this state machine from terminating.
+    If all non-daemon states have completed, then the state machine will be terminated,
+    and any still running daemon states will be finalized. Thus can be useful for logging for example.
+
+    The exit code of this state machine is the exit code of the state machine that is
+    last in the list of non-daemons states provided.
     """
 
-    def __init__(self, name, states):
+    def __init__(self, name, states, daemon_states=None):
         self.name = name
         self.states = states
-        self.idx = 0
+        self.daemon_states = daemon_states if daemon_states is not None else []
         self.completed = False
-        self.finalized_states = [False] * len(states)
+        self.finalized_states = [False] * (len(self.states) + len(self.daemon_states))
 
     def state_name(self):
         return self.name + \
-               '/[' + ', '.join(state.state_name() for state in self.states if not state.has_completed()) + \
+               '/[' + \
+               ', '.join(state.state_name() for state in self.states if not state.has_completed()) + \
+               ', '.join(state.state_name() + ' (daemon)' for state in self.daemon_states if not state.has_completed()) + \
                ']'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
-        self.idx = 0
         self.completed = False
-        self.finalized_states = [False] * len(self.states)
+        self.finalized_states = [False] * (len(self.states) + len(self.daemon_states))
 
-        print(self.state_name(), 'starting to execute', len(self.states), 'states in parallel')
-        for state in self.states:
+        print(self.state_name(), 'starting to execute', len(self.states), 'states and',
+              len(self.daemon_states), 'daemon states in parallel')
+        for state in self.states + self.daemon_states:
             state.initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        for idx, (state, finalized) in enumerate(zip(self.states, self.finalized_states)):
+        for idx, (state, finalized) in enumerate(zip(self.states + self.daemon_states, self.finalized_states)):
             if finalized:
                 continue
             if state.has_completed():
@@ -45,11 +53,12 @@ class ParallelStateMachine(BaseState):
                 state.process(t, controls, sub_state, world_state, sensors)
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        for state, finalized in zip(self.states, self.finalized_states):
+        for state, finalized in zip(self.states + self.daemon_states, self.finalized_states):
             if not finalized:
                 state.finalize(t, controls, sub_state, world_state, sensors)
 
     def has_completed(self):
+        # do not consider daemon states when testing for completion
         for state in self.states:
             if not state.has_completed():
                 return False
@@ -57,5 +66,5 @@ class ParallelStateMachine(BaseState):
         return True
 
     def exit_code(self):
-        # return the exit code of the last state
+        # return the exit code of the last non-daemon state
         return self.states[-1].exit_code()
