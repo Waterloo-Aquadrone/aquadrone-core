@@ -7,7 +7,8 @@ https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&previe
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose Ubuntu1604ROSKineticSmall.vbox in the file chooser dialog.
 5. Click the Ubuntu1604ROSKineticSmall tab that just appeared. Click Start.
-6. (optional) Open a terminal and type: "gedit ~/.bashrc". Add the following lines to the bottom of the file:
+6. (recommended) Open a terminal and type "sudo apt-get update && sudo apt-get upgrade"
+7. (optional) Open a terminal and type: "gedit ~/.bashrc". Add the following lines to the bottom of the file:
 
 \# Source Aquadrone ROS workspace
 
@@ -15,7 +16,7 @@ source ~/aquadrone2020_dev_workspace/catkin_ws/devel/setup.bash
 
 cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
 
-7. (optional) Open a terminal and run the following commands:
+8. (optional) Open a terminal and run the following commands:
 
 cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
 
@@ -25,8 +26,8 @@ cd ~/aquadrone2020_dev_workspace/catkin_ws
 
 catkin clean -y && catkin build
 
-8. (optional) On the VM homescreen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
-9. (optional) Run the following command to see the submarine do a barrell roll: "roslaunch aquadrone_sim_demos barrel_roll_demo.launch"
+9. (optional) On the VM homescreen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
+10. (optional) Run the following command to see the submarine do a barrell roll: "roslaunch aquadrone_sim_demos barrel_roll_demo.launch"
 ## Common Commands
 - roslaunch \<package name> \<launch file>
 - roslaunch \<package name> \<launch file> \<arg name>:=\<arg value>
