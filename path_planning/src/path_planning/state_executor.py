@@ -22,6 +22,9 @@ class StateExecutor:
         return rospy.Time.now().to_sec()
 
     def run(self):
+        """
+        This function will execute the state or state machine, and block until it terminates.
+        """
         self.state.initialize(self.t(), self.controls, self.sub_state, None, self.sensors)
 
         while not rospy.is_shutdown():
@@ -39,4 +42,7 @@ class StateExecutor:
         self.exit_code = -1
 
     def exit_code(self):
+        """
+        :return: The exit code that the state/state machine terminated with.
+        """
         return self.exit_code
