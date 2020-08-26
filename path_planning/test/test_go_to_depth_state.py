@@ -8,8 +8,11 @@ from std_srvs.srv import Trigger
 
 from aquadrone_msgs.msg import SubState
 from path_planning.states.go_to_depth import GoToDepthState
-from path_planning.states.base_state import t
 from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModule, ROSSensorDataModule
+
+
+def t():
+        return rospy.Time.now().to_sec()
 
 
 class TestGoToDepth(unittest.TestCase):

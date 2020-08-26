@@ -5,7 +5,8 @@ import rospy
 from path_planning.states.go_to_depth import GoToDepthState
 from path_planning.pole_finder_demo_states import ColoredPoleFinderState, ColoredPoleApproacherState
 from path_planning.state_machines.markov_chain_state_machine import MarkovChainStateMachine
-from path_planning.states.base_state import run_state
+from path_planning.state_machines.timed_state_machine import TimedStateMachine
+from path_planning.state_executor import StateExecutor
 
 
 if __name__ == "__main__":
@@ -30,5 +31,7 @@ if __name__ == "__main__":
                            (ColoredPoleApproacherState(blue_low, blue_high),   {0: 2, 1: 5}))  # 6
 
     machine = MarkovChainStateMachine('pole_finder_demo', states, mappings)
+    timed_machine = TimedStateMachine(machine, timeout=5 * 60, timeout_exit_code=0)
 
-    run_state(machine, rate=rospy.Rate(5))
+    executor = StateExecutor(timed_machine, rate=rospy.Rate(5))
+    executor.run()

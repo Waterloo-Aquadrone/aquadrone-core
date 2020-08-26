@@ -3,6 +3,9 @@
 from path_planning.states.base_state import BaseState
 
 
+HALT = -1
+
+
 class MarkovChainStateMachine(BaseState):
     """
     The exit code of this state machine is just the exit code of its last state. If you want different exit codes in
@@ -25,6 +28,7 @@ class MarkovChainStateMachine(BaseState):
         self.name = name
         self.states = states
         self.state_mapping_dictionaries = state_mapping_dictionaries
+        self.starting_index = starting_index
         self.idx = starting_index
         self.completed = False
 
@@ -32,6 +36,8 @@ class MarkovChainStateMachine(BaseState):
         return self.name + '/' + self.states[self.idx].state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
+        self.idx = self.starting_index
+        self.completed = False
         print(self.state_name(), 'starting to execute a markov chain with', len(self.states), 'states')
         self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
@@ -40,14 +46,16 @@ class MarkovChainStateMachine(BaseState):
         state.process(t, controls, sub_state, world_state, sensors)
 
         if state.has_completed():
-            state.finalize(t, controls, sub_state, world_state, sensors)
-
             # Do not modify self.idx if it will result in -1!
             new_idx = self.state_mapping_dictionaries[self.idx][state.exit_code()]
-            if new_idx == -1:
+            if new_idx == HALT:
                 self.completed = True
                 print(self.name, 'completed via', state.state_name(), 'sub-state!')
                 return
+
+            # Only manually finalize the state if it is not the last one
+            # If the state is the last one, it will be finalized when this state machine is finalized
+            state.finalize(t, controls, sub_state, world_state, sensors)
 
             self.idx = new_idx
             new_state = self.states[self.idx]
@@ -56,7 +64,7 @@ class MarkovChainStateMachine(BaseState):
             new_state.process(t, controls, sub_state, world_state, sensors)
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
+        self.states[self.idx].finalize(t, controls, sub_state, world_state, sensors)
 
     def has_completed(self):
         return self.completed
