@@ -29,5 +29,5 @@ class Search:
         controls.set_yaw_goal(yaw + dt * 2*math.pi * 0.05)
         controls.planar_move_command(Fy=0, Fx=0.05)
 
-    def did_find():
+    def has_completed():
         return is_found
