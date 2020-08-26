@@ -58,10 +58,10 @@ class FaultyThrustDistributor:
         thrusts = msg.motorThrusts
         time = FaultyThrustDistributor.get_time()
 
-        for i, (thrust, noise_model) in enumerate(zip(thrusts, self.noise_models)):
+        for i, (thrust, noise_model, publisher) in enumerate(zip(thrusts, self.noise_models, self.publishers)):
             msg = FloatStamped()
             msg.data = thrust + noise_model(time)
-            self.publishers[i].publish(msg)
+            publisher.publish(msg)
 
     @staticmethod
     def run():
