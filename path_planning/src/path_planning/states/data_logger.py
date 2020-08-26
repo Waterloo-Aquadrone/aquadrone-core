@@ -26,6 +26,7 @@ class DataLogger(BaseState):
         print(self.state_name(), 'starting to log data')
 
     def process(self, t, controls, sub_state, world_state, sensors):
+        # for now just log the depth
         self.data.append([t, sub_state.get_submarine_state().z])
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
