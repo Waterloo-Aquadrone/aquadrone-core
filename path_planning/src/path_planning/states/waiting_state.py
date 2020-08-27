@@ -17,6 +17,7 @@ class WaitingState(BaseState):
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.start_time = t
+        self.completed = False
         print(self.state_name(), 'starting to wait for', self.delay, 'seconds')
 
     def process(self, t, controls, sub_state, world_state, sensors):
