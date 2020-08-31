@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from time import time
+import rospy
 import numpy as np
 from path_planning.states.base_state import BaseState
 
@@ -15,6 +16,15 @@ class DataLogger(BaseState):
     def __init__(self):
         self.data = []
         self.completed = False
+        rospy.on_shutdown(self.shutdown_hook)
+
+    def shutdown_hook(self):
+        """
+    	This is special to this specific state. If ros is externally shut down,
+    	save the data before exitting in this shutdown hook.
+    	"""
+        if not self.completed and len(self.data) > 0:
+            self.save_data()
 
     @staticmethod
     def state_name():
@@ -30,8 +40,11 @@ class DataLogger(BaseState):
         self.data.append([t, sub_state.get_submarine_state().z])
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        np.savetxt('log-' + str(time()) + '.csv', self.data, delimiter=',')
+        self.save_data()
         self.completed = True
+
+    def save_data(self):
+        np.savetxt('log-' + str(time()) + '.csv', self.data, delimiter=',')
 
     def has_completed(self):
         return self.completed
