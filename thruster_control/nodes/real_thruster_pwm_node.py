@@ -26,6 +26,10 @@ if __name__ == "__main__":
     with open(rospack.get_path('thruster_control') + "/config/thruster_gpio.json") as gpio_json:
         gpio_config = json.load(gpio_json)
 
+    if len(gpio_config) != config.get_num_thrusters():
+        raise Exception('Invalid config! Expected ' +
+                        str(config.get_num_thrusters()) + ' entries but got ' + str(len(gpio_config)))
+
     pwm_frequency = 400
     thrusters = []
     for i in range(config.get_num_thrusters()):
