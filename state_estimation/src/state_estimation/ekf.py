@@ -3,8 +3,8 @@
 import rospy
 import scipy.linalg
 
-import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
-# import autograd.numpy as np  # Thinly-wrapped numpy
+# import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
+import autograd.numpy as np  # Thinly-wrapped numpy
 from autograd import jacobian
 
 from geometry_msgs.msg import Vector3, Quaternion
@@ -64,9 +64,9 @@ class EKF:
         self.g = 9.81  # m/s^2
         self.rho_water = 997  # kg/m^3
         self.mass = 10  # TODO: add this to config
-        self.volume = 10  # used for buoyancy calcs, TODO: add this to config
+        self.volume = 10  # used for buoyancy calculations, TODO: add this to config
         self.buoyancy_offset = np.array(
-            [0, 0, 0.5])  # location where bouyancy force is applied (center of bouyancy) TODO: add this to config
+            [0, 0, 0.5])  # location where buoyancy force is applied (center of buoyancy) TODO: add this to config
         self.inertia_inv = np.zeros((3, 3))  # inverse of moment of inertia matrix, TODO: add this to config
 
         self.n = Idx.NUM  # Number of state elements

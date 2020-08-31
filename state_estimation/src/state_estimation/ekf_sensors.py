@@ -2,8 +2,8 @@
 
 import rospy
 
-import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
-# import autograd.numpy as np  # Thinly-wrapped numpy
+# import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
+import autograd.numpy as np  # Thinly-wrapped numpy
 from autograd import jacobian
 
 from sensor_msgs.msg import Imu, FluidPressure
