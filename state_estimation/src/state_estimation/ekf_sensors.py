@@ -11,7 +11,7 @@ from sensor_msgs.msg import Imu, FluidPressure
 from ekf_indices import Idx
 
 
-class BaseSensorListener:
+class BaseSensorListener(object):
     # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
     def __init__(self, parent_ekf):
