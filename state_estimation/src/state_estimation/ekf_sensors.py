@@ -75,7 +75,7 @@ class BaseSensorListener:
 
 class PressureSensorListener(BaseSensorListener):
     def __init__(self, parent_ekf):
-        super().__init__(parent_ekf)
+        super(PressureSensorListener, self).__init__(parent_ekf)
         rospy.Subscriber("aquadrone/out/pressure", FluidPressure, self.depth_cb)
 
         self.z = 0
@@ -114,7 +114,7 @@ class PressureSensorListener(BaseSensorListener):
 
 class IMUSensorListener(BaseSensorListener):
     def __init__(self, parent_ekf):
-        super().__init__(parent_ekf)
+        super(IMUSensorListener, self).__init__(parent_ekf)
         rospy.Subscriber("aquadrone/out/imu", Imu, self.imu_cb)
 
         self.accel = np.array([0, 0, 0])
