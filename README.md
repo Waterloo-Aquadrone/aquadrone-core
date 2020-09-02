@@ -30,7 +30,7 @@ catkin clean -y && catkin build
 10. (optional) Run the following command to see the submarine do a barrell roll: "roslaunch aquadrone_sim_demos barrel_roll_demo.launch"
 
 ## ROS Crash Course
-### Common Commands
+#### Common Commands
 - roslaunch \<package name> \<launch file>
 - roslaunch \<package name> \<launch file> \<arg name>:=\<arg value>
 - rqt_graph
@@ -43,14 +43,14 @@ catkin clean -y && catkin build
 - catkin build (must be done from the catkin_ws directory)
 - source catkin_ws/devel/setup.bash
 
-### Building the Catkin Workspace
+#### Building the Catkin Workspace
 This is required whenever new python packages are created, c++ code is updated, etc.
 
 1. Open a terminal in the aquadrone2020dev_workspace/catkin_ws/ directory
 2. Build the catkin workspace with the following command: "catkin build". If stuff is behaving weird and you want to recreate everything to try to avoid potential issues, run the following command instead: "catkin clean -y && catkin build".
 3. Remember to resource the workspace in all terminals with the following command: source devel/setup.bash
 
-### Debugging/Notes
+#### Debugging/Notes
 - To run any ROS commands from a terminal (rostopic, roslaunch, rosnode etc), the catkin workspace must be sourced from 
 that terminal via the following command: source devel/setup.bash. If the catkin workspace is rebuilt (with the following command: catkin build), this must be redone in each terminal. You can configure your VM to do this whenever a new terminal is created (but not when the workspace is rebult) by following step 6 in **First Time Setup and Usage instructions**.
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 
@@ -59,11 +59,11 @@ command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on
 
 ## Aquadrone Specific Specifications
 
-### Coding Standards
+#### Coding Standards
 - Topic names should be lowercase, separated by underscores
 - Any custom ROS messages should be in the aquadrone_msgs package
 
-### List of Topics
+#### List of Topics
 - /movement_command send a desired Wrench to the thruster_control system from path_planning
 - /stability_command send a desired Wrench to the thruster_control system from orientation PID controller
 - /depth_command send a desired Wrench to the thruster_control system from the depth PID controller
@@ -78,7 +78,7 @@ command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on
 - /aquadrone/thrusters/0/input send a command to the 0th thruster (same for thrusters 1-7)
 - /gazebo/model_states get the state of all objects in the Gazebo simulation
 
-### List of Nodes
+#### List of Nodes
 - ekf_state_estimation listens to sensor data and /motor_commands and publishes estimates of the sub's position to /state_estimation
 - omniscient_ekf_state_estimation listens to the sub's position from /gazebo/model_states and publishes it directly to /state_estimation
 - real_thruster_output listens to /motor_command and sends the PWM signals to control the real thrusters
@@ -88,7 +88,7 @@ command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on
 - stability listens to /state_estimation and /orientation_target and computes the required Wrench based on a PID, and publishes it to /stability_command
 - omniscient_vision_node listens to /gazebo/model_states and computes the exact relative position of objects in the world and publishes them to /Vision_Data
 
-### Units
+#### Units
 - All units **must** be in metric when appearing on a ROS topic or service
 - Internal calculations within a ROS node are strongly suggested to be done in metric
 - Values in config files should be in metric where possible, but this is less essential
