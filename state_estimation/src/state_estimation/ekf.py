@@ -77,7 +77,7 @@ class EKF:
         self.u = np.zeros(config.get_num_thrusters())  # most recent motor thrust received
         self.B = np.asarray(config.get_thrusts_to_wrench_matrix())  # thrust to wrench matrix
 
-        self.f_jacobian = jacobian(self.f)
+        self.f_jacobian_func = jacobian(self.f)
         self.Q = np.eye(self.n) * 0.01  # uncertainty in dynamics model
 
         self.depth_sub = PressureSensorListener(self)
@@ -104,7 +104,7 @@ class EKF:
         return rospy.Time.now().to_sec()
 
     def prediction(self, dt):
-        f_jacobian = self.f_jacobian(self.x, self.u, dt)
+        f_jacobian = self.f_jacobian_func(self.x, self.u, dt)
         f_jacobian = np.reshape(f_jacobian, (self.n, self.n))
 
         # Update x and uncertainty P
