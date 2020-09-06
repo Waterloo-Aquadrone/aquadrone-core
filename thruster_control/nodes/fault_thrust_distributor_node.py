@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import rospy
+import traceback
 
 from thruster_control.thrust_computer.thruster_configurations import get_configuration
-from thruster_control.thrust_distributor_noise.thrust_distributor_noise import ThrustDistributorNoise
+from thruster_control.thrust_distributor.thrust_distributor_noise import ThrustDistributorNoise
+
 
 
 
@@ -22,5 +24,5 @@ if __name__ == "__main__":
     model = rospy.get_param("model", "v28")
     num = get_configuration(model).get_num_thrusters()
 
-    distributor = ThrustDistributor(num, namespace="aquadrone")
+    distributor = ThrustDistributorNoise(num, namespace="aquadrone")
     distributor.run()
