@@ -37,14 +37,15 @@ class DataLogger(BaseState):
 
     def process(self, t, controls, sub_state, world_state, sensors):
         # for now just log the depth
-        self.data.append([t, sub_state.get_submarine_state().z])
+        self.data.append([t, sub_state.get_submarine_state().position.z])
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         self.save_data()
         self.completed = True
 
     def save_data(self):
-        np.savetxt('log-' + str(time()) + '.csv', self.data, delimiter=',')
+	print('saving csv')
+        np.savetxt('submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
 
     def has_completed(self):
         return self.completed

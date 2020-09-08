@@ -9,7 +9,7 @@ from path_planning.states.barrel_roll import BarrelRoll
 from path_planning.states.exit_code_state import ExitCodeState
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
-from path_planning.state_machines.data_logger import DataLogger
+from path_planning.states.data_logger import DataLogger
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.markov_chain_state_machine import MarkovChainStateMachine
 from path_planning.state_executor import StateExecutor
