@@ -15,8 +15,9 @@ class OmniscientEKF:
 
         rospy.Service('reset_sub_state_estimation', Trigger, self.reset_ekf)
 
-    def reset_ekf(self, msg):
-        return TriggerResponse(success=True, message="reset")
+    @staticmethod
+    def reset_ekf(msg=None):
+        return TriggerResponse(success=True, message="nothing to reset")
 
     def get_obj_pos(self, model_states):
         for name, pose, twist in zip(model_states.name, model_states.pose, model_states.twist):
