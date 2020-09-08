@@ -88,6 +88,10 @@ command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on
 - stability listens to /state_estimation and /orientation_target and computes the required Wrench based on a PID, and publishes it to /stability_command
 - omniscient_vision_node listens to /gazebo/model_states and computes the exact relative position of objects in the world and publishes them to /Vision_Data
 
+#### Image of a Graph of Nodes and Topics
+
+![Image of a Graph of Nodes and Topics](/path_planning/images/rqt_graph.png)
+
 #### Units
 - All units **must** be in metric when appearing on a ROS topic or service
 - Internal calculations within a ROS node are strongly suggested to be done in metric
