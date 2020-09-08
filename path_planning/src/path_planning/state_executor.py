@@ -1,5 +1,5 @@
 import rospy
-from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModule, ROSSensorDataModule
+from .ros_modules import ROSControlsModule, ROSStateEstimationModule, ROSSensorDataModule
 
 
 class StateExecutor:
@@ -41,7 +41,7 @@ class StateExecutor:
         self.controls.halt_and_catch_fire()
         self.exit_code = -1
 
-    def exit_code(self):
+    def get_exit_code(self):
         """
         :return: The exit code that the state/state machine terminated with.
         """
