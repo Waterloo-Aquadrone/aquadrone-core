@@ -1,6 +1,6 @@
 # Writing Path Planning Software
 The path planning system is designed using a modular system of states. 
-The submarine switches between different states, each of which performs a specialized tasks.
+The submarine switches between different states, each of which performs a specialized task.
 
 ## States
 All states are subclasses of the base_state:
