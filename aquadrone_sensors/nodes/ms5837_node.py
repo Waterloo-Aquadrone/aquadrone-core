@@ -26,8 +26,8 @@ while not rospy.is_shutdown():
             while not rospy.is_shutdown():
                 if sensor.read():
                     msg = FluidPressure()
-                    msg.fluid_pressure = sensor.pressure()# mbar
-                    msg.var = sensor_var
+                    msg.fluid_pressure = sensor.pressure()  # mbar
+                    msg.variance = sensor_var
                     pub.publish(msg)
                 else:
                     rospy.core.logwarn("unable to read ms5837, depth sensor")
