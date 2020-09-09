@@ -95,10 +95,10 @@ class PressureSensorListener(BaseSensorListener):
 
     def get_R(self):
         # Variance of measurements
-        return np.array([self.variance])
+        return np.array([[self.variance]])
 
     def state_to_measurement_h(self, x, u):
-        return x[Idx.z]
+        return np.array([x[Idx.z]])
 
     def depth_cb(self, msg):
         pressure = msg.fluid_pressure
@@ -143,7 +143,7 @@ class IMUSensorListener(BaseSensorListener):
         return np.diag(np.concatenate((self.accel_var, self.orientation_var, self.ang_vel_variance)))
 
     def state_to_measurement_h(self, x, u):
-        net_wrench = self.parent_ekf.get_net_wrench_func(x, u)
+        net_wrench = self.parent_ekf.get_net_wrench(x, u)
         acceleration = net_wrench[:3] / self.parent_ekf.mass
         return np.concatenate((acceleration, x[Idx.Ow:Idx.Oz + 1], x[Idx.Wx:Idx.Wz + 1]))
 
@@ -159,7 +159,7 @@ class IMUSensorListener(BaseSensorListener):
         self.orientation = np.array([msg.orientation.w,
                                      msg.orientation.x,
                                      msg.orientation.y,
-                                     msg.orientation.z])[np.newaxis]
+                                     msg.orientation.z])
 
         # Need to verify what our onboard sensor reports
         # Keep as this as an initial estimate

@@ -3,6 +3,7 @@
 import rospy
 import scipy.linalg
 
+import autograd
 # import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
 import autograd.numpy as np  # Thinly-wrapped numpy
 from autograd import jacobian
@@ -123,10 +124,21 @@ class EKF:
                                      listener.get_R())
                                     for listener in listeners if listener.is_valid()])
         # package lists into arrays/matrices as appropriate
-        z = np.array(z)  # measurements
-        h = np.array(h)  # predicted measurements
+        print('data boi')
+	print(z)
+	print(h)
+	print(h_jacobian)
+        print(R)
+        z = np.concatenate(z)  # measurements
+        h = np.concatenate(h)  # predicted measurements
         h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
-        R = scipy.linalg.block_diag(R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
+        R = scipy.linalg.block_diag(*R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
+
+	print('combined')	
+	print(z)
+	print(h)
+	print(h_jacobian)
+        print(R)
 
         if len(z) == 0:
             # no valid measurements
@@ -160,20 +172,23 @@ class EKF:
         :param dt: The amount of ellapsed time.
         :return: The resulting state.
         """
+        x = self.fix(x)
+            
         total_wrench = self.get_net_wrench(x, u)
 
         # update position
         x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
 
         # update orientation
-        x[Idx.Ow:Idx.Oz + 1] += np.array([0] + x[Idx.Wx:Idx.Wz + 1]) * x[Idx.Ow:Idx.Oz + 1] * (dt / 2)
+        print(x)
+        x[Idx.Ow:Idx.Oz + 1] += np.concatenate(([0], x[Idx.Wx:Idx.Wz + 1])) * x[Idx.Ow:Idx.Oz + 1] * (dt / 2)
         x[Idx.Ow:Idx.Oz + 1] /= np.linalg.norm(x[Idx.Ow:Idx.Oz + 1])  # rescale to unit quaternion
 
         # update linear velocity
         x[Idx.Vx:Idx.Vz + 1] += total_wrench[:3] / self.mass * dt
 
         # update angular velocity
-        x[Idx.Wx:Idx.Wz + 1] += self.inertia_inv * total_wrench[3:] * dt
+        x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
 
         return x
 
@@ -185,6 +200,8 @@ class EKF:
         :param u: The motor thrusts.
         :return: The total wrench being applied to the submarine.
         """
+	x = self.fix(x)
+
         net_wrench = np.zeros(6)
         net_wrench += np.dot(self.B, u)
 
@@ -292,3 +309,10 @@ class EKF:
             self.update()
 
             self.state_publisher.publish(self.get_state_msg())
+
+    @staticmethod
+    def fix(arr):
+        if type(arr) == autograd.numpy.numpy_boxes.ArrayBox:
+            return arr._value
+	else:
+	    return arr
