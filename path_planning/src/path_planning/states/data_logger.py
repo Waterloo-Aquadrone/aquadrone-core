@@ -18,13 +18,13 @@ class DataLogger(BaseState):
         self.data = []
         self.completed = False
         rospy.on_shutdown(self.shutdown_hook)
-	self.output_dir = rospkg.RosPack().get_path('path_planning')
+        self.output_dir = rospkg.RosPack().get_path('path_planning')
 
     def shutdown_hook(self):
         """
-    	This is special to this specific state. If ros is externally shut down,
-    	save the data before exitting in this shutdown hook.
-    	"""
+        This is special to this specific state. If ros is externally shut down,
+        save the data before exitting in this shutdown hook.
+        """
         if not self.completed and len(self.data) > 0:
             self.save_data()
 
@@ -46,9 +46,7 @@ class DataLogger(BaseState):
         self.completed = True
 
     def save_data(self):
-	print('saving csv')
         np.savetxt(self.output_dir + '/submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
-        print('saved csv')
 
     def has_completed(self):
         return self.completed
