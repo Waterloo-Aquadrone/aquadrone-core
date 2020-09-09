@@ -2,6 +2,7 @@
 
 from time import time
 import rospy
+import rospkg
 import numpy as np
 from path_planning.states.base_state import BaseState
 
@@ -17,6 +18,7 @@ class DataLogger(BaseState):
         self.data = []
         self.completed = False
         rospy.on_shutdown(self.shutdown_hook)
+	self.output_dir = rospkg.RosPack().get_path('path_planning')
 
     def shutdown_hook(self):
         """
@@ -45,7 +47,8 @@ class DataLogger(BaseState):
 
     def save_data(self):
 	print('saving csv')
-        np.savetxt('../../../../submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
+        np.savetxt(self.output_dir + '/submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
+        print('saved csv')
 
     def has_completed(self):
         return self.completed
