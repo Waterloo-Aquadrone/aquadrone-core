@@ -14,7 +14,10 @@
         <arg name="model" value="aquadrone"/>
     </include>
 
+    <!-- Need to include this or else ROS will hang, TODO: make this unnecessary -->
     <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py"/>
+    
+    <!-- Only run the thrust distributor because we need to bypass the thrust_computer to send motor thrusts directly from path_planning -->
     <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py" output="screen"/>
 
     <node name="thruster_test" pkg="path_planning" type="thruster_test.py" output="screen"/>
