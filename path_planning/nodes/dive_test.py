@@ -18,7 +18,7 @@ if __name__ == "__main__":
     target_depth = 0.5  # m
 
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(), GoToDepthState(target_depth),
-                                                   WaitingState(10), GoToDepthState(0), ExitCodeState(0)])
+                                                   WaitingState(10), GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
     dive_logging_machine = ParallelStateMachine('dive_logger', states=[dive_machine], daemon_states=[DataLogger()])
 
     executor = StateExecutor(dive_logging_machine, rate=rospy.Rate(5))
