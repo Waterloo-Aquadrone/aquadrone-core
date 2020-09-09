@@ -279,7 +279,11 @@ class EKF:
 
     def run(self):
         while not rospy.is_shutdown():
-            self.rate.sleep()
+            try:
+                self.rate.sleep()
+            except ROSInterruptException:
+                break
+  
             current_t = self.get_t()
             dt = current_t - self.last_t
             self.last_t = current_t
