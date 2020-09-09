@@ -79,7 +79,7 @@ class EKF:
         self.B = np.asarray(config.get_thrusts_to_wrench_matrix())  # thrust to wrench matrix
 
         self.f_jacobian_func = jacobian(self.f)
-        self.Q = np.eye(self.n) * 0.01  # uncertainty in dynamics model
+        self.Q = np.eye(self.n) * 1  # uncertainty in dynamics model
 
         self.depth_sub = PressureSensorListener(self)
         self.imu_sub = IMUSensorListener(self)
@@ -124,21 +124,10 @@ class EKF:
                                      listener.get_R())
                                     for listener in listeners if listener.is_valid()])
         # package lists into arrays/matrices as appropriate
-        print('data boi')
-	print(z)
-	print(h)
-	print(h_jacobian)
-        print(R)
         z = np.concatenate(z)  # measurements
         h = np.concatenate(h)  # predicted measurements
         h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
         R = scipy.linalg.block_diag(*R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
-
-	print('combined')	
-	print(z)
-	print(h)
-	print(h_jacobian)
-        print(R)
 
         if len(z) == 0:
             # no valid measurements
@@ -180,7 +169,6 @@ class EKF:
         x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
 
         # update orientation
-        print(x)
         x[Idx.Ow:Idx.Oz + 1] += np.concatenate(([0], x[Idx.Wx:Idx.Wz + 1])) * x[Idx.Ow:Idx.Oz + 1] * (dt / 2)
         x[Idx.Ow:Idx.Oz + 1] /= np.linalg.norm(x[Idx.Ow:Idx.Oz + 1])  # rescale to unit quaternion
 
