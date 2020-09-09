@@ -24,7 +24,7 @@ def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
     offset = np.array([x, y, z])
     moment = np.cross(offset, force, axis=0)
 
-    return np.vstack((force, moment))
+    return np.concatenate((force, moment))
 
 
 def get_thruster_force(r, p, y):
