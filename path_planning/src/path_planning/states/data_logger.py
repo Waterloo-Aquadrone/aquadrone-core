@@ -45,7 +45,7 @@ class DataLogger(BaseState):
 
     def save_data(self):
 	print('saving csv')
-        np.savetxt('submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
+        np.savetxt('../../../../submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
 
     def has_completed(self):
         return self.completed
