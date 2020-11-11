@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import geometry_helper as gh
+from thruster_control.thrust_computer import geometry_helper as gh
 
 
 a2 = np.pi / 2.0

@@ -33,9 +33,6 @@ class T100Thruster(RealThruster):
         rospack = rospkg.RosPack()
         config_path = rospack.get_path('thruster_control') + "/config/"
 
-        rospy.Subscriber("/%s/thrusters/%d/input" % (namespace, motor_index),
-                         FloatStamped, self.apply_thrust, queue_size=1)
-
         pwmData = np.genfromtxt(config_path + "pwm_thrust_conversion.csv", delimiter=",", names=True)
         self.pwmSignals_us = pwmData['pwm_width']
         self.motorThrusts_lbs = pwmData['thrust_lbs']
@@ -49,7 +46,11 @@ class T100Thruster(RealThruster):
         initial_thrust.data = 0
         self.apply_thrust(initial_thrust)
 
+        rospy.Subscriber("/%s/thrusters/%d/input" % (namespace, motor_index),
+                         FloatStamped, self.apply_thrust, queue_size=1)
+
     def apply_thrust(self, float_stamped):
+        print(self.pwm)
         thrust = float_stamped.data
 
         # lb to us
