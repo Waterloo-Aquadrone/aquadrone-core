@@ -50,7 +50,6 @@ class T100Thruster(RealThruster):
                          FloatStamped, self.apply_thrust, queue_size=1)
 
     def apply_thrust(self, float_stamped):
-        print(self.pwm)
         thrust = float_stamped.data
 
         # lb to us
