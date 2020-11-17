@@ -28,6 +28,7 @@ catkin clean -y && catkin build
 
 9. (optional) On the VM homescreen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
 10. (optional) Run the following command to see the submarine do a barrell roll: "roslaunch aquadrone_sim_demos barrel_roll_demo.launch"
+11. (optional) If you are having issues pushing to our git repos with your personal account from the VM, use this account: https://github.com/waterloo-aquadrone-vm-account. Message Amaar for the password.
 
 ## ROS Crash Course
 #### Common Commands
