@@ -6,7 +6,7 @@
 https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&preview=Ubuntu1604ROSKineticSmall.zip
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose Ubuntu1604ROSKineticSmall.vbox in the file chooser dialog.
-5. Click the Ubuntu1604ROSKineticSmall tab that just appeared. Click Start.
+5. Click the Ubuntu1604ROSKineticSmall tab that just appeared. Click Start. The VM's password is **aquadrone**.
 6. (recommended) Open a terminal and type "sudo apt-get update && sudo apt-get upgrade"
 7. (optional) Open a terminal and type: "gedit ~/.bashrc". Add the following lines to the bottom of the file:
 
