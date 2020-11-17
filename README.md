@@ -32,6 +32,7 @@ catkin clean -y && catkin build
 
 ## ROS Crash Course
 #### Common Commands
+Use tab autocompletion to help find what you’re looking for! Double tap tab to list out all possible autocompletions. Here are some of the most common commands:
 - roslaunch \<package name> \<launch file>
 - roslaunch \<package name> \<launch file> \<arg name>:=\<arg value>
 - rqt_graph
