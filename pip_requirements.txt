@@ -2,3 +2,4 @@ simple-pid
 mock
 numpy==1.13
 autograd
+MCP342x
