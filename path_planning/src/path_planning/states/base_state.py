@@ -42,6 +42,7 @@ class BaseState:
 
     def exit_code(self):
         """
+        This function should only be called once has_completed returns True.
         Indicates the reason that the state has exited.
         The code 0 signifies that the state completed its objective and exited successfully.
         The code -1 signifies that ros was shutdown.
