@@ -82,6 +82,22 @@ class Submarine:
         self.angular_velocity_var = angular_velocity
 
 
+class WorldObject:
+    def __init__(self, position, orientation_quat, orientation_rpy):
+        self.position = position
+        self.orientation_quat = orientation_quat
+        self.orientation_rpy = orientation_rpy
+
+        self.position_var = None
+        self.orientation_quat_var = None
+        self.orientation_rpy_var = None
+
+    def set_uncertainties(self, position, orientation_quat, orientation_rpy):
+        self.position_var = position
+        self.orientation_quat_var = orientation_quat
+        self.orientation_rpy_var = orientation_rpy
+
+
 class Gate:
     def __init__(self, top_corners, bottom_corners):
         self.top_corners = top_corners

@@ -170,6 +170,38 @@ class ROSSensorDataModule:
         return image
 
 
+class ROSWorldEstimationModule:
+    def __init__(self):
+        self.world_state_subscriber = rospy.Subscriber("/world_state_estimation", WorldState, self.world_state_callback)
+        self.world_state = WorldState()
+
+        rospy.wait_for_service('reset_world_state_estimation')
+        self.world_state_est_reset_service = rospy.ServiceProxy('reset_world_state_estimation', Trigger)
+
+    def world_state_callback(self, msg):
+        self.world_state = msg
+
+    def get_world_state(self):
+        return self.convert_to_dictionary(self.world_state)
+
+    @staticmethod
+    def convert_to_dictionary(world_state):
+        """
+        Returns a dictionary where keys are the names of objects (eg. 'gate', 'pole', etc.).
+        """
+        dict = {}
+        for object_state in world_state.data:
+            obj = DS.WorldObject(object_state.position, object_state.orientation_quat, object_state.orientation_RPY)
+            obj.set_uncertainties(object_state.pos_variance, object_state.orientation_quat_variance,
+                                  object_state.orientation_RPY_variance)
+            dict[object_state.identifier] = obj
+        return dict
+
+    def reset_state_estimation(self):
+        req = TriggerRequest()
+        self.world_state_est_reset_service(req)
+
+
 if __name__ == "__main__":
 
     rospy.init_node("test_sensors")
