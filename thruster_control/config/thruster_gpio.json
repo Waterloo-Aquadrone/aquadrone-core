@@ -1,10 +1,10 @@
 [
-    {"description": "front_right",    "gpio":  10},
-    {"description": "front_left",     "gpio":  11},
-    {"description": "back_right",     "gpio":  12},
-    {"description": "back_left",      "gpio":  13},
-    {"description": "center_right",   "gpio":  14},
-    {"description": "center_left",    "gpio":  15},
-    {"description": "sideways_right", "gpio":  16},
-    {"description": "sideways_left",  "gpio":  17}
+    {"description": "front_right",    "gpio":  7},
+    {"description": "front_left",     "gpio":  8},
+    {"description": "back_right",     "gpio":  9},
+    {"description": "back_left",      "gpio":  10},
+    {"description": "center_right",   "gpio":  11},
+    {"description": "center_left",    "gpio":  12},
+    {"description": "sideways_right", "gpio":  13},
+    {"description": "sideways_left",  "gpio":  15}
 ]
