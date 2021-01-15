@@ -28,19 +28,16 @@ class RealThruster:
 
 
 class T100Thruster(RealThruster):
-    def __init__(self, pwm_freq, motor_index, gpio_pin, namespace='aquadrone'):
+    def __init__(self, pwm_freq, motor_index, pwm, namespace='aquadrone'):
         self.pwm_freq = pwm_freq
+        self.pwm = pwm
+
         rospack = rospkg.RosPack()
         config_path = rospack.get_path('thruster_control') + "/config/"
 
         pwmData = np.genfromtxt(config_path + "pwm_thrust_conversion.csv", delimiter=",", names=True)
         self.pwmSignals_us = pwmData['pwm_width']
         self.motorThrusts_lbs = pwmData['thrust_lbs']
-
-        i2c = busio.I2C(board.SCL, board.SDA)
-        pca = adafruit_pca9685.PCA9685(i2c)
-        pca.frequency = pwm_freq
-        self.pwm = pca.channels[gpio_pin]
 
         initial_thrust = FloatStamped()
         initial_thrust.data = 0

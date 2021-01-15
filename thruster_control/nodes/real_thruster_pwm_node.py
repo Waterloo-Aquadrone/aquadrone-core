@@ -4,6 +4,11 @@ import rospy
 import rospkg
 import json
 
+# import RPi.GPIO as GPIO
+import board
+import busio
+import adafruit_pca9685
+
 from thruster_control.thrust_computer.thruster_configurations import get_configuration
 
 
@@ -31,9 +36,14 @@ if __name__ == "__main__":
                         str(config.get_num_thrusters()) + ' entries but got ' + str(len(gpio_config)))
 
     pwm_frequency = 400
+
+    i2c = busio.I2C(board.SCL, board.SDA)
+    pca = adafruit_pca9685.PCA9685(i2c)
+    pca.frequency = pwm_frequency
+
     thrusters = []
     for i in range(config.get_num_thrusters()):
         ThrusterClass = config.get_thruster_class(i)
-        thrusters.append(ThrusterClass(pwm_frequency, i, gpio_config[i]['gpio']))
+        thrusters.append(ThrusterClass(pwm_frequency, i, pca.channels[gpio_config[i]['gpio']]))
 
     rospy.spin()
