@@ -6,7 +6,7 @@
 https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&preview=Ubuntu1604ROSKineticSmall.zip
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose Ubuntu1604ROSKineticSmall.vbox in the file chooser dialog.
-5. Click the Ubuntu1604ROSKineticSmall tab that just appeared. Click Start.
+5. Click the Ubuntu1604ROSKineticSmall tab that just appeared. Click Start. The VM's password is **aquadrone**.
 6. (recommended) Open a terminal and type "sudo apt-get update && sudo apt-get upgrade"
 7. (optional) Open a terminal and type: "gedit ~/.bashrc". Add the following lines to the bottom of the file:
 
@@ -28,9 +28,11 @@ catkin clean -y && catkin build
 
 9. (optional) On the VM homescreen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
 10. (optional) Run the following command to see the submarine do a barrell roll: "roslaunch aquadrone_sim_demos barrel_roll_demo.launch"
+11. (optional) If you are having issues pushing to our git repos with your personal account from the VM, use this account: https://github.com/waterloo-aquadrone-vm-account. Message Amaar for the password.
 
 ## ROS Crash Course
 #### Common Commands
+Use tab autocompletion to help find what you’re looking for! Double tap tab to list out all possible autocompletions. Here are some of the most common commands:
 - roslaunch \<package name> \<launch file>
 - roslaunch \<package name> \<launch file> \<arg name>:=\<arg value>
 - rqt_graph
@@ -52,7 +54,7 @@ This is required whenever new python packages are created, c++ code is updated, 
 
 #### Debugging/Notes
 - To run any ROS commands from a terminal (rostopic, roslaunch, rosnode etc), the catkin workspace must be sourced from 
-that terminal via the following command: source devel/setup.bash. If the catkin workspace is rebuilt (with the following command: catkin build), this must be redone in each terminal. You can configure your VM to do this whenever a new terminal is created (but not when the workspace is rebult) by following step 6 in **First Time Setup and Usage instructions**.
+that terminal via the following command: source devel/setup.bash. If the catkin workspace is rebuilt (with the following command: catkin build), this must be redone in each terminal. You can configure your VM to do this whenever a new terminal is created (but not when the workspace is rebult) by following step 7 in **First Time Setup and Usage instructions** above.
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 
 that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following 
 command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on a windows computer) via git with the command: git update-index --chmod=+x \<file name>.py
