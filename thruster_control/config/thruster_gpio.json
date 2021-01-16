@@ -1,10 +1,25 @@
-[
-    {"connector": 0, "ESC": 3, "gpio":  10, "thruster": "front_right"},
-    {"connector": 1, "ESC": 7, "gpio":  15, "thruster": "front_left"},
-    {"connector": 2, "ESC": 2, "gpio":   9, "thruster": "back_right"},
-    {"connector": 3, "ESC": 6, "gpio":  13, "thruster": "back_left"},
-    {"connector": 4, "ESC": 1, "gpio":   8, "thruster": "center_right"},
-    {"connector": 5, "ESC": 5, "gpio":  12, "thruster": "center_left"},
-    {"connector": 6, "ESC": 0, "gpio":   7, "thruster": "sideways_right"},
-    {"connector": 7, "ESC": 4, "gpio":  11, "thruster": "sideways_left"}
-]
+{
+	"description": "connector refers to the physical 3 pin connectors (counted starting from the corner), ESC numbering corresponds to inscriptions on the PCB",
+	"i2c_data": [
+	    {"connector": 1, "ESC": 4, "i2c_index":  10, "thruster": "front_right"},
+	    {"connector": 2, "ESC": 8, "i2c_index":  15, "thruster": "front_left"},
+	    {"connector": 3, "ESC": 3, "i2c_index":   9, "thruster": "back_right"},
+	    {"connector": 4, "ESC": 7, "i2c_index":  13, "thruster": "back_left"},
+	    {"connector": 5, "ESC": 2, "i2c_index":   8, "thruster": "center_right"},
+	    {"connector": 6, "ESC": 6, "i2c_index":  12, "thruster": "center_left"},
+	    {"connector": 7, "ESC": 1, "i2c_index":   7, "thruster": "sideways_right"},
+	    {"connector": 8, "ESC": 5, "i2c_index":  11, "thruster": "sideways_left"}
+	],
+	"thruster_geomerty": {
+		"front_right":    {"x":  0.2, "y": -0.285, "z": 0.1, "roll": 0, "pitch": 90, "yaw": 0}
+		"front_left":     {"x":  0.2, "y":  0.285, "z": 0.1, "roll": 0, "pitch": 90, "yaw": 0}
+		"back_right":     {"x": -0.2, "y": -0.285, "z": 0.1, "roll": 0, "pitch": 90, "yaw": 0}
+		"back_left":      {"x": -0.2, "y":  0.285, "z": 0.1, "roll": 0, "pitch": 90, "yaw": 0}
+
+		"center_right":   {"x": 0, "y": -0.285, "z": 0.1, "roll": 0, "pitch": 0, "yaw": 0}
+		"center_left":    {"x": 0, "y":  0.285, "z": 0.1, "roll": 0, "pitch": 0, "yaw": 0}
+
+		"sideways_right": {"x": 0, "y": -0.17, "z": 0, "roll":, "pitch": 0, "yaw": -90}
+		"sideways_left":  {"x": 0, "y":  0.17, "z": 0, "roll":, "pitch": 0, "yaw":  90}
+	}
+}
