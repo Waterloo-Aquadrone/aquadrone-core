@@ -1,10 +1,10 @@
 [
-    {"description": "front_right",    "gpio":  7},
-    {"description": "front_left",     "gpio":  8},
-    {"description": "back_right",     "gpio":  9},
-    {"description": "back_left",      "gpio":  10},
-    {"description": "center_right",   "gpio":  11},
-    {"description": "center_left",    "gpio":  12},
-    {"description": "sideways_right", "gpio":  13},
-    {"description": "sideways_left",  "gpio":  15}
+    {"connector": 0, "ESC": 3, "gpio":  10, "thruster": "front_right"},
+    {"connector": 1, "ESC": 7, "gpio":  15, "thruster": "front_left"},
+    {"connector": 2, "ESC": 2, "gpio":   9, "thruster": "back_right"},
+    {"connector": 3, "ESC": 6, "gpio":  13, "thruster": "back_left"},
+    {"connector": 4, "ESC": 1, "gpio":   8, "thruster": "center_right"},
+    {"connector": 5, "ESC": 5, "gpio":  12, "thruster": "center_left"},
+    {"connector": 6, "ESC": 0, "gpio":   7, "thruster": "sideways_right"},
+    {"connector": 7, "ESC": 4, "gpio":  11, "thruster": "sideways_left"}
 ]
