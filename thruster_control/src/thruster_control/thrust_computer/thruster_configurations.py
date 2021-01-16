@@ -152,7 +152,7 @@ class V28Configuration(ThrusterConfiguration):
         th_4 = gh.get_thruster_wrench_vector(x=0,         y=0.285,   z=0.1,  roll=0,  pitch=0,        yaw=0)
         th_5 = gh.get_thruster_wrench_vector(x=0,         y=-0.285,  z=0.1,  roll=0,  pitch=0,        yaw=0)
 
-        # Lef-Right Thrusters
+        # Left-Right Thrusters
         th_6 = gh.get_thruster_wrench_vector(x=0,    y=0.17,    z=0,  roll=0,  pitch=0,  yaw=-a2)
         th_7 = gh.get_thruster_wrench_vector(x=0,   y=-0.17,    z=0,  roll=0,  pitch=0,  yaw=-a2)
 
