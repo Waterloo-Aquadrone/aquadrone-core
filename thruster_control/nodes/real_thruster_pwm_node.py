@@ -26,14 +26,16 @@ if __name__ == "__main__":
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
     config = get_configuration(model)
+    config.initialize()
 
     rospack = rospkg.RosPack()
-    with open(rospack.get_path('thruster_control') + "/config/thruster_gpio.json") as gpio_json:
-        gpio_config = json.load(gpio_json)
+    with open(rospack.get_path('thruster_control') + "/config/thrusters_" + model + ".json") as thruster_json:
+        thruster_config = json.load(thruster_json)
+    i2c_data = thruster_config['i2c_data']
 
-    if len(gpio_config) != config.get_num_thrusters():
+    if len(i2c_data) != config.get_num_thrusters():
         raise Exception('Invalid config! Expected ' +
-                        str(config.get_num_thrusters()) + ' entries but got ' + str(len(gpio_config)))
+                        str(config.get_num_thrusters()) + ' entries but got ' + str(len(i2c_data)))
 
     pwm_frequency = 400
 
@@ -44,6 +46,6 @@ if __name__ == "__main__":
     thrusters = []
     for i in range(config.get_num_thrusters()):
         ThrusterClass = config.get_thruster_class(i)
-        thrusters.append(ThrusterClass(pwm_frequency, i, pca.channels[gpio_config[i]['gpio']]))
+        thrusters.append(ThrusterClass(pwm_frequency, i, pca.channels[i2c_data[i]['i2c_index']]))
 
     rospy.spin()
