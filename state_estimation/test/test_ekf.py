@@ -12,7 +12,9 @@ from thruster_control.thrust_computer.thruster_configurations import ThrusterCon
 class TestEKF(unittest.TestCase):
 
     def test_contruction(self):
-        ekf = EKF(ThrusterConfiguration('v28'))
+        config = ThrusterConfiguration('v28')
+        config.initialize()
+        ekf = EKF(config)
 
 
 if __name__ == '__main__':
