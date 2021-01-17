@@ -72,8 +72,8 @@ class ThrusterConfiguration:
              - T = B * W
             """
             thruster_count = A.shape[1]
-            block = np.block([[A,                                         np.zeros((6, 6))],
-                              [np.ones((thruster_count, thruster_count)), np.transpose(A)]])
+            block = np.block([[A,                      np.zeros((6, 6))],
+                              [np.eye(thruster_count), np.transpose(A)]])
             self.wrench_to_thrusts_matrix = np.linalg.inv(block)[:thruster_count, :6]
         else:
             # under-actuated
