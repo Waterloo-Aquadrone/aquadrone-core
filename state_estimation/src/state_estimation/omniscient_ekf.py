@@ -8,9 +8,13 @@ import aquadrone_math_utils.orientation_math as OMath
 
 
 class OmniscientEKF:
-    def __init__(self, sub_model_name='aquadrone', world_model_names=['pole']):
+    # the default names in gazebo for the objects to track
+    DEFAULT_WORLD_MODEL_NAMES = ['pole']
+
+    def __init__(self, sub_model_name='aquadrone', world_model_names=None):
         self.sub_model_name = sub_model_name
-        self.world_model_names = world_model_names
+        self.world_model_names = world_model_names if world_model_names is not None \
+            else OmniscientEKF.DEFAULT_WORLD_MODEL_NAMES
 
         rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos, queue_size=1)
 
@@ -50,9 +54,7 @@ class OmniscientEKF:
     def create_object_state(name, pose):
         object_state = WorldObjectState()
         object_state.identifier = name
-        object_state.position = pose.position
-        object_state.orientation_quat = pose.orientation
-        object_state.orientation_RPY = OMath.msg_quaternion_to_euler(pose.orientation)
+        object_state.pose_with_covariance.pose = pose
         return object_state
 
     @staticmethod

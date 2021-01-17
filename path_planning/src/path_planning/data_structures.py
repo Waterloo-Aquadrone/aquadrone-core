@@ -25,6 +25,10 @@ class Vector:
     def from_msg(msg):
         return Vector(msg.x, msg.y, msg.z)
 
+    @staticmethod
+    def from_numpy(arr):
+        return Vector(*arr)
+
     def __add__(self, other):
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
@@ -95,9 +99,8 @@ class WorldObject:
         self.orientation_quat_var = None
         self.orientation_rpy_var = None
 
-    def set_uncertainties(self, position, orientation_quat, orientation_rpy):
+    def set_uncertainties(self, position, orientation_rpy):
         self.position_var = position
-        self.orientation_quat_var = orientation_quat
         self.orientation_rpy_var = orientation_rpy
 
 
