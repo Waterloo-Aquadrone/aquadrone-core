@@ -54,6 +54,9 @@ class Quaternion:
 
 
 class Submarine:
+    """
+    This class is used to access data about the submarine.
+    """
     def __init__(self, position,
                        velocity,
                        orientation_quat,
