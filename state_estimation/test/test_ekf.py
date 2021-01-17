@@ -6,13 +6,13 @@ import unittest
 from mock import MagicMock
 
 from state_estimation.ekf import EKF
-from thruster_control.thrust_computer.thruster_configurations import V28Configuration
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 
 
 class TestEKF(unittest.TestCase):
 
     def test_contruction(self):
-        ekf = EKF(V28Configuration())
+        ekf = EKF(ThrusterConfiguration('v28'))
 
 
 if __name__ == '__main__':
