@@ -107,4 +107,3 @@ class ThrusterConfiguration:
         from thruster_control.real_thrusters.thruster_types import T100Thruster
         # Currently, only the T100Thruster is implemented
         return T100Thruster
-
