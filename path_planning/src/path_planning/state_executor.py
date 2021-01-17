@@ -29,7 +29,7 @@ class StateExecutor:
         """
         self.state.initialize(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
 
-        while not rospy.is_shutdown():]
+        while not rospy.is_shutdown():
             try:
                 self.rate.sleep()
             except rospy.ROSInterruptException:
