@@ -13,6 +13,7 @@ class ThrusterConfiguration:
     """
     def __init__(self, model='v28'):
         self.model = model
+        self.thrust_to_wrench_matrix = None
         self.wrench_to_thrusts_matrix = None
 
     def initialize(self):
@@ -26,6 +27,7 @@ class ThrusterConfiguration:
                                                 yaw=np.radians(thruster_data['yaw']))
                   for thruster_data in thruster_config['thruster_geometry'].values()]
         A = np.column_stack(A_cols)
+        self.thrust_to_wrench_matrix = A
 
         if A.shape[1] == 6:
             # perfectly actuated
@@ -78,6 +80,9 @@ class ThrusterConfiguration:
         else:
             # under-actuated
             raise NotImplementedError()
+
+    def get_thrusts_to_wrench_matrix(self):
+        return self.thrust_to_wrench_matrix
 
     def wrench_to_thrusts(self, wrench_vec):
         """
