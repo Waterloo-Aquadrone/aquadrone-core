@@ -1,5 +1,5 @@
 import rospy
-from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModule, \
+from .ros_modules import ROSControlsModule, ROSStateEstimationModule, \
     ROSWorldEstimationModule, ROSSensorDataModule
 
 
