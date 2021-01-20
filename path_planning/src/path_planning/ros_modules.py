@@ -187,6 +187,7 @@ class ROSWorldEstimationModule:
     def convert_to_dictionary(world_state):
         """
         Returns a dictionary where keys are the names of objects (eg. 'gate', 'pole', etc.).
+        The corresponding values are instances of DS.WorldObject
         """
         dict = {}
         for object_state in world_state.data:
