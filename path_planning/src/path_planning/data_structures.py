@@ -27,6 +27,8 @@ class Vector:
 
     @staticmethod
     def from_numpy(arr):
+        if len(arr) > 3:
+            raise ValueError('Vector can only support 3 dimensions!')
         return Vector(*arr)
 
     def __add__(self, other):
