@@ -21,7 +21,7 @@ class RelativeTravelState(BaseState):
         pass
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        targetPos = world_state.get_world_state()[self.target].position
+        target_pos = world_state.get_world_state()[self.target].position
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         pass
