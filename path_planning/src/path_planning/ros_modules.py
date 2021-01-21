@@ -10,7 +10,7 @@ from sensor_msgs.msg import Image
 
 import data_structures as DS
 
-from aquadrone_msgs.msg import SubState, MotorControls
+from aquadrone_msgs.msg import SubState, MotorControls, WorldState
 import aquadrone_math_utils.orientation_math as OMath
 
 
