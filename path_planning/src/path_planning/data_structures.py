@@ -98,7 +98,6 @@ class WorldObject:
         self.orientation_rpy = orientation_rpy
 
         self.position_var = None
-        self.orientation_quat_var = None
         self.orientation_rpy_var = None
 
     def set_uncertainties(self, position, orientation_rpy):
