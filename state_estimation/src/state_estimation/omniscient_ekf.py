@@ -9,7 +9,7 @@ import aquadrone_math_utils.orientation_math as OMath
 
 class OmniscientEKF:
     # the default names in gazebo for the objects to track
-    DEFAULT_WORLD_MODEL_NAMES = ['pole']
+    DEFAULT_WORLD_MODEL_NAMES = ['blue_pole', 'green_pole', 'white_pole', 'red_pole']
 
     def __init__(self, sub_model_name='aquadrone', world_model_names=None):
         self.sub_model_name = sub_model_name
