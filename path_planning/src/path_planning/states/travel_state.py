@@ -63,7 +63,8 @@ class TravelState(BaseState):
         v_target = sum(v * displacement) * displacement / dist ** 2  # vector velocity in the direction of target
         v_perp = v - v_target  # vector velocity perpendicular to target
 
-        heading = sub.orientation_rpy.z - np.arctan2(displacement[1], displacement[0])
+        angle_to_target = np.arctan2(displacement[1], displacement[0])
+        heading = sub.orientation_rpy.z - angle_to_target
         heading_trig = np.array([np.sin(heading), np.cos(heading)])
         # interpolate k_p and k_d values using elliptical fit between the pure x and pure y values based on heading
         k_p = TravelState.k_p_prod / np.linalg.norm(TravelState.k_p * heading_trig)
@@ -80,10 +81,11 @@ class TravelState(BaseState):
         relative_forces = np.dot(abs_to_sub_transform, absolute_forces)
 
         # yaw to either face target or target angle, depending on how close we are
-        err = self.target_yaw - sub.orientation_rpy.z if dist < TravelState.fine_control_threshold else -heading
-        torque = TravelState.k_p_yaw * err - TravelState.k_d_yaw * sub.angular_velocity.z
+        controls.set_yaw_goal(self.target_yaw if dist < TravelState.fine_control_threshold else angle_to_target)
+        # err = self.target_yaw - sub.orientation_rpy.z if dist < TravelState.fine_control_threshold else -heading
+        # torque = TravelState.k_p_yaw * err - TravelState.k_d_yaw * sub.angular_velocity.z
 
-        controls.planar_move_command(relative_forces[0], relative_forces[1], torque)
+        controls.planar_move_command(relative_forces[0], relative_forces[1])
         controls.set_depth_goal(self.target_z)  # TODO: check sign
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
