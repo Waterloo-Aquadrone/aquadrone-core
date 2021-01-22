@@ -14,7 +14,8 @@ class DataLogger(BaseState):
     This state does not send any commands to any of the systems.
     """
 
-    def __init__(self):
+    def __init__(self, file_name='submarine-log'):
+        self.file_name = file_name
         self.data = []
         self.completed = False
         rospy.on_shutdown(self.shutdown_hook)
@@ -47,7 +48,7 @@ class DataLogger(BaseState):
         self.completed = True
 
     def save_data(self):
-        np.savetxt(self.output_dir + '/submarine-log-' + str(time()) + '.csv', self.data, delimiter=',',
+        np.savetxt(self.output_dir + '/' + self.file_name + '-' + str(time()) + '.csv', self.data, delimiter=',',
                    header='t, x, y, z, r, p, y\n')
 
     def has_completed(self):

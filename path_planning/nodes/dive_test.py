@@ -15,11 +15,14 @@ from path_planning.state_executor import StateExecutor
 if __name__ == "__main__":
     rospy.init_node("dive_test")
 
-    target_depth = 0.5  # m
+    target_depth = 6  # m
 
-    dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(), GoToDepthState(target_depth),
+    dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(),
+                                                   GoToDepthState(target_depth, tolerance=0.05,
+                                                                  velocity_tolerance=0.01),
                                                    WaitingState(10), GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
-    dive_logging_machine = ParallelStateMachine('dive_logger', states=[dive_machine], daemon_states=[DataLogger()])
+    dive_logging_machine = ParallelStateMachine('dive_logger', states=[dive_machine],
+                                                daemon_states=[DataLogger(file_name='dive-test')])
 
     executor = StateExecutor(dive_logging_machine, rate=rospy.Rate(5))
     executor.run()
