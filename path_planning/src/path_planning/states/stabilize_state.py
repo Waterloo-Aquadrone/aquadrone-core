@@ -26,12 +26,27 @@ class StabilizeState(BaseState):
 
     def process(self, t, controls, sub_state, world_state, sensors):
         state = sub_state.get_submarine_state()
-        if np.abs(self.r - state.orientation_rpy.x) < self.tolerance and \
-                np.abs(self.p - state.orientation_rpy.y) < self.tolerance and \
-                np.abs(self.y - state.orientation_rpy.z) < self.tolerance and \
+        if self.abs_angle_difference(self.r, state.orientation_rpy.x) < self.tolerance and \
+                self.abs_angle_difference(self.p, state.orientation_rpy.y) < self.tolerance and \
+                self.abs_angle_difference(self.y, state.orientation_rpy.z) < self.tolerance and \
                 state.angular_velocity.magnitude() < self.velocity_tolerance:
             self.completed = True
             print(self.state_name(), 'stabilized!')
+
+    @staticmethod
+    def abs_angle_difference(a1, a2):
+        diff = a1 - a2
+
+        # remap to [0, 2 * pi)
+        while diff >= 2 * np.pi:
+            diff -= 2 * np.pi
+        while diff < 0:
+            diff += 2 * np.pi
+
+        # if greater than pi, then going the other direction is shorter
+        if diff > np.pi:
+            diff = 2 * np.pi - diff
+        return diff
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         pass
