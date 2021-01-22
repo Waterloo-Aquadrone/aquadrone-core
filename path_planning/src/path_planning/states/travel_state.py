@@ -43,8 +43,8 @@ class TravelState(BaseState):
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.completed = False
         if self.verbose:
-            print('Starting to travel to: (x=' + self.target_x + ', y=' + self.target_y + ', z=' + self.target_z +
-                  ', yaw=' + self.target_yaw + ')')
+            print('Starting to travel to: (x=' + str(self.target_x) + ', y=' + str(self.target_y) + ', z=' +
+                  str(self.target_z) + ', yaw=' + str(self.target_yaw) + ')')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         sub = sub_state.get_submarine_state()
