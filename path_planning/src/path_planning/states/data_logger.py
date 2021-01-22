@@ -4,6 +4,7 @@ from time import time
 import rospy
 import rospkg
 import numpy as np
+import pandas as pd
 from path_planning.states.base_state import BaseState
 
 
@@ -46,6 +47,9 @@ class DataLogger(BaseState):
     def finalize(self, t, controls, sub_state, world_state, sensors):
         self.save_data()
         self.completed = True
+
+    def get_data(self):
+        return pd.DataFrame(self.data, columns=['t', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
     def save_data(self):
         np.savetxt(self.output_dir + '/' + self.file_name + '-' + str(time()) + '.csv', self.data, delimiter=',',
