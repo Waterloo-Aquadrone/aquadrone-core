@@ -16,10 +16,10 @@ from path_planning.state_executor import StateExecutor
 if __name__ == "__main__":
     rospy.init_node("square_test")
 
-    target_depth = 0.5  # m
+    target_depth = 4  # m
     target_radius = 3  # m
     laps = 4
-    
+
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(), GoToDepthState(target_depth),
                                                    WaitingState(10)])
     square_machine = SequentialStateMachine('square', [TravelState(target_radius, 0, target_depth, 90),

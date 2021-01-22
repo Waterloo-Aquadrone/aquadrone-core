@@ -6,17 +6,17 @@ class TravelState(BaseState):
     """
     Moves the submarine to the target position, assuming there are no obstacles in the way.
     """
-    k_p = np.array([1, 1])  # K_p terms for pure movement in x and y directions respectively
+    k_p = np.array([10, 10])  # K_p terms for pure movement in x and y directions respectively
     k_p_prod = np.product(k_p)
     # Note negative sign for k_d must be applied manually
     k_d = np.array([0.1, 0.1])  # K_d terms for pure movement in x and y directions respectively
     k_d_prod = np.product(k_d)
-    k_p_yaw = 1
+    k_p_yaw = 10
     k_d_yaw = 0.1
 
     fine_control_threshold = 0.5  # meters
 
-    def __init__(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
+    def __init__(self, target_x=None, target_y=None, target_z=None, target_yaw=None, verbose=True):
         """
         This class assumes that the target roll and pitch are 0.
         Units are meters and degrees.
@@ -25,6 +25,7 @@ class TravelState(BaseState):
         self.target_y = target_y
         self.target_z = target_z
         self.target_yaw = np.radians(target_yaw)
+        self.verbose = verbose
         self.completed = False
 
     def update_target(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
@@ -41,6 +42,9 @@ class TravelState(BaseState):
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.completed = False
+        if self.verbose:
+            print('Starting to travel to: (x=' + self.target_x + ', y=' + self.target_y + ', z=' + self.target_z +
+                  ', yaw=' + self.target_yaw + ')')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         sub = sub_state.get_submarine_state()
