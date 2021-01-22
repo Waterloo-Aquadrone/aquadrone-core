@@ -19,11 +19,12 @@ class TravelState(BaseState):
     def __init__(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
         """
         This class assumes that the target roll and pitch are 0.
+        Units are meters and degrees.
         """
         self.target_x = target_x
         self.target_y = target_y
         self.target_z = target_z
-        self.target_yaw = target_yaw
+        self.target_yaw = np.radians(target_yaw)
         self.completed = False
 
     def update_target(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
@@ -65,6 +66,7 @@ class TravelState(BaseState):
         k_d = TravelState.k_d_prod / np.linalg.norm(TravelState.k_d * heading_trig)
         k_d_perp = TravelState.k_d_prod / np.linalg.norm(TravelState.k_d[::-1] * heading_trig)
 
+        # TODO: v_perp is undamped in this scheme and will (in theory) oscillate sinusoidally indefinitely
         absolute_forces = k_p * displacement - k_d * v_target - k_d_perp * v_perp
 
         sin = np.sin(sub.orientation_rpy.z)
