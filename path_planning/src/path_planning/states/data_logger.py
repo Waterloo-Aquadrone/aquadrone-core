@@ -23,13 +23,12 @@ class DataLogger(BaseState):
     def shutdown_hook(self):
         """
         This is special to this specific state. If ros is externally shut down,
-        save the data before exitting in this shutdown hook.
+        save the data before exiting in this shutdown hook.
         """
         if not self.completed and len(self.data) > 0:
             self.save_data()
 
-    @staticmethod
-    def state_name():
+    def state_name(self):
         return "data_logger"
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
@@ -39,14 +38,17 @@ class DataLogger(BaseState):
 
     def process(self, t, controls, sub_state, world_state, sensors):
         # for now just log the depth
-        self.data.append([t, sub_state.get_submarine_state().position.z])
+        sub = sub_state.get_submarine_state()
+        self.data.append([t, sub.position.x, sub.position.y, sub.position.z,
+                          sub.orientation_rpy.x, sub.orientation_rpy.y, sub.orientation_rpy.z])
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         self.save_data()
         self.completed = True
 
     def save_data(self):
-        np.savetxt(self.output_dir + '/submarine-log-' + str(time()) + '.csv', self.data, delimiter=',')
+        np.savetxt(self.output_dir + '/submarine-log-' + str(time()) + '.csv', self.data, delimiter=',',
+                   header='t, x, y, z, r, p, y\n')
 
     def has_completed(self):
         return self.completed
