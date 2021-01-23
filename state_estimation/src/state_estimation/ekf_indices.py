@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 class IDx:
     # Position
     Px = 0

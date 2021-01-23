@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 import rostest
 import unittest

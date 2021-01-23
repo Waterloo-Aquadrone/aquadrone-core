@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 from aquadrone_msgs.msg import MotorControls
 from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
