@@ -162,7 +162,7 @@ class EKF:
         :return: The resulting state.
         """
         x = self.fix(x)
-            
+
         total_wrench = self.get_net_wrench(x, u)
 
         # update position
@@ -188,7 +188,7 @@ class EKF:
         :param u: The motor thrusts.
         :return: The total wrench being applied to the submarine.
         """
-	x = self.fix(x)
+        x = self.fix(x)
 
         net_wrench = np.zeros(6)
         net_wrench += np.dot(self.B, u)
@@ -200,8 +200,8 @@ class EKF:
 
         # quadratic drag forces
         net_wrench[:3] += np.array([-0.01 * x[Idx.Vx] * np.abs(x[Idx.Vx]),
-                                   -0.01 * x[Idx.Vy] * np.abs(x[Idx.Vy]),
-                                   -0.01 * x[Idx.Vz] * np.abs(x[Idx.Vz])])
+                                    -0.01 * x[Idx.Vy] * np.abs(x[Idx.Vy]),
+                                    -0.01 * x[Idx.Vz] * np.abs(x[Idx.Vz])])
 
         return net_wrench
 
@@ -288,7 +288,7 @@ class EKF:
                 self.rate.sleep()
             except ROSInterruptException:
                 break
-  
+
             current_t = self.get_t()
             dt = current_t - self.last_t
             self.last_t = current_t
@@ -302,5 +302,5 @@ class EKF:
     def fix(arr):
         if type(arr) == autograd.numpy.numpy_boxes.ArrayBox:
             return arr._value
-	else:
-	    return arr
+        else:
+            return arr
