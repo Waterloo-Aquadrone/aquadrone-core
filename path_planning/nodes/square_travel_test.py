@@ -45,4 +45,5 @@ if __name__ == "__main__":
     plt.xlabel('Time (s)')
     plt.ylabel('Position (m), Angle (radians)')
     plt.title('Travelling in a Square')
+    plt.legend()
     plt.savefig(directory + '/square-travel-' + str(time()) + '.png')
