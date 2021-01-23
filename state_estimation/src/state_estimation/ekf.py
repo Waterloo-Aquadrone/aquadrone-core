@@ -40,7 +40,7 @@ class EKF:
         z[k] = C*x[k] + B*u[k]
         """
 
-        ''' Process Description
+        """ Process Description
 
         Each loop will do a prediction step based on the motor thrusts,
         gravity, buoyancy, drag, and other forces to update the expected
@@ -53,7 +53,7 @@ class EKF:
         Then there is a step where the new expected state/variance is converted
         to a SubState message which is then published.
 
-        '''
+        """
         self.rate = rate if rate is not None else rospy.Rate(20)  # Hz
 
         rospy.Subscriber("motor_command", MotorControls, self.motor_callback)
