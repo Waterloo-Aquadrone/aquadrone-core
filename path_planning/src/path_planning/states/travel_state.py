@@ -32,10 +32,14 @@ class TravelState(BaseState):
         """
         Updates the target to the new location.
         """
-        self.target_x = target_x
-        self.target_y = target_y
-        self.target_z = target_z
-        self.target_yaw = target_yaw
+        if target_x is not None:
+            self.target_x = target_x
+        if target_y is not None:
+            self.target_y = target_y
+        if target_z is not None:
+            self.target_z = target_z
+        if target_yaw is not None:
+            self.target_yaw = target_yaw
 
     def state_name(self):
         return "travel"
