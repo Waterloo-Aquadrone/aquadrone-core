@@ -21,6 +21,7 @@ class ROSControlsModule:
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
+        self.halt_and_catch_fire_service = None
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
@@ -93,7 +94,11 @@ class ROSControlsModule:
         """
         # TODO: setup thrust_distributor.py to have a service that sets all thrusts to 0, then disables future requests.
         #  Alternatively, use a shutdown hook
-        pass
+        if self.halt_and_catch_fire_service is None:
+            rospy.wait_for_service('halt_and_catch_fire')
+            self.halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
+        req = TriggerRequest()
+        self.halt_and_catch_fire_service(req)
 
 
 class ROSStateEstimationModule:
