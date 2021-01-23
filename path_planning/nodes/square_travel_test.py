@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import rospy
+import rospkg
+from time import time
+from matplotlib import pyplot as plt
 
 from path_planning.states.waiting_state import WaitingState
 from path_planning.states.stabilize_state import StabilizeState
@@ -28,7 +31,18 @@ if __name__ == "__main__":
                                                        TravelState(0, 0, target_depth, 0)])
     surface_machine = SequentialStateMachine('surface', [GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
     mission_machine = SequentialStateMachine('main', [dive_machine] + laps * [square_machine] + [surface_machine])
-    dive_logging_machine = ParallelStateMachine('dive_logger', states=[mission_machine], daemon_states=[DataLogger()])
+    data_logger = DataLogger('square-travel')
+    dive_logging_machine = ParallelStateMachine('dive_logger', states=[mission_machine], daemon_states=[data_logger])
 
     executor = StateExecutor(dive_logging_machine, rate=rospy.Rate(5))
     executor.run()
+
+    directory = rospkg.RosPack().get_path('path_planning')
+    data = data_logger.get_data()
+    plt.plot(data['t'], data['x'], label='x')
+    plt.plot(data['t'], data['y'], label='y')
+    plt.plot(data['t'], data['yaw'], label='yaw')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m), Angle (radians)')
+    plt.title('Travelling in a Square')
+    plt.savefig(directory + '/square-travel-' + str(time()) + '.png')
