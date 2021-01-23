@@ -4,4 +4,4 @@ numpy==1.13
 autograd
 pandas
 matplotlib
-adafruit-circuitpython-pca9685
+adafruit-circuitpython-pca9685  # only needed on Jetson
