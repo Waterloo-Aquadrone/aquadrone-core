@@ -1,5 +1,6 @@
 import numpy as np
 from path_planning.states.base_state import BaseState
+from aquadrone_math_utils.angle_math import abs_angle_difference
 
 
 class TravelState(BaseState):
@@ -11,8 +12,6 @@ class TravelState(BaseState):
     # Note negative sign for k_d must be applied manually
     k_d = np.array([0.1, 0.1])  # K_d terms for pure movement in x and y directions respectively
     k_d_prod = np.product(k_d)
-    k_p_yaw = 10
-    k_d_yaw = 0.1
 
     fine_control_threshold = 0.5  # meters
 
@@ -30,7 +29,7 @@ class TravelState(BaseState):
 
     def update_target(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
         """
-        Updates the target to the new location.
+        Updates the target to the new location. Any parameters left as None will be ignored.
         """
         if target_x is not None:
             self.target_x = target_x
@@ -57,17 +56,32 @@ class TravelState(BaseState):
         dist = np.linalg.norm(displacement)
         v = np.array([sub.velocity.x, sub.velocity.y])
 
+        # check to see if we are completed
         if dist < 0.1 and np.linalg.norm(v) < 0.1 and \
-                np.degrees(np.abs(sub.orientation_rpy.z - self.target_yaw)) < 10 and \
+                abs_angle_difference(sub.orientation_rpy.z, self.target_yaw) < 10 and \
                 np.degrees(np.abs(sub.angular_velocity.z)) < 5 and \
                 abs(sub.position.z - self.target_z) < 0.1 and np.abs(sub.velocity.z) < 0.1:
             self.completed = True
             return
 
+        controls.set_depth_goal(self.target_z)
+
+        angle_to_target = np.arctan2(displacement[1], displacement[0])
+        # yaw to either face target or target angle, depending on how close we are
+        if dist > TravelState.fine_control_threshold:
+            controls.set_yaw_goal(angle_to_target)
+            # if we are not yet facing the right direction, focus on that and leave x-y motion until later
+            if abs_angle_difference(sub.orientation_rpy.z, angle_to_target) > 5:
+                controls.planar_move_command(0, 0)
+                return
+        else:
+            controls.set_yaw_goal(self.target_yaw)
+
+        # Calculations for the applied force
+
         v_target = sum(v * displacement) * displacement / dist ** 2  # vector velocity in the direction of target
         v_perp = v - v_target  # vector velocity perpendicular to target
 
-        angle_to_target = np.arctan2(displacement[1], displacement[0])
         heading = sub.orientation_rpy.z - angle_to_target
         heading_trig = np.array([np.sin(heading), np.cos(heading)])
         # interpolate k_p and k_d values using elliptical fit between the pure x and pure y values based on heading
@@ -84,19 +98,7 @@ class TravelState(BaseState):
                                          [sin, cos]])
         relative_forces = np.dot(abs_to_sub_transform, absolute_forces)
 
-        # yaw to either face target or target angle, depending on how close we are
-        controls.set_yaw_goal(self.target_yaw if dist < TravelState.fine_control_threshold else angle_to_target)
-        # err = self.target_yaw - sub.orientation_rpy.z if dist < TravelState.fine_control_threshold else -heading
-        # torque = TravelState.k_p_yaw * err - TravelState.k_d_yaw * sub.angular_velocity.z
-
         controls.planar_move_command(relative_forces[0], relative_forces[1])
-        controls.set_depth_goal(self.target_z)  # TODO: check sign
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
 
     def has_completed(self):
         return self.completed
-
-    def exit_code(self):
-        return 0
