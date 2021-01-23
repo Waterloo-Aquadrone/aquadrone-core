@@ -10,7 +10,7 @@ stability:
         Kd: 30
         limit: 10
     yaw:
-        Kp: 10
+        Kp: 40
         Ki: 0
         Kd: 2000
         limit: 10
