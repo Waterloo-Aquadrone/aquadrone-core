@@ -16,7 +16,7 @@ class TravelState(BaseState):
 
     fine_control_threshold = 0.5  # meters
 
-    def __init__(self, target_x=None, target_y=None, target_z=None, target_yaw=None, verbose=True):
+    def __init__(self, target_x=0, target_y=0, target_z=0, target_yaw=0, verbose=True):
         """
         This class assumes that the target roll and pitch are 0.
         Units are meters and degrees.
