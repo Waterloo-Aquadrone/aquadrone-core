@@ -30,7 +30,7 @@ if __name__ == "__main__":
                                                        TravelState(0, target_radius, target_depth, 270),
                                                        TravelState(0, 0, target_depth, 0)])
     surface_machine = SequentialStateMachine('surface', [GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
-    mission_machine = SequentialStateMachine('main', [dive_machine] + laps * [square_machine] + [surface_machine])
+    mission_machine = SequentialStateMachine('main', [dive_machine] + (laps * [square_machine]) + [surface_machine])
     data_logger = DataLogger('square-travel')
     dive_logging_machine = ParallelStateMachine('dive_logger', states=[mission_machine], daemon_states=[data_logger])
 
