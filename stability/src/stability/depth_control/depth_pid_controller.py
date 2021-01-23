@@ -60,7 +60,10 @@ class DepthPIDController:
     def run(self):
         while not rospy.is_shutdown():
             self.control_loop()
-            self.rate.sleep()
+            try:
+                self.rate.sleep()
+            except rospy.ROSInterruptException:
+                break
 
     def control_loop(self):
         u = -self.pid(self.depth)

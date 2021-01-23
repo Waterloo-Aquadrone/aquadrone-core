@@ -372,7 +372,10 @@ class EKF:
 
     def run(self):
         while not rospy.is_shutdown():
-            self.rate_ctrl.sleep()
+            try:
+                self.rate_ctrl.sleep()
+            except ROSInterruptException:
+                break
 
             self.output()
 

@@ -1,5 +1,5 @@
 import rospy
-from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModule, \
+from .ros_modules import ROSControlsModule, ROSStateEstimationModule, \
     ROSWorldEstimationModule, ROSSensorDataModule
 
 
@@ -30,7 +30,11 @@ class StateExecutor:
         self.state.initialize(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
 
         while not rospy.is_shutdown():
-            self.rate.sleep()
+            try:
+                self.rate.sleep()
+            except rospy.ROSInterruptException:
+                break
+
             self.state.process(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
 
             if self.state.has_completed():

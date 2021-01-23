@@ -79,7 +79,10 @@ class Omniscient_Vision:
 			self.calc_rel_pos()
 			self.get_pub_msg()
 			self.relative_pos_pub.publish(self.pub_msg)
-		self.rate.sleep()
+                        try:
+	        	        self.rate.sleep()
+                        except rospy.ROSInterruptException:
+                                break
 
 if __name__ == "__main__":
     rospy.init_node("omniscient_vision_node")

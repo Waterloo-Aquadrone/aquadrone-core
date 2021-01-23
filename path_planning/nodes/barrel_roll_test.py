@@ -9,6 +9,7 @@ from path_planning.states.barrel_roll import BarrelRoll
 from path_planning.states.exit_code_state import ExitCodeState
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
+from path_planning.states.data_logger import DataLogger
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.markov_chain_state_machine import MarkovChainStateMachine
 from path_planning.state_executor import StateExecutor
@@ -30,11 +31,12 @@ if __name__ == "__main__":
                                (timed_barrel_roll_state, {0: 2, 1: 3}),  # 1
                                (success_surface_machine, {0: -1}),       # 2
                                (failure_surface_machine, {1: -1}))       # 3
-    machine = MarkovChainStateMachine('barrel_roll_test', states, dictionaries)
+    markovMachine = MarkovChainStateMachine('barrel_roll_test', states, dictionaries)
+    machine = ParallelStateMachine('logging_state_machine', [markovMachine], daemon_states=[DataLogger()])
     executor = StateExecutor(machine, rospy.Rate(5))
     executor.run()
 
-    if executor.get_exit_code() == 0:
+    if executor.exit_code() == 0:
         print('Successfully completed barrel roll!')
     else:
         print('Aborted barrel roll attempt!')

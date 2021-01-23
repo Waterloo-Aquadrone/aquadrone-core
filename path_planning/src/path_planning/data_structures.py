@@ -25,6 +25,12 @@ class Vector:
     def from_msg(msg):
         return Vector(msg.x, msg.y, msg.z)
 
+    @staticmethod
+    def from_numpy(arr):
+        if len(arr) > 3:
+            raise ValueError('Vector can only support 3 dimensions!')
+        return Vector(*arr)
+
     def __add__(self, other):
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
@@ -54,6 +60,9 @@ class Quaternion:
 
 
 class Submarine:
+    """
+    This class is used to access data about the submarine.
+    """
     def __init__(self, position,
                        velocity,
                        orientation_quat,
@@ -89,12 +98,10 @@ class WorldObject:
         self.orientation_rpy = orientation_rpy
 
         self.position_var = None
-        self.orientation_quat_var = None
         self.orientation_rpy_var = None
 
-    def set_uncertainties(self, position, orientation_quat, orientation_rpy):
+    def set_uncertainties(self, position, orientation_rpy):
         self.position_var = position
-        self.orientation_quat_var = orientation_quat
         self.orientation_rpy_var = orientation_rpy
 
 

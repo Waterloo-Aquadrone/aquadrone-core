@@ -39,6 +39,7 @@ class RelativeTravelState(BaseState):
         self.travel_state_helper.initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
+
         self.update_travel_state_helper(world_state)
         self.travel_state_helper.process(t, controls, sub_state, world_state, sensors)
 
