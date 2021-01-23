@@ -12,6 +12,7 @@ import data_structures as DS
 
 from aquadrone_msgs.msg import SubState, MotorControls, WorldState
 import aquadrone_math_utils.orientation_math as OMath
+from aquadrone_math_utils.angle_math import normalize_angle
 
 
 class ROSControlsModule:
@@ -24,19 +25,11 @@ class ROSControlsModule:
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
 
-    @staticmethod
-    def normalize_angle(angle):
-        while angle > 2 * np.pi:
-            angle -= 2 * np.pi
-        while angle < 0:
-            angle += 2 * np.pi
-        return angle
-
     def set_orientation_goal(self, r=0, p=0, y=0):
         target = Vector3()
-        target.x = ROSControlsModule.normalize_angle(r)
-        target.y = ROSControlsModule.normalize_angle(p)
-        target.z = ROSControlsModule.normalize_angle(y)
+        target.x = normalize_angle(r)
+        target.y = normalize_angle(p)
+        target.z = normalize_angle(y)
         self.orientation_pub.publish(target)
 
     def set_roll_goal(self, roll):
@@ -48,7 +41,7 @@ class ROSControlsModule:
         :param roll:
         """
         target = Vector3()
-        target.x = ROSControlsModule.normalize_angle(roll)
+        target.x = normalize_angle(roll)
         self.orientation_pub.publish(target)
 
     def set_yaw_goal(self, yaw):
@@ -60,7 +53,7 @@ class ROSControlsModule:
         target = Vector3()
         target.x = 0
         target.y = 0
-        target.z = ROSControlsModule.normalize_angle(yaw)
+        target.z = normalize_angle(yaw)
         self.orientation_pub.publish(target)
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
@@ -121,9 +114,9 @@ class ROSStateEstimationModule:
         orientation_rpy = DS.Vector.from_msg(self.sub_state.orientation_RPY)
         ang_vel = DS.Vector.from_msg(self.sub_state.ang_vel)
 
-        orientation_rpy.x = ROSControlsModule.normalize_angle(orientation_rpy.x)
-        orientation_rpy.y = ROSControlsModule.normalize_angle(orientation_rpy.y)
-        orientation_rpy.z = ROSControlsModule.normalize_angle(orientation_rpy.z)
+        orientation_rpy.x = normalize_angle(orientation_rpy.x)
+        orientation_rpy.y = normalize_angle(orientation_rpy.y)
+        orientation_rpy.z = normalize_angle(orientation_rpy.z)
 
         position_var = DS.Vector.from_msg(self.sub_state.pos_variance)
         velocity_var = DS.Vector.from_msg(self.sub_state.vel_variance)
