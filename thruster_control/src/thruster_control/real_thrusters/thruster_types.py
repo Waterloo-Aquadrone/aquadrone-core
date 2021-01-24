@@ -1,3 +1,4 @@
+from threading import Timer
 import numpy as np
 import rospy
 import rospkg
@@ -28,6 +29,8 @@ class RealThruster:
 
 
 class T100Thruster(RealThruster):
+    PULSE_WIDTH_CALIBRATION_OFFSET = -84  # determined via testing at a frequency of 60 Hz
+
     def __init__(self, pwm_freq, motor_index, pwm, namespace='aquadrone'):
         self.pwm_freq = pwm_freq
         self.pwm = pwm
@@ -39,12 +42,14 @@ class T100Thruster(RealThruster):
         self.pwmSignals_us = pwmData['pwm_width']
         self.motorThrusts_lbs = pwmData['thrust_lbs']
 
+        # send 0 thrust signal to initialize the thruster
         initial_thrust = FloatStamped()
         initial_thrust.data = 0
         self.apply_thrust(initial_thrust)
 
-        rospy.Subscriber("/%s/thrusters/%d/input" % (namespace, motor_index),
-                         FloatStamped, self.apply_thrust, queue_size=1)
+        Timer(7, lambda: rospy.Subscriber("/%s/thrusters/%d/input" % (namespace, motor_index),
+                                          FloatStamped, self.apply_thrust, queue_size=1)) \
+            .start()
 
     def apply_thrust(self, float_stamped):
         thrust = float_stamped.data
@@ -52,6 +57,7 @@ class T100Thruster(RealThruster):
         # lb to us
         # Manually set to 1500 if thrust is 0 because of ambiguity due to deadband
         pulse_us = 1500 if thrust == 0 else np.interp(thrust, self.motorThrusts_lbs, self.pwmSignals_us)
+        pulse_us += T100Thruster.PULSE_WIDTH_CALIBRATION_OFFSET
         pulse_s = pulse_us / 1.0e6
         pulse_perc = pulse_s * self.pwm_freq
         pulse_duty = int(pulse_perc * 0xffff)

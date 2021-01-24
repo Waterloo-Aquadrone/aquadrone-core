@@ -37,7 +37,7 @@ if __name__ == "__main__":
         raise Exception('Invalid config! Expected ' +
                         str(config.get_num_thrusters()) + ' entries but got ' + str(len(i2c_data)))
 
-    pwm_frequency = 400
+    pwm_frequency = 60
 
     i2c = busio.I2C(board.SCL, board.SDA)
     pca = adafruit_pca9685.PCA9685(i2c)
