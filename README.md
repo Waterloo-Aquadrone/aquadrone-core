@@ -58,6 +58,7 @@ that terminal via the following command: source devel/setup.bash. If the catkin 
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 
 that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following 
 command: chmod +x \<file name>.py. This can also be done outside the VM (i.e. on a windows computer) via git with the command: git update-index --chmod=+x \<file name>.py
+- If you are getting weird ROS errors (eg. Gazebo crashing on startup), try updating everything by running the following command in a terminal "sudo atp-get update && sudo apt-get upgrade".
 
 ## Aquadrone Specific Specifications
 

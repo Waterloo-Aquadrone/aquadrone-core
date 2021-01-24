@@ -37,7 +37,7 @@ if __name__ == "__main__":
         raise Exception('Invalid config! Expected ' +
                         str(config.get_num_thrusters()) + ' entries but got ' + str(len(i2c_data)))
 
-    pwm_frequency = 400
+    pwm_frequency = 60
 
     i2c = busio.I2C(board.SCL, board.SDA)
     pca = adafruit_pca9685.PCA9685(i2c)
@@ -48,5 +48,4 @@ if __name__ == "__main__":
         ThrusterClass = config.get_thruster_class(i)
         thrusters.append(ThrusterClass(pwm_frequency, i, pca.channels[i2c_data[i]['i2c_index']]))
 
-    print('Thruster initialization complete')
     rospy.spin()
