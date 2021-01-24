@@ -53,6 +53,8 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    MotorControls.msg
    SubState.msg
+   WorldObjectState.msg
+   WorldState.msg
    Vision.msg
    Vision_Array.msg
    #Vision.msg

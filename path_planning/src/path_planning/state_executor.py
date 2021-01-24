@@ -1,5 +1,6 @@
 import rospy
-from .ros_modules import ROSControlsModule, ROSStateEstimationModule, ROSSensorDataModule
+from .ros_modules import ROSControlsModule, ROSStateEstimationModule, \
+    ROSWorldEstimationModule, ROSSensorDataModule
 
 
 class StateExecutor:
@@ -13,6 +14,7 @@ class StateExecutor:
 
         self.controls = ROSControlsModule()
         self.sub_state = ROSStateEstimationModule()
+        self.world_state = ROSWorldEstimationModule()
         self.sensors = ROSSensorDataModule()
 
         self.exit_code = None
@@ -23,9 +25,9 @@ class StateExecutor:
 
     def run(self):
         """
-        This function will execute the state or state machine, and block until it terminates.
+        This function will execute the state and block until it terminates.
         """
-        self.state.initialize(self.t(), self.controls, self.sub_state, None, self.sensors)
+        self.state.initialize(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
 
         while not rospy.is_shutdown():
             try:
@@ -33,10 +35,10 @@ class StateExecutor:
             except rospy.ROSInterruptException:
                 break
 
-            self.state.process(self.t(), self.controls, self.sub_state, None, self.sensors)
+            self.state.process(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
 
             if self.state.has_completed():
-                self.state.finalize(self.t(), self.controls, self.sub_state, None, self.sensors)
+                self.state.finalize(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
                 self.exit_code = self.state.exit_code()
                 return
 
@@ -45,8 +47,8 @@ class StateExecutor:
         self.controls.halt_and_catch_fire()
         self.exit_code = -1
 
-    def get_exit_code(self):
+    def exit_code(self):
         """
-        :return: The exit code that the state/state machine terminated with.
+        :return: The exit code that the state terminated with.
         """
         return self.exit_code

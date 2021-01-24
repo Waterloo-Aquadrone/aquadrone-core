@@ -10,7 +10,8 @@ from sensor_msgs.msg import Image
 
 import data_structures as DS
 
-from aquadrone_msgs.msg import SubState, MotorControls
+from aquadrone_msgs.msg import SubState, MotorControls, WorldState
+import aquadrone_math_utils.orientation_math as OMath
 
 
 class ROSControlsModule:
@@ -170,6 +171,47 @@ class ROSSensorDataModule:
                     image[y][x][2-p] = int(dat)
 
         return image
+
+
+class ROSWorldEstimationModule:
+    def __init__(self):
+        self.world_state_subscriber = rospy.Subscriber("/world_state_estimation", WorldState, self.world_state_callback)
+        self.world_state = WorldState()
+        self.world_state_est_reset_service = None
+
+    def world_state_callback(self, msg):
+        self.world_state = msg
+
+    def get_world_state(self):
+        return self.convert_to_dictionary(self.world_state)
+
+    @staticmethod
+    def convert_to_dictionary(world_state):
+        """
+        Returns a dictionary where keys are the names of objects (eg. 'gate', 'pole', etc.).
+        The corresponding values are instances of DS.WorldObject
+        """
+        dict = {}
+        for object_state in world_state.data:
+            pose_with_covariance = object_state.pose_with_covariance
+            pose = pose_with_covariance.pose
+            orientation_quat = pose.orientation
+            orientation_RPY = OMath.msg_quaternion_to_euler(orientation_quat)
+
+            variances = np.array(pose_with_covariance.covariance).reshape((6, 6)).diagonal()
+
+            obj = DS.WorldObject(pose.position, orientation_quat, orientation_RPY)
+            obj.set_uncertainties(DS.Vector.from_numpy(variances[:3]),
+                                  DS.Vector.from_numpy(variances[3:]))
+            dict[object_state.identifier] = obj
+        return dict
+
+    def reset_state_estimation(self):
+        if self.world_state_est_reset_service is None:
+            rospy.wait_for_service('reset_world_state_estimation')
+            self.world_state_est_reset_service = rospy.ServiceProxy('reset_world_state_estimation', Trigger)
+        req = TriggerRequest()
+        self.world_state_est_reset_service(req)
 
 
 if __name__ == "__main__":
