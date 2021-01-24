@@ -31,7 +31,7 @@ class ThrusterConfiguration:
 
         if A.shape[1] == 6:
             # perfectly actuated
-            self.wrench_to_thrusts_matrix = np.linalg.inv(A)
+            self.wrench_to_thrusts_matrix = np.linalg.pinv(A)
         elif A.shape[1] > 6:
             # over-actuated
             """
