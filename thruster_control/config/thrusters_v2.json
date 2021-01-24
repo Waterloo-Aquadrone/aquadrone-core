@@ -11,11 +11,11 @@
 	    {"connector": 8, "ESC": 5, "i2c_index":  5, "thruster": "none"}
 	],
 	"thruster_geometry": {
-		"front_right":    {"x":  0.4572, "y": -0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw": -90},
 		"front_left":     {"x":  0.4572, "y":  0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw":  90},
-		"back_right":     {"x": -0.4572, "y": -0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw": -90},
-		"back_left":      {"x": -0.4572, "y":  0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw":  90},
+		"front_right":    {"x":  0.4572, "y": -0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw": -90},
+		"center_left":    {"x":       0, "y":  0.1524, "z": 0, "roll": 0, "pitch":   0, "yaw": 0},
 		"center_right":   {"x":       0, "y": -0.1524, "z": 0, "roll": 0, "pitch":   0, "yaw": 0},
-		"center_left":    {"x":       0, "y":  0.1524, "z": 0, "roll": 0, "pitch":   0, "yaw": 0}
+		"back_left":      {"x": -0.4572, "y":  0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw":  90},
+		"back_right":     {"x": -0.4572, "y": -0.1524, "z": 0, "roll": 0, "pitch": 45, "yaw": -90}
 	}
 }
