@@ -48,6 +48,7 @@ class T100Thruster(RealThruster):
         initial_thrust.data = 0
         self.apply_thrust(initial_thrust)
 
+        # wait 7 seconds before listening to thrust commands so that the thruster has time to initialize
         Timer(7, lambda: rospy.Subscriber("/%s/thrusters/%d/input" % (namespace, motor_index),
                                           FloatStamped, self.apply_thrust, queue_size=1)) \
             .start()
