@@ -48,5 +48,4 @@ if __name__ == "__main__":
         ThrusterClass = config.get_thruster_class(i)
         thrusters.append(ThrusterClass(pwm_frequency, i, pca.channels[i2c_data[i]['i2c_index']]))
 
-    print('Thruster initialization complete')
     rospy.spin()
