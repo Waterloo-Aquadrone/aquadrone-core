@@ -25,7 +25,7 @@ class ThrusterConfiguration:
                                                 roll=np.radians(thruster_data['roll']),
                                                 pitch=np.radians(thruster_data['pitch']),
                                                 yaw=np.radians(thruster_data['yaw']))
-                  for thruster_data in thruster_config['thruster_geometry'].values()]
+                  for thruster_data in thruster_config['thruster_geometry']]
         A = np.column_stack(A_cols)
         self.thrust_to_wrench_matrix = A
 
