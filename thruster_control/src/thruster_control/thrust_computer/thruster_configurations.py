@@ -1,6 +1,6 @@
 import numpy as np
 
-import geometry_helper as gh
+from . import geometry_helper as gh
 
 
 a2 = np.pi / 2.0
