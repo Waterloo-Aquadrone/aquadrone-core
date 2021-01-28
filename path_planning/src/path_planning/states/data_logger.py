@@ -55,14 +55,15 @@ class DataLogger(BaseState):
         self.save_data()
         self.completed = True
 
-    def get_data(self):
-        return pd.DataFrame(self.data, columns=['t', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
-
     def save_data(self):
         np.savetxt(self.output_dir + '/' + self.file_name + '-' + str(time()) + '.csv', self.data, delimiter=',',
                    header='t, x, y, z, r, p, y\n')
-        for data_post_processing_func in self.data_post_processing_funcs:
-            data_post_processing_func(self.data)
+
+        if len(self.data_post_processing_funcs) > 0:
+            # convert to data frame before passing to post_processing_funcs
+            self.data = pd.DataFrame(self.data, columns=['t', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
+            for data_post_processing_func in self.data_post_processing_funcs:
+                data_post_processing_func(self.data)
 
     def has_completed(self):
         return self.completed
