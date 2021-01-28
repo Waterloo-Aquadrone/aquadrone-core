@@ -96,13 +96,15 @@ class ROSControlsModule:
         if self.controls_halted:
             return
 
-        halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
-        req = TriggerRequest()
         try:
+            rospy.wait_for_service('halt_and_catch_fire')
+            halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
+            req = TriggerRequest()
             halt_and_catch_fire_service(req)
         except rospy.ROSInterruptException:
             # rospy is shut down
             print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
+
         self.controls_halted = True
 
 
