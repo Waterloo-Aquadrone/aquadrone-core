@@ -1,4 +1,5 @@
 import rospy
+import rosservice
 import cv2
 import numpy as np
 import time
@@ -92,10 +93,19 @@ class ROSControlsModule:
         Immediately stops all thruster outputs. The sub will naturally rise to the surface via buoyancy,
         and cannot be controlled again until everything is restarted.
         """
-        # TODO: setup thrust_distributor.py to have a service that sets all thrusts to 0, then disables future requests.
-        #  Alternatively, use a shutdown hook
         if self.halt_and_catch_fire_service is None:
-            rospy.wait_for_service('halt_and_catch_fire')
+            try:
+                rospy.wait_for_service('halt_and_catch_fire')
+            except rospy.ROSInterruptException:
+                # We were interrupted before receiving acknowledgement that the halt_and_catch_fire service exists
+                services = rosservice.get_service_list()
+                print('Services:', services)
+                # if the halt_and_catch_fire is already in the list of services we can proceed as normal
+                if 'halt_and_catch_fire' not in services:
+                    # The thrust_distributor service will likely shut itself down anyways so we are probably fine
+                    print('WARNING! Unable to send shutdown command to motors.')
+                    return
+
             self.halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
         req = TriggerRequest()
         self.halt_and_catch_fire_service(req)
