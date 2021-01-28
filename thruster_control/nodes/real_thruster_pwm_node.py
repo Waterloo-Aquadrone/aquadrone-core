@@ -9,7 +9,7 @@ import board
 import busio
 import adafruit_pca9685
 
-from thruster_control.thrust_computer.thruster_configurations import get_configuration
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 
 
 """
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
-    config = get_configuration(model)
+    config = ThrusterConfiguration(model)
     config.initialize()
 
     rospack = rospkg.RosPack()
