@@ -106,8 +106,7 @@ class ROSStateEstimationModule:
         self.sub_state_sub = rospy.Subscriber("/state_estimation", SubState, self.sub_state_callback)
         self.sub_state = SubState()
 
-        rospy.wait_for_service('reset_sub_state_estimation')
-        self.state_est_reset_service = rospy.ServiceProxy('reset_sub_state_estimation', Trigger)
+        self.state_est_reset_service = None
 
     def sub_state_callback(self, msg):
         self.sub_state = msg
@@ -135,6 +134,9 @@ class ROSStateEstimationModule:
         return out
 
     def reset_state_estimation(self):
+        if self.state_est_reset_service is None:
+            rospy.wait_for_service('reset_sub_state_estimation')
+            self.state_est_reset_service = rospy.ServiceProxy('reset_sub_state_estimation', Trigger)
         req = TriggerRequest()
         self.state_est_reset_service(req)
 
