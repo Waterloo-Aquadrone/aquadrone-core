@@ -102,9 +102,9 @@ class ROSControlsModule:
                 print('Services:', services)
                 # if the halt_and_catch_fire is already in the list of services we can proceed as normal
                 if 'halt_and_catch_fire' not in services:
-                    # The thrust_distributor service will likely shut itself down anyways so we are probably fine
-                    print('WARNING! Unable to send shutdown command to motors.')
-                    return
+                    # Even if this fails, the thrust_distributor service will likely shut itself down anyways
+                    print('WARNING! Unable to verify existence of halt_and_catch_fire service. '
+                          'Attempting to shut down thrusters anyways.')
 
             self.halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
         req = TriggerRequest()
