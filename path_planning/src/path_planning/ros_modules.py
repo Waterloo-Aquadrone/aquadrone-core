@@ -22,7 +22,7 @@ class ROSControlsModule:
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
-        self.halt_and_catch_fire_service = None
+        self.controls_halted = False
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
@@ -93,22 +93,17 @@ class ROSControlsModule:
         Immediately stops all thruster outputs. The sub will naturally rise to the surface via buoyancy,
         and cannot be controlled again until everything is restarted.
         """
-        if self.halt_and_catch_fire_service is None:
-            try:
-                rospy.wait_for_service('halt_and_catch_fire')
-            except rospy.ROSInterruptException:
-                # We were interrupted before receiving acknowledgement that the halt_and_catch_fire service exists
-                services = rosservice.get_service_list()
-                print('Services:', services)
-                # if the halt_and_catch_fire is already in the list of services we can proceed as normal
-                if 'halt_and_catch_fire' not in services:
-                    # Even if this fails, the thrust_distributor service will likely shut itself down anyways
-                    print('WARNING! Unable to verify existence of halt_and_catch_fire service. '
-                          'Attempting to shut down thrusters anyways.')
+        if self.controls_halted:
+            return
 
-            self.halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
+        halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
         req = TriggerRequest()
-        self.halt_and_catch_fire_service(req)
+        try:
+            halt_and_catch_fire_service(req)
+        except rospy.ROSInterruptException:
+            # rospy is shut down
+            print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
+        self.controls_halted = True
 
 
 class ROSStateEstimationModule:
