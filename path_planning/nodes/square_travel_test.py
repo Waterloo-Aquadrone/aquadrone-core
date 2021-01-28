@@ -16,6 +16,18 @@ from path_planning.state_machines.parallel_state_machine import ParallelStateMac
 from path_planning.state_executor import StateExecutor
 
 
+def plot_travel_data(data):
+    directory = rospkg.RosPack().get_path('path_planning')
+    plt.plot(data['t'], data['x'], label='x')
+    plt.plot(data['t'], data['y'], label='y')
+    plt.plot(data['t'], data['yaw'], label='yaw')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m), Angle (radians)')
+    plt.title('Travelling in a Square')
+    plt.legend()
+    plt.savefig(directory + '/square-travel-' + str(time()) + '.png')
+
+
 if __name__ == "__main__":
     rospy.init_node("square_test")
 
@@ -31,19 +43,11 @@ if __name__ == "__main__":
                                                        TravelState(0, 0, target_depth, 0)])
     surface_machine = SequentialStateMachine('surface', [GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
     mission_machine = SequentialStateMachine('main', [dive_machine] + (laps * [square_machine]) + [surface_machine])
+
     data_logger = DataLogger('square-travel')
+    data_logger.add_data_post_processing_func(plot_travel_data)
+
     dive_logging_machine = ParallelStateMachine('dive_logger', states=[mission_machine], daemon_states=[data_logger])
 
     executor = StateExecutor(dive_logging_machine, rate=rospy.Rate(5))
     executor.run()
-
-    directory = rospkg.RosPack().get_path('path_planning')
-    data = data_logger.get_data()
-    plt.plot(data['t'], data['x'], label='x')
-    plt.plot(data['t'], data['y'], label='y')
-    plt.plot(data['t'], data['yaw'], label='yaw')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Position (m), Angle (radians)')
-    plt.title('Travelling in a Square')
-    plt.legend()
-    plt.savefig(directory + '/square-travel-' + str(time()) + '.png')

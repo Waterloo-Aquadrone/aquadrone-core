@@ -21,6 +21,13 @@ class DataLogger(BaseState):
         self.completed = False
         rospy.on_shutdown(self.shutdown_hook)
         self.output_dir = rospkg.RosPack().get_path('path_planning')
+        self.data_post_processing_funcs = []
+
+    def add_data_post_processing_func(self, data_post_processing_func):
+        """
+        :param data_post_processing_func: A function that receives the logged data and processes it as needed.
+        """
+        self.data_post_processing_funcs.append(data_post_processing_func)
 
     def shutdown_hook(self):
         """
@@ -54,6 +61,8 @@ class DataLogger(BaseState):
     def save_data(self):
         np.savetxt(self.output_dir + '/' + self.file_name + '-' + str(time()) + '.csv', self.data, delimiter=',',
                    header='t, x, y, z, r, p, y\n')
+        for data_post_processing_func in self.data_post_processing_funcs:
+            data_post_processing_func(self.data)
 
     def has_completed(self):
         return self.completed

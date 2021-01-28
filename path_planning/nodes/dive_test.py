@@ -15,6 +15,15 @@ from path_planning.state_machines.parallel_state_machine import ParallelStateMac
 from path_planning.state_executor import StateExecutor
 
 
+def plot_depth_data(data):
+    directory = rospkg.RosPack().get_path('path_planning')
+    plt.plot(data['t'], data['z'])
+    plt.xlabel('Time (s)')
+    plt.ylabel('Depth (m)')
+    plt.title('Depth Versus Time')
+    plt.savefig(directory + '/depth-control-' + str(time()) + '.png')
+
+
 if __name__ == "__main__":
     rospy.init_node("dive_test")
 
@@ -25,16 +34,10 @@ if __name__ == "__main__":
                                                                   velocity_tolerance=0.01),
                                                    WaitingState(10), GoToDepthState(0), WaitingState(10), ExitCodeState(0)])
     data_logger = DataLogger('dive-test')
+    data_logger.add_data_post_processing_func(plot_depth_data)
+
     dive_logging_machine = ParallelStateMachine('dive_logger', states=[dive_machine],
                                                 daemon_states=[data_logger])
 
     executor = StateExecutor(dive_logging_machine, rate=rospy.Rate(5))
     executor.run()
-
-    directory = rospkg.RosPack().get_path('path_planning')
-    data = data_logger.get_data()
-    plt.plot(data['t'], data['z'])
-    plt.xlabel('Time (s)')
-    plt.ylabel('Depth (m)')
-    plt.title('Depth Versus Time')
-    plt.savefig(directory + '/depth-control-' + str(time()) + '.png')

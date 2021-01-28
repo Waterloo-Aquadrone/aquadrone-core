@@ -15,6 +15,16 @@ from path_planning.state_machines.sequential_state_machine import SequentialStat
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_executor import StateExecutor
 
+
+def plot_yaw_data(data):
+    directory = rospkg.RosPack().get_path('path_planning')
+    plt.plot(data['t'], np.degrees(data['yaw']))
+    plt.xlabel('Time (s)')
+    plt.ylabel('Yaw (deg)')
+    plt.title('Yaw Versus Time')
+    plt.savefig(directory + '/yaw-control-' + str(time()) + '.png')
+
+
 if __name__ == "__main__":
     rospy.init_node("yaw_test")
 
@@ -34,16 +44,10 @@ if __name__ == "__main__":
                                                  GoToDepthState(0), WaitingState(10),
                                                  ExitCodeState(0)])
     data_logger = DataLogger('yaw-test')
+    data_logger.add_data_post_processing_func(plot_yaw_data)
+
     yaw_logging_machine = ParallelStateMachine('yaw_logger', states=[yaw_machine],
                                                daemon_states=[data_logger])
 
     executor = StateExecutor(yaw_logging_machine, rate=rospy.Rate(5))
     executor.run()
-
-    directory = rospkg.RosPack().get_path('path_planning')
-    data = data_logger.get_data()
-    plt.plot(data['t'], np.degrees(data['yaw']))
-    plt.xlabel('Time (s)')
-    plt.ylabel('Yaw (deg)')
-    plt.title('Yaw Versus Time')
-    plt.savefig(directory + '/yaw-control-' + str(time()) + '.png')
