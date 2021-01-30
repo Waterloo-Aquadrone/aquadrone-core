@@ -2,5 +2,5 @@
     <rosparam command="load" file="$(find stability)/config/amaar_stability_params.yaml"/>
 
     <node name="depth_pid" pkg="stability" type="depth_control_node.py" output="screen"/>
-    <node name="orientation_pid" pkg="stability" type="orientation_depth_control_node.py" output="screen"/>
+    <node name="orientation_pid" pkg="stability" type="orientation_control_node.py" output="screen"/>
 </launch>
