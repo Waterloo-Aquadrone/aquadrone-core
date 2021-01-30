@@ -7,6 +7,7 @@ from geometry_msgs.msg import Wrench
 
 from aquadrone_msgs.msg import SubState
 
+from scipy.spatial.transform import Rotation
 import aquadrone_math_utils.orientation_math as OH
 
 
@@ -37,9 +38,7 @@ class DepthPIDController:
         self.depth_goal = 3
         self.pid.setpoint = self.depth_goal
 
-        self.roll = 0
-        self.pitch = 0
-        self.yaw = 0
+        self.quaternion = Rotation.from_matrix(np.identity(3)).as_quat()
 
     def goal_cb(self, msg):
         if msg.data < 0:
@@ -50,9 +49,8 @@ class DepthPIDController:
     def state_cb(self, msg):
         self.depth = -msg.position.z
 
-        self.roll = msg.orientation_RPY.x
-        self.pitch = msg.orientation_RPY.y
-        self.yaw = msg.orientation_RPY.z
+        self.quaternion = np.array([msg.orientation_quat.x, msg.orientation_quat.y,
+                                    msg.orientation_quat.z, msg.orientation_quat.w])
 
     def pressure_to_m(self, p):
         return (p - self.pressure_offset) / self.g
@@ -71,10 +69,7 @@ class DepthPIDController:
         # print("Goal/Depth = %f/%f" % (self.depth_goal, self.depth))
 
     def publish_wrench(self, u):
-
-        vec = np.array([[0], [0], [u]])
-
-        vec = np.dot(OH.RPY_Matrix(self.roll, self.pitch, self.yaw).transpose(), vec)
+        vec = np.dot(Rotation.from_quat(self.quaternion).as_matrix(), np.array([0, 0, u]))
         # print(vec)
 
         msg = Wrench()
