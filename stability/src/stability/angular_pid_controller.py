@@ -41,7 +41,7 @@ class AngularPIDController:
             pid.setpoint = target
 
     def state_cb(self, msg):
-        self.orientation = [msg.orientation.x, msg.orientation.y, msg.orientation.z]
+        self.orientation = [msg.orientation_RPY.x, msg.orientation_RPY.y, msg.orientation_RPY.z]
 
     def run(self):
         control = Wrench()
