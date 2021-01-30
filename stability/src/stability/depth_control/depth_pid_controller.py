@@ -30,7 +30,7 @@ class DepthPIDController:
         self.pressure_offset = 100.0
         self.g = 9.8  # m/s^2
 
-        self.w_pub = rospy.Publisher('/depth_command', Wrench, queue_size=3)
+        self.w_pub = rospy.Publisher('/depth_command', Wrench)
         self.depth_sub = rospy.Subscriber("/depth_control/goal_depth", Float64, callback=self.goal_cb)
 
         # Increasing depth (positive) will be negatively increasing position.z
