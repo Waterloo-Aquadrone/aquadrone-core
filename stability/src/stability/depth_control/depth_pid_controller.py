@@ -8,7 +8,6 @@ from geometry_msgs.msg import Wrench
 from aquadrone_msgs.msg import SubState
 
 from scipy.spatial.transform import Rotation
-import aquadrone_math_utils.orientation_math as OH
 
 
 class DepthPIDController:
@@ -69,7 +68,7 @@ class DepthPIDController:
         # print("Goal/Depth = %f/%f" % (self.depth_goal, self.depth))
 
     def publish_wrench(self, u):
-        vec = np.dot(Rotation.from_quat(self.quaternion).as_matrix(), np.array([0, 0, u]))
+        vec = np.dot(Rotation.from_quat(self.quaternion).inv().as_matrix(), np.array([0, 0, u]))
         # print(vec)
 
         msg = Wrench()
