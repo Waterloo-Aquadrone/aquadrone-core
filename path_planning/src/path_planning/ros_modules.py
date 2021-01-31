@@ -11,52 +11,16 @@ from sensor_msgs.msg import Image
 
 from path_planning import data_structures as DS
 
-from aquadrone_msgs.msg import SubState, MotorControls, WorldState
+from aquadrone_msgs.msg import SubState, MotorControls, WorldState, StabilityTarget
 import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.angle_math import normalize_angle
 
 
 class ROSControlsModule:
     def __init__(self):
-        self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
-        self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
-        self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
+        self.stability_pub = rospy.Publisher("/stability_target", StabilityTarget, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
         self.controls_halted = False
-
-    def set_depth_goal(self, d):
-        self.depth_pub.publish(d)
-
-    def set_orientation_goal(self, r=0, p=0, y=0):
-        target = Vector3()
-        target.x = normalize_angle(r)
-        target.y = normalize_angle(p)
-        target.z = normalize_angle(y)
-        self.orientation_pub.publish(target)
-
-    def set_roll_goal(self, roll):
-        """
-        Commands sent using this method will be persistent. Even if the active state in the state machine changes, the
-        command will continue to be in effect until another one of the same type overrides it.
-        Implicitly sets pitch and yaw to 0.
-
-        :param roll:
-        """
-        target = Vector3()
-        target.x = normalize_angle(roll)
-        self.orientation_pub.publish(target)
-
-    def set_yaw_goal(self, yaw):
-        """
-        Implicitly sets pitch and roll to 0.
-
-        :param yaw:
-        """
-        target = Vector3()
-        target.x = 0
-        target.y = 0
-        target.z = normalize_angle(yaw)
-        self.orientation_pub.publish(target)
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
@@ -68,21 +32,71 @@ class ROSControlsModule:
         :param Fy:
         :param Tz:
         """
-        w = Wrench()
-        w.force.x = Fx
-        w.force.y = Fy
-        w.force.z = 0
-        w.torque.x = 0
-        w.torque.y = 0
-        w.torque.z = Tz
-        self.planar_move_pub.publish(w)
+        raise NotImplemented
+
+    def set_position_target(self, x=0, y=0):
+        target = StabilityTarget()
+        target.commands = [True, True, False] + [False] * 3
+        target.pose.postion.x = x
+        target.pose.postion.y = y
+        self.stability_pub.publish(target)
+
+    def set_depth_goal(self, d):
+        target = StabilityTarget()
+        target.commands = [False, False, True] + [False] * 3
+        target.pose.postion.z = d
+        self.stability_pub.publish(target)
+
+    def set_orientation_goal(self, roll=0, pitch=0, yaw=0):
+        roll = normalize_angle(roll)
+        pitch = normalize_angle(pitch)
+        yaw = normalize_angle(yaw)
+
+        target = StabilityTarget()
+        target.commands = [False] * 3 + [True] * 3
+        orientation_quat = OMath.euler_to_quat(np.array([roll, pitch, yaw]))
+        for var, value in zip('xyzw', orientation_quat):
+            setattr(target.pose.orientation, var, value)
+        self.stability_pub.publish(target)
+
+    def set_roll_goal(self, roll):
+        """
+        Commands sent using this method will be persistent. Even if the active state in the state machine changes, the
+        command will continue to be in effect until another one of the same type overrides it.
+        Does not affect pitch and yaw targets.
+
+        :param roll:
+        """
+        roll = normalize_angle(roll)
+
+        target = StabilityTarget()
+        target.commands = [False] * 3 + [True, False, False]
+        orientation_quat = OMath.euler_to_quat(np.array([roll, 0, 0]))
+        for var, value in zip('xyzw', orientation_quat):
+            setattr(target.pose.orientation, var, value)
+        self.stability_pub.publish(target)
+
+    def set_yaw_goal(self, yaw):
+        """
+        Does not affect pitch and roll targets.
+
+        :param yaw:
+        """
+        yaw = normalize_angle(yaw)
+
+        target = StabilityTarget()
+        target.commands = [False] * 3 + [False, False, True]
+        orientation_quat = OMath.euler_to_quat(np.array([0, 0, yaw]))
+        for var, value in zip('xyzw', orientation_quat):
+            setattr(target.pose.orientation, var, value)
+        self.stability_pub.publish(target)
 
     def send_direct_motor_thrusts(self, thrusts):
         """
         This command will only work if the thrust_computer node is not running.
         Otherwise, this command will immediately be overwritten.
 
-        :param thrusts: Array of 8 floats for the 8 motors.
+        :param thrusts: Array of floats for each of the motors.
         """
         msg = MotorControls()
         msg.motorThrusts = thrusts
