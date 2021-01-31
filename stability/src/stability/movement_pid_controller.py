@@ -9,7 +9,7 @@ from aquadrone_msgs.msg import SubState
 from scipy.spatial.transform import Rotation
 
 
-class OrientationPIDController:
+class MovementPIDController:
     def __init__(self, rate=None):
         if rate is None:
             self.rate = rospy.Rate(10)

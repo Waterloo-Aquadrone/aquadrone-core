@@ -1,4 +1,16 @@
 stability:
+    x:
+        Kp: 100
+        Ki: 0.0
+        Kd: 0
+    y:
+        Kp: 100
+        Ki: 0.0
+        Kd: 0
+    depth:
+        Kp: 100
+        Ki: 0.0
+        Kd: 0
     roll:
         Kp: 75
         Ki: 0.0
@@ -14,7 +26,3 @@ stability:
         Ki: 0
         Kd: 2000
         limit: 10
-    depth:
-        Kp: 100
-        Ki: 0.0
-        Kd: 0
