@@ -52,6 +52,7 @@ class TravelState(BaseState):
     def process(self, t, controls, sub_state, world_state, sensors):
         controls.set_movement_target(self.target_x, self.target_y)
         controls.set_depth_goal(self.target_z)
+        controls.set_yaw_goal(self.target_yaw)
 
         sub = sub_state.get_submarine_state()
         displacement = np.array([self.target_x - sub.position.x,
