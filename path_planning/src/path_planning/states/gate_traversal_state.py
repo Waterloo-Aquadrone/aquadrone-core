@@ -1,3 +1,5 @@
+from path_planning.states.base_state import BaseState
+
 class GateTraversalState(BaseState):
     """
     Each state should define how it interacts with the depth and orientation control systems, because those are
