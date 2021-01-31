@@ -2,7 +2,7 @@ import numpy as np
 
 from geometry_msgs.msg import Wrench
 
-import aquadrone_math_utils.orientation_math as OH
+import aquadrone_math_utils.orientation_math as OMath
 
 
 def vector_to_wrench(v):
@@ -28,7 +28,7 @@ def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
 
 
 def get_thruster_force(r, p, y):
-    return np.dot(OH.RPY_Matrix(r, p, y), thruster_force_dir_vec())
+    return np.dot(OMath.RPY_Matrix(r, p, y), thruster_force_dir_vec())
 
 
 def thruster_force_dir_vec():
