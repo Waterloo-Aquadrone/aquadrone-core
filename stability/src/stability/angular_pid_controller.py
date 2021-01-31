@@ -34,7 +34,7 @@ class AngularPIDController:
         self.orientation = [0, 0, 0]  # roll, pitch, yaw
         rospy.Subscriber("/orientation_target", Vector3, callback=self.goal_cb)
         rospy.Subscriber('/state_estimation', SubState, callback=self.state_cb)
-        self.pub = rospy.Publisher('/stability_command', Wrench)
+        self.pub = rospy.Publisher('/stability_command', Wrench, queue_size=1)
 
     def goal_cb(self, msg):
         for pid, target in zip(self.pids, [msg.x, msg.y, msg.z]):
