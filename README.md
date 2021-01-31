@@ -1,9 +1,8 @@
 # Aquadrone 2020
 
 ## First Time Setup and Usage instructions
-1. Download VirtualBox from this link: https://www.virtualbox.org/wiki/Downloads
-2. Download the Virtual Machine (VM) files from this link (4.2 GB): 
-https://www.dropbox.com/sh/nf4nli9wn51kszc/AAD_YnMlaH_XO5i9ndWCLnxYa?dl=0&preview=Ubuntu1604ROSKineticSmall.zip
+1. Download VirtualBox from this link: https://www.virtualbox.org/wiki/Downloads. The host OS is the operating system that you are running on your computer.
+2. Download the Virtual Machine (VM) files from [this link](https://drive.google.com/file/d/1xM4aIALtoE3ixZoi0Vh-BiYUIwNcSH-c/view?usp=sharing) (8.41 GB): 
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose **Aquadrone VM.vbox** in the file chooser dialog.
 5. Click the **Aquadrone VM** tab that just appeared. 
