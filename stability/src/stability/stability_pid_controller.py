@@ -62,8 +62,7 @@ class StabilityPIDController:
         orientation_target_quat = msg.pose.orientation
         orientation_target_rpy = quaternion_to_euler(np.array([orientation_target_quat.x, orientation_target_quat.y,
                                                                orientation_target_quat.z, orientation_target_quat.w]))
-        for pid, command, target in zip(self.pids[3:], msg.commands[3:],
-                                        [orientation_target_rpy.x, orientation_target_rpy.y, orientation_target_rpy.z]):
+        for pid, command, target in zip(self.pids[3:], msg.commands[3:], orientation_target_rpy):
             if command:
                 pid.setpoint = target
 
