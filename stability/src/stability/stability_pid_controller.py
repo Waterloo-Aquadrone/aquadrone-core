@@ -50,7 +50,7 @@ class StabilityPIDController:
         self.w_pub = rospy.Publisher('/stability_command', Wrench, queue_size=1)
 
     def goal_cb(self, msg):
-        if msg.position.z < 0:
+        if msg.pose.position.z < 0:
             print('Warning: z < 0 corresponds to above water!')
 
         position_target = msg.pose.position
