@@ -105,9 +105,12 @@ before_script:
   - cd ../../
   - rosdep install --from-paths src --ignore-src --rosdistro=noetic -y --skip-keys "gazebo gazebo_msgs gazebo_plugins gazebo_ros gazebo_ros_control gazebo_ros_pkgs"
   # Switch uuv_simulator to ROS Noetic branch
-  - cd src/uuv_simulator
-  - git checkout --track origin/noetic-devel
-  - cd ../../
+#  - cd src/uuv_simulator
+#  - git checkout --track origin/noetic-devel
+#  - cd ../../
+  - cd src
+  - rm -rf uuv_simulator
+  - cd ../
 
 # Compile and test (mark the build as failed if any step fails). If the
 # CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
