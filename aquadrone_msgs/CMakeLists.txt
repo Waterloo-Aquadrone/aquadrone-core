@@ -57,8 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
    WorldState.msg
    Vision.msg
    Vision_Array.msg
-   #Vision.msg
-#   Message2.msg
+   StabilityTarget.msg
  )
 
 ## Generate services in the 'srv' folder
