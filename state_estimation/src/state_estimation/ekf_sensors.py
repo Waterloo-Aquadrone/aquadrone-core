@@ -11,7 +11,7 @@ from sensor_msgs.msg import Imu, FluidPressure
 
 from aquadrone_msgs.msg import SubState, MotorControls
 
-from ekf_indices import IDx as IDx
+from state_estimation.ekf_indices import IDx as IDx
 
 class BaseSensorListener(object):
     # https://en.wikipedia.org/wiki/Extended_Kalman_filter
