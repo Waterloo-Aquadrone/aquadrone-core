@@ -2,3 +2,6 @@ simple-pid
 mock
 numpy
 autograd
+pandas
+matplotlib
+# adafruit-circuitpython-pca9685  # only needed on Jetson, will cause Travis CI build to fail
