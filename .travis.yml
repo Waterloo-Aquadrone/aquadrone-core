@@ -69,7 +69,7 @@ before_install:
   - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
   - sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   - sudo apt update
-  - sudo apt upgrade -y
+  # - sudo apt upgrade -y  # This is disabled for now because it is very slow and not necessary
   - sudo apt install ros-noetic-desktop-full
   - sudo apt install python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
   - sudo rosdep init
@@ -108,8 +108,6 @@ before_script:
   - cd src/uuv_simulator
   - git checkout --track origin/noetic-devel
   - cd ../../
-  # initialize the catkin workspace
-  - catkin init
 
 # Compile and test (mark the build as failed if any step fails). If the
 # CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
@@ -121,6 +119,7 @@ before_script:
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
+  - catkin init
   - cd ~/aquadrone2020_dev_workspace/catkin_ws
   - catkin clean -y
   - catkin build
