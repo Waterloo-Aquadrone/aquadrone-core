@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 from aquadrone_msgs.msg import SubState, WorldObjectState, WorldState
 from gazebo_msgs.msg import ModelStates

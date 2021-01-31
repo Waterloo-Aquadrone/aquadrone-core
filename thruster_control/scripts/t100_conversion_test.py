@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from real_thruster_types.thruster_types import T100Thruster
 from uuv_gazebo_ros_plugins_msgs.msg import FloatStamped

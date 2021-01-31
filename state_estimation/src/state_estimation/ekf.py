@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 import math
 #import numpy as np
@@ -15,8 +13,8 @@ from std_srvs.srv import Trigger, TriggerResponse
 
 from aquadrone_msgs.msg import SubState, MotorControls
 
-from ekf_indices import IDx as IDx
-from ekf_sensors import IMUSensorListener, PressureSensorListener
+from state_estimation.ekf_indices import IDx as IDx
+from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
 
 
