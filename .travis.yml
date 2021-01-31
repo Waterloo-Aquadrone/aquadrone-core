@@ -96,7 +96,7 @@ before_script:
   # Install Aquadrone pip_requirements
   - cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
   - pip3 install -r pip_requirements.txt
-  - cd ../
+  - cd ../../
 
 # Compile and test (mark the build as failed if any step fails). If the
 # CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
