@@ -16,11 +16,21 @@ class RelativeTravelState(BaseState):
         :param relative_yaw: This parameter is the yaw that makes the submarine face the target plus the added relative yaw
         """
         self.target = target
+        self.travel_state_helper = TravelState()
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.z_offset = z_offset
         self.relative_yaw = relative_yaw
-        self.travel_state_helper = TravelState()
+        self.absolute_target_yaw = math.atan2(-y_offset, -x_offset) + relative_yaw
+        
+    def update_target(self, target):
+        self.target = target
+        
+    def update_target_offset(self, x_offset=0, y_offset=0, z_offset=0, relative_yaw=0):
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.z_offset = z_offset
+        self.relative_yaw = relative_yaw
         self.absolute_target_yaw = math.atan2(-y_offset, -x_offset) + relative_yaw
 
     def update_travel_state_helper(self, world_state):
