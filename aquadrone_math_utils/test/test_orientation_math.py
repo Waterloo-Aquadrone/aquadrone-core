@@ -7,13 +7,10 @@ from mock import MagicMock
 
 import aquadrone_math_utils.orientation_math as OMath
 
-class TestOMath(unittest.TestCase):
 
+class TestOMath(unittest.TestCase):
     def smoke_test(self):
-        OMath.Roll(0)
-        OMath.Pitch(0)
-        OMath.Yaw(0)
-        
+        OMath.RPY_Matrix(0, 0, 0)
 
 
 if __name__ == '__main__':
