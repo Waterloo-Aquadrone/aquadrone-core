@@ -9,7 +9,7 @@ from std_srvs.srv import Trigger, TriggerRequest
 from geometry_msgs.msg import Vector3, Wrench
 from sensor_msgs.msg import Image
 
-import data_structures as DS
+from path_planning import data_structures as DS
 
 from aquadrone_msgs.msg import SubState, MotorControls, WorldState
 import aquadrone_math_utils.orientation_math as OMath
