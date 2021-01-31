@@ -91,25 +91,11 @@ install:
   - cd aquadrone2020_dev_workspace/catkin_ws/src
   # Copy the version of the repo being tested to the workspace
   - mv $CI_SOURCE_PATH .
-  # Clone uuv_simulator
-  - git clone https://github.com/tdenewiler/uuv_simulator.git
 
 before_script:
   # Install Aquadrone pip_requirements
   - cd ~/aquadrone2020_dev_workspace/catkin_ws/src/aquadrone2020
   - pip3 install -r pip_requirements.txt
-  - cd ../
-  # Install uuv_simulator rosdep requirements
-  - cd uuv_simulator
-  - git checkout --track origin/rosdep-python3
-  - cd ../../
-  - rosdep install --from-paths src --ignore-src --rosdistro=noetic -y --skip-keys "gazebo gazebo_msgs gazebo_plugins gazebo_ros gazebo_ros_control gazebo_ros_pkgs"
-  # Switch uuv_simulator to ROS Noetic branch
-#  - cd src/uuv_simulator
-#  - git checkout --track origin/noetic-devel
-#  - cd ../../
-  - cd src
-  - rm -rf uuv_simulator
   - cd ../
 
 # Compile and test (mark the build as failed if any step fails). If the
