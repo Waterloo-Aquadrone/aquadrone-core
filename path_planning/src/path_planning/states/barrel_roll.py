@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import numpy as np
 from path_planning.states.base_state import BaseState
 
