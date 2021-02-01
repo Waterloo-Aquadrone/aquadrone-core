@@ -49,9 +49,8 @@ class OrientationPIDController:
     def run(self):
         control = Wrench()
         while not rospy.is_shutdown():
-            rotation_error = self.rotation * self.target_rotation.inv()
-            rpy_error = rotation_error.as_euler('zyx')
-            absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, rpy_error)])
+            quat_error = (self.target_rotation * self.rotation.inv()).as_quat()[1:]
+            absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, quat_error)])
             relative_torque = np.dot(self.rotation.inv().as_matrix(), absolute_torque)
             for i, var in enumerate(['x', 'y', 'z']):
                 setattr(control.torque, var, relative_torque[i])
