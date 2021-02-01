@@ -20,6 +20,7 @@ class OrientationPIDController:
         if rate is None:
             self.rate = rospy.Rate(10)
 
+        # the pids will be in the absolute intrinsic-rotation coordinate frame
         self.pids = []
         for angle in ['roll', 'pitch', 'yaw']:
             Kp = rospy.get_param('/stability/' + angle + '/Kp')
@@ -32,26 +33,26 @@ class OrientationPIDController:
             pid.error_map = OrientationPIDController.normalize_angular_error
             self.pids.append(pid)
 
-        self.quaternion = np.array([0, 0, 0, 1])
-        self.orientation = np.array([0, 0, 0])  # roll, pitch, yaw
+        self.rotation = Rotation.identity()
+        self.target_rotation = Rotation.identity()
         rospy.Subscriber("/orientation_target", Vector3, callback=self.goal_cb)
         rospy.Subscriber('/state_estimation', SubState, callback=self.state_cb)
         self.pub = rospy.Publisher('/stability_command', Wrench, queue_size=1)
 
     def goal_cb(self, msg):
-        for pid, target in zip(self.pids, [msg.x, msg.y, msg.z]):
-            pid.setpoint = target
+        self.target_rotation = Rotation.from_euler('ZYX', np.array([msg.z, -msg.y, msg.x]))
 
     def state_cb(self, msg):
-        self.quaternion = np.array([msg.orientation_quat.x, msg.orientation_quat.y,
-                                    msg.orientation_quat.z, msg.orientation_quat.w])
-        self.orientation = np.array([msg.orientation_RPY.x, msg.orientation_RPY.y, msg.orientation_RPY.z])
+        self.rotation = Rotation.from_quat(np.array([msg.orientation_quat.x, msg.orientation_quat.y,
+                                                     msg.orientation_quat.z, msg.orientation_quat.w]))
 
     def run(self):
         control = Wrench()
         while not rospy.is_shutdown():
-            absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, self.orientation)])
-            relative_torque = np.dot(Rotation.from_quat(self.quaternion).inv().as_matrix(), absolute_torque)
+            rotation_error = self.rotation * self.target_rotation.inv()
+            rpy_error = rotation_error.as_euler('zyx')
+            absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, rpy_error)])
+            relative_torque = np.dot(self.rotation.inv().as_matrix(), absolute_torque)
             for i, var in enumerate(['x', 'y', 'z']):
                 setattr(control.torque, var, relative_torque[i])
             self.pub.publish(control)
