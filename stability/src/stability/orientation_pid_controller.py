@@ -27,7 +27,7 @@ class OrientationPIDController:
             Ki = rospy.get_param('/stability/' + angle + '/Ki')
             Kd = rospy.get_param('/stability/' + angle + '/Kd')
 
-            pid = PID(Kp, Ki, Kd)
+            pid = PID(Kp, 0, 0)
             pid.output_limits = (-50, 50)
             pid.setpoint = 0  # all target angles initialized to 0
             pid.error_map = OrientationPIDController.normalize_angular_error
