@@ -30,7 +30,7 @@ class OrientationPIDController:
             pid = PID(Kp, 0, 0)
             pid.output_limits = (-50, 50)
             pid.setpoint = 0  # all target angles initialized to 0
-            pid.error_map = OrientationPIDController.normalize_angular_error
+            # pid.error_map = OrientationPIDController.normalize_angular_error
             self.pids.append(pid)
 
         self.rotation = Rotation.identity()
