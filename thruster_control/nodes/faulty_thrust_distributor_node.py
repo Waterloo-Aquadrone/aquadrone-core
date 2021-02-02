@@ -1,12 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
-import traceback
 
-from thruster_control.thrust_computer.thruster_configurations import get_configuration
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 from thruster_control.thrust_distributor.faulty_thrust_distributor import FaultyThrustDistributor
-
-
 
 
 """
@@ -22,7 +19,9 @@ if __name__ == "__main__":
 
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
-    num = get_configuration(model).get_num_thrusters()
+    config = ThrusterConfiguration(model)
+    config.initialize()
+    num = config.get_num_thrusters()
 
     distributor = FaultyThrustDistributor(num, namespace="aquadrone")
     distributor.run()

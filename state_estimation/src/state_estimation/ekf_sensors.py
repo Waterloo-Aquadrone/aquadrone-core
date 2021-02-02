@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-
 import rospy
 
 # import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
@@ -8,7 +6,7 @@ from autograd import jacobian
 
 from sensor_msgs.msg import Imu, FluidPressure
 
-from ekf_indices import Idx
+from state_estimation.ekf_indices import Idx
 
 
 class BaseSensorListener(object):

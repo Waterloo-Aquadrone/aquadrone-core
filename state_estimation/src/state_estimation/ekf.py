@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 import scipy.linalg
 
@@ -14,8 +12,8 @@ from std_srvs.srv import Trigger, TriggerResponse
 
 from aquadrone_msgs.msg import SubState, MotorControls
 
-from ekf_indices import Idx
-from ekf_sensors import IMUSensorListener, PressureSensorListener
+from state_estimation.ekf_indices import Idx
+from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
 
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)

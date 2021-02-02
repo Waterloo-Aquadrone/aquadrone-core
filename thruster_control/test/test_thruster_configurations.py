@@ -1,19 +1,19 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import rostest
 import unittest
 from mock import MagicMock
 
-from thruster_control.thrust_computer.thruster_configurations import V1Configuration, V2Configuration, V28Configuration
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 
 
 class TestV1Configuration(unittest.TestCase):
     def test_contruction(self):
-        c = V1Configuration()
+        c = ThrusterConfiguration('v1')
 
     def smoke_test(self):
-        c = V1Configuration()
+        c = ThrusterConfiguration('v1')
         c.initialize()
         c.get_num_thrusters()
         c.get_thrusts_to_wrench_matrix()
@@ -22,10 +22,10 @@ class TestV1Configuration(unittest.TestCase):
 
 class TestV2Configuration(unittest.TestCase):
     def test_contruction(self):
-        c = V2Configuration()
+        c = ThrusterConfiguration('v2')
 
     def smoke_test(self):
-        c = V2Configuration()
+        c = ThrusterConfiguration('v2')
         c.initialize()
         c.get_num_thrusters()
         c.get_thrusts_to_wrench_matrix()
@@ -34,10 +34,10 @@ class TestV2Configuration(unittest.TestCase):
 
 class TestV28Configuration(unittest.TestCase):
     def test_contruction(self):
-        c = V28Configuration()
+        c = ThrusterConfiguration('v28')
 
     def smoke_test(self):
-        c = V28Configuration()
+        c = ThrusterConfiguration('v28')
         c.initialize()
         c.get_num_thrusters()
         c.get_thrusts_to_wrench_matrix()

@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
-from thruster_control.thrust_computer.thruster_configurations import get_configuration
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 from thruster_control.thrust_computer.thrust_computer import ThrustComputer
 
 """
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     # Assume V28 by default
     model = rospy.get_param("model", "v28")
-    config = get_configuration(model)
+    config = ThrusterConfiguration(model)
     config.initialize()
 
     thrust_computer = ThrustComputer(config)

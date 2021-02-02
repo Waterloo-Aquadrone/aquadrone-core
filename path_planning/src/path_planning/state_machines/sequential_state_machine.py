@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from path_planning.states.base_state import BaseState
 
 

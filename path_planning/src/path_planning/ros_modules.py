@@ -1,4 +1,5 @@
 import rospy
+import rosservice
 import cv2
 import numpy as np
 import time
@@ -8,34 +9,29 @@ from std_srvs.srv import Trigger, TriggerRequest
 from geometry_msgs.msg import Vector3, Wrench
 from sensor_msgs.msg import Image
 
-import data_structures as DS
+from path_planning import data_structures as DS
 
-from aquadrone_msgs.msg import SubState, MotorControls
+from aquadrone_msgs.msg import SubState, MotorControls, WorldState
+import aquadrone_math_utils.orientation_math as OMath
+from aquadrone_math_utils.angle_math import normalize_angle
 
 
 class ROSControlsModule:
     def __init__(self):
         self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
-        self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
+        self.planar_move_pub = rospy.Publisher("/movement_target", Vector3, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
+        self.controls_halted = False
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
 
-    @staticmethod
-    def normalize_angle(angle):
-        while angle > 2 * np.pi:
-            angle -= 2 * np.pi
-        while angle < 0:
-            angle += 2 * np.pi
-        return angle
-
-    def set_orientation_goal(self, r=0, p=0, y=0):
+    def set_orientation_goal(self, roll=0, pitch=0, yaw=0):
         target = Vector3()
-        target.x = ROSControlsModule.normalize_angle(r)
-        target.y = ROSControlsModule.normalize_angle(p)
-        target.z = ROSControlsModule.normalize_angle(y)
+        target.x = normalize_angle(roll)
+        target.y = normalize_angle(pitch)
+        target.z = normalize_angle(yaw)
         self.orientation_pub.publish(target)
 
     def set_roll_goal(self, roll):
@@ -47,7 +43,7 @@ class ROSControlsModule:
         :param roll:
         """
         target = Vector3()
-        target.x = ROSControlsModule.normalize_angle(roll)
+        target.x = normalize_angle(roll)
         self.orientation_pub.publish(target)
 
     def set_yaw_goal(self, yaw):
@@ -59,33 +55,27 @@ class ROSControlsModule:
         target = Vector3()
         target.x = 0
         target.y = 0
-        target.z = ROSControlsModule.normalize_angle(yaw)
+        target.z = normalize_angle(yaw)
         self.orientation_pub.publish(target)
+
+    def set_movement_target(self, x=0, y=0):
+        target = Vector3()
+        target.x = x
+        target.y = y
+        self.planar_move_pub.publish(target)
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
-        Commands sent using this method will expire after a configurable amount of time. This should be repeated called
-        in the process loop.
-
-        :param Fx:
-        :param Fy:
-        :param Tz:
+        This is no longer supported! Use set_movement_target instead.
         """
-        w = Wrench()
-        w.force.x = Fx
-        w.force.y = Fy
-        w.force.z = 0
-        w.torque.x = 0
-        w.torque.y = 0
-        w.torque.z = Tz
-        self.planar_move_pub.publish(w)
+        raise NotImplemented
 
     def send_direct_motor_thrusts(self, thrusts):
         """
         This command will only work if the thrust_computer node is not running.
         Otherwise, this command will immediately be overwritten.
 
-        :param thrusts: Array of 8 floats for the 8 motors.
+        :param thrusts: Array of floats for each of the motors.
         """
         msg = MotorControls()
         msg.motorThrusts = thrusts
@@ -96,9 +86,19 @@ class ROSControlsModule:
         Immediately stops all thruster outputs. The sub will naturally rise to the surface via buoyancy,
         and cannot be controlled again until everything is restarted.
         """
-        # TODO: setup thrust_distributor.py to have a service that sets all thrusts to 0, then disables future requests.
-        #  Alternatively, use a shutdown hook
-        pass
+        if self.controls_halted:
+            return
+
+        try:
+            rospy.wait_for_service('halt_and_catch_fire')
+            halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
+            req = TriggerRequest()
+            halt_and_catch_fire_service(req)
+        except rospy.ROSInterruptException:
+            # rospy is shut down
+            print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
+
+        self.controls_halted = True
 
 
 class ROSStateEstimationModule:
@@ -106,8 +106,7 @@ class ROSStateEstimationModule:
         self.sub_state_sub = rospy.Subscriber("/state_estimation", SubState, self.sub_state_callback)
         self.sub_state = SubState()
 
-        rospy.wait_for_service('reset_sub_state_estimation')
-        self.state_est_reset_service = rospy.ServiceProxy('reset_sub_state_estimation', Trigger)
+        self.state_est_reset_service = None
 
     def sub_state_callback(self, msg):
         self.sub_state = msg
@@ -119,9 +118,9 @@ class ROSStateEstimationModule:
         orientation_rpy = DS.Vector.from_msg(self.sub_state.orientation_RPY)
         ang_vel = DS.Vector.from_msg(self.sub_state.ang_vel)
 
-        orientation_rpy.x = ROSControlsModule.normalize_angle(orientation_rpy.x)
-        orientation_rpy.y = ROSControlsModule.normalize_angle(orientation_rpy.y)
-        orientation_rpy.z = ROSControlsModule.normalize_angle(orientation_rpy.z)
+        orientation_rpy.x = normalize_angle(orientation_rpy.x)
+        orientation_rpy.y = normalize_angle(orientation_rpy.y)
+        orientation_rpy.z = normalize_angle(orientation_rpy.z)
 
         position_var = DS.Vector.from_msg(self.sub_state.pos_variance)
         velocity_var = DS.Vector.from_msg(self.sub_state.vel_variance)
@@ -135,6 +134,9 @@ class ROSStateEstimationModule:
         return out
 
     def reset_state_estimation(self):
+        if self.state_est_reset_service is None:
+            rospy.wait_for_service('reset_sub_state_estimation')
+            self.state_est_reset_service = rospy.ServiceProxy('reset_sub_state_estimation', Trigger)
         req = TriggerRequest()
         self.state_est_reset_service(req)
 
@@ -168,6 +170,47 @@ class ROSSensorDataModule:
                     image[y][x][2-p] = int(dat)
 
         return image
+
+
+class ROSWorldEstimationModule:
+    def __init__(self):
+        self.world_state_subscriber = rospy.Subscriber("/world_state_estimation", WorldState, self.world_state_callback)
+        self.world_state = WorldState()
+        self.world_state_est_reset_service = None
+
+    def world_state_callback(self, msg):
+        self.world_state = msg
+
+    def get_world_state(self):
+        return self.convert_to_dictionary(self.world_state)
+
+    @staticmethod
+    def convert_to_dictionary(world_state):
+        """
+        Returns a dictionary where keys are the names of objects (eg. 'gate', 'pole', etc.).
+        The corresponding values are instances of DS.WorldObject
+        """
+        dict = {}
+        for object_state in world_state.data:
+            pose_with_covariance = object_state.pose_with_covariance
+            pose = pose_with_covariance.pose
+            orientation_quat = pose.orientation
+            orientation_RPY = OMath.msg_quaternion_to_euler(orientation_quat)
+
+            variances = np.array(pose_with_covariance.covariance).reshape((6, 6)).diagonal()
+
+            obj = DS.WorldObject(pose.position, orientation_quat, orientation_RPY)
+            obj.set_uncertainties(DS.Vector.from_numpy(variances[:3]),
+                                  DS.Vector.from_numpy(variances[3:]))
+            dict[object_state.identifier] = obj
+        return dict
+
+    def reset_state_estimation(self):
+        if self.world_state_est_reset_service is None:
+            rospy.wait_for_service('reset_world_state_estimation')
+            self.world_state_est_reset_service = rospy.ServiceProxy('reset_world_state_estimation', Trigger)
+        req = TriggerRequest()
+        self.world_state_est_reset_service(req)
 
 
 if __name__ == "__main__":

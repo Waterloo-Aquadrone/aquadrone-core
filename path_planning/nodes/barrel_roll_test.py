@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     executor = StateExecutor(machine, rospy.Rate(5))
     executor.run()
 
-    if executor.get_exit_code() == 0:
+    if executor.exit_code() == 0:
         print('Successfully completed barrel roll!')
     else:
         print('Aborted barrel roll attempt!')

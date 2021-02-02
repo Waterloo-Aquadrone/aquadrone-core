@@ -13,9 +13,6 @@
     <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
         <arg name="model" value="aquadrone"/>
     </include>
-
-    <!-- Need to include this or else ROS will hang, TODO: make this unnecessary -->
-    <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py"/>
     
     <!-- Only run the thrust distributor because we need to bypass the thrust_computer to send motor thrusts directly from path_planning -->
     <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py" output="screen"/>
