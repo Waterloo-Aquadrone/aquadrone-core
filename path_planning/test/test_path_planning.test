@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="test_ros_modules" pkg="path_planning" type="test_ros_modules.py" />
+  <test test-name="test_go_to_depth" pkg="path_planning" type="test_go_to_depth_state.py" />
+</launch>

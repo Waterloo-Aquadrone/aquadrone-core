@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_ekf" pkg="state_estimation" type="test_ekf.py" />
+</launch>

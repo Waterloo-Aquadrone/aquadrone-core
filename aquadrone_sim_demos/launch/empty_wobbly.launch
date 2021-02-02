@@ -17,7 +17,8 @@
 
     <include file="$(find thruster_control)/launch/$(arg control_file)"/>
 
-    <node name="state_est" pkg="state_estimation" type="ekf.py"/>
+    <param name="model" value="$(arg model_name)"/>
+    <node name="state_est" pkg="state_estimation" type="ekf_node.py"/>
 
 
 </launch>

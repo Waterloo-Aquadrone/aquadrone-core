@@ -1,3 +1,9 @@
 <launch>
-  <test test-name="test_controls" pkg="thruster_control" type="test_depth_control.py" />
+  <test test-name="test_mcc" pkg="thruster_control" type="test_movement_command_collector.py" />
+  <test test-name="test_configurations" pkg="thruster_control" type="test_thruster_configurations.py" />
+  <test test-name="test_thrust_computer" pkg="thruster_control" type="test_thrust_computer.py" />
+
+  <!-- These tests need to be run on the Jetson with the appropriate libraries -->
+  <!--<test test-name="test_thrusters" pkg="thruster_control" type="test_thruster_types.py" />-->
+
 </launch>
