@@ -7,8 +7,13 @@ from thruster_control.thrust_computer import geometry_helper as gh
 
 class ThrusterConfiguration:
     """
-    Subclasses of this class define all the relevant data for dealing with different thruster configurations.
+    This class handles converting between Wrenches and motor thrusts for the various submarine configurations.
+
+    All calculations throughout the thruster_control class are done in the frame of reference of the submarine.
+    As such, all commands sent to the thrusters must be provided in the submarine's reference frame.
+    For example, a positive x force will push the submarine forward, regardless of the direction that is facing.
     """
+
     def __init__(self, model='v28'):
         self.model = model
         self.thrust_to_wrench_matrix = None
@@ -72,7 +77,7 @@ class ThrusterConfiguration:
              - T = B * W
             """
             thruster_count = A.shape[1]
-            block = np.block([[A,                      np.zeros((6, 6))],
+            block = np.block([[A, np.zeros((6, 6))],
                               [np.eye(thruster_count), np.transpose(A)]])
             self.wrench_to_thrusts_matrix = np.linalg.inv(block)[:thruster_count, :6]
         else:
