@@ -1,4 +1,5 @@
 import rospy
+import rosservice
 import cv2
 import numpy as np
 import time
@@ -12,6 +13,7 @@ from path_planning import data_structures as DS
 
 from aquadrone_msgs.msg import SubState, MotorControls, WorldState
 import aquadrone_math_utils.orientation_math as OMath
+from aquadrone_math_utils.angle_math import normalize_angle
 
 
 class ROSControlsModule:
@@ -20,23 +22,16 @@ class ROSControlsModule:
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
+        self.controls_halted = False
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
 
-    @staticmethod
-    def normalize_angle(angle):
-        while angle > 2 * np.pi:
-            angle -= 2 * np.pi
-        while angle < 0:
-            angle += 2 * np.pi
-        return angle
-
     def set_orientation_goal(self, r=0, p=0, y=0):
         target = Vector3()
-        target.x = ROSControlsModule.normalize_angle(r)
-        target.y = ROSControlsModule.normalize_angle(p)
-        target.z = ROSControlsModule.normalize_angle(y)
+        target.x = normalize_angle(r)
+        target.y = normalize_angle(p)
+        target.z = normalize_angle(y)
         self.orientation_pub.publish(target)
 
     def set_roll_goal(self, roll):
@@ -48,7 +43,7 @@ class ROSControlsModule:
         :param roll:
         """
         target = Vector3()
-        target.x = ROSControlsModule.normalize_angle(roll)
+        target.x = normalize_angle(roll)
         self.orientation_pub.publish(target)
 
     def set_yaw_goal(self, yaw):
@@ -60,13 +55,14 @@ class ROSControlsModule:
         target = Vector3()
         target.x = 0
         target.y = 0
-        target.z = ROSControlsModule.normalize_angle(yaw)
+        target.z = normalize_angle(yaw)
         self.orientation_pub.publish(target)
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
         Commands sent using this method will expire after a configurable amount of time. This should be repeated called
         in the process loop.
+        Forces are specified relative to the submarine's reference frame.
 
         :param Fx:
         :param Fy:
@@ -97,9 +93,19 @@ class ROSControlsModule:
         Immediately stops all thruster outputs. The sub will naturally rise to the surface via buoyancy,
         and cannot be controlled again until everything is restarted.
         """
-        # TODO: setup thrust_distributor.py to have a service that sets all thrusts to 0, then disables future requests.
-        #  Alternatively, use a shutdown hook
-        pass
+        if self.controls_halted:
+            return
+
+        try:
+            rospy.wait_for_service('halt_and_catch_fire')
+            halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
+            req = TriggerRequest()
+            halt_and_catch_fire_service(req)
+        except rospy.ROSInterruptException:
+            # rospy is shut down
+            print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
+
+        self.controls_halted = True
 
 
 class ROSStateEstimationModule:
@@ -119,9 +125,9 @@ class ROSStateEstimationModule:
         orientation_rpy = DS.Vector.from_msg(self.sub_state.orientation_RPY)
         ang_vel = DS.Vector.from_msg(self.sub_state.ang_vel)
 
-        orientation_rpy.x = ROSControlsModule.normalize_angle(orientation_rpy.x)
-        orientation_rpy.y = ROSControlsModule.normalize_angle(orientation_rpy.y)
-        orientation_rpy.z = ROSControlsModule.normalize_angle(orientation_rpy.z)
+        orientation_rpy.x = normalize_angle(orientation_rpy.x)
+        orientation_rpy.y = normalize_angle(orientation_rpy.y)
+        orientation_rpy.z = normalize_angle(orientation_rpy.z)
 
         position_var = DS.Vector.from_msg(self.sub_state.pos_variance)
         velocity_var = DS.Vector.from_msg(self.sub_state.vel_variance)
