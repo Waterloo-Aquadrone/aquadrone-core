@@ -50,10 +50,7 @@ class OrientationPIDController:
         control = Wrench()
         while not rospy.is_shutdown():
             quat_error = (self.target_rotation * self.rotation.inv()).as_quat()
-            quat_error = quat_error * (1 if quat_error[0] > 0 else -1)
-
-            norm = np.linalg.norm(quat_error[1:])
-            axis_error = 2 * np.arctan(norm / quat_error[0]) * quat_error[1:] / norm
+            axis_error = quat_error[1:] * (1 if quat_error[0] > 0 else -1)
 
             absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, axis_error)])
             # relative_torque = np.dot(self.rotation.inv().as_matrix(), absolute_torque)
