@@ -19,7 +19,7 @@
 		{"thruster":    "center_left", "x":    0, "y":  0.285, "z": 0.1, "roll": 0, "pitch":  0, "yaw":   0},
 		{"thruster":   "center_right", "x":    0, "y": -0.285, "z": 0.1, "roll": 0, "pitch":  0, "yaw":   0},
 
-		{"thruster":  "sideways_left", "x":    0, "y":   0.17, "z":   0, "roll": 0, "pitch":  0, "yaw": -90},
+		{"thruster":  "sideways_left", "x":    0, "y":   0.17, "z":   0, "roll": 0, "pitch":  0, "yaw": 90},
 		{"thruster": "sideways_right", "x":    0, "y":  -0.17, "z":   0, "roll": 0, "pitch":  0, "yaw": -90}
 	]
 }

@@ -22,7 +22,7 @@ class StabilizeState(BaseState):
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.completed = False
-        controls.set_orientation_goal(r=self.r, p=self.p, y=self.y)
+        controls.set_orientation_goal(roll=self.r, pitch=self.p, yaw=self.y)
         print(self.state_name(), 'starting to stabilize to (r, p, y)=(', self.r, ',', self.p, ',', self.y, ')')
 
     def process(self, t, controls, sub_state, world_state, sensors):
