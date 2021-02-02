@@ -20,14 +20,14 @@ class OrientationPIDController:
         if rate is None:
             self.rate = rospy.Rate(10)
 
-        # the pids will be in the absolute intrinsic-rotation coordinate frame
+        # the pids will be in the absolute extrinsic-rotation coordinate frame
         self.pids = []
         for angle in ['roll', 'pitch', 'yaw']:
             Kp = rospy.get_param('/stability/' + angle + '/Kp')
             Ki = rospy.get_param('/stability/' + angle + '/Ki')
             Kd = rospy.get_param('/stability/' + angle + '/Kd')
 
-            pid = PID(Kp, 0, 0)
+            pid = PID(Kp, Ki, Kd)
             pid.output_limits = (-50, 50)
             pid.setpoint = 0  # all target angles initialized to 0
             # pid.error_map = OrientationPIDController.normalize_angular_error
@@ -49,16 +49,24 @@ class OrientationPIDController:
     def run(self):
         control = Wrench()
         while not rospy.is_shutdown():
-            quat_error = (self.target_rotation * self.rotation.inv()).as_quat()
-            axis_error = quat_error[1:] * (1 if quat_error[0] > 0 else -1)
-
-            absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, axis_error)])
-            relative_torque = np.dot(self.rotation.inv().as_matrix(), absolute_torque)
+            torque = self.calculate_torque()
             for i, var in enumerate(['x', 'y', 'z']):
-                setattr(control.torque, var, relative_torque[i])
+                setattr(control.torque, var, torque[i])
             self.pub.publish(control)
 
             try:
                 self.rate.sleep()
             except rospy.ROSInterruptException:
                 break
+
+    def calculate_torque(self):
+        # quat_error = (self.target_rotation * self.rotation.inv()).as_quat()
+        # axis_error = quat_error[1:] * (1 if quat_error[0] > 0 else -1)
+        # absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, axis_error)])
+        rotation_rpy = self.rotation.as_euler('zyx')[::-1]
+        target_rotation_rpy = self.target_rotation.as_euler('zyx')[::-1]
+        errors = rotation_rpy - target_rotation_rpy
+
+        absolute_torque = np.array([pid(normalize_angle(error)) for pid, error in zip(self.pids, errors)])
+        relative_torque = np.dot(self.rotation.inv().as_matrix(), absolute_torque)
+        return relative_torque
