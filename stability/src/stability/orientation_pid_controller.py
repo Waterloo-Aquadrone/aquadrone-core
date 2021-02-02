@@ -59,6 +59,7 @@ class OrientationPIDController:
                 break
 
     def calculate_torque(self):
+        # TODO: use full quaternion based PID, ensure that it works in all cases reliably
         # quat_error = (self.target_rotation * self.rotation.inv()).as_quat()
         # axis_error = quat_error[1:] * (1 if quat_error[0] > 0 else -1)
         # absolute_torque = np.array([pid(orientation) for pid, orientation in zip(self.pids, axis_error)])
