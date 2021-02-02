@@ -20,7 +20,7 @@ class ROSControlsModule:
     def __init__(self):
         self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
-        self.planar_move_pub = rospy.Publisher("/movement_command", Wrench, queue_size=1)
+        self.planar_move_pub = rospy.Publisher("/movement_target", Vector3, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
         self.controls_halted = False
 
@@ -58,24 +58,17 @@ class ROSControlsModule:
         target.z = normalize_angle(yaw)
         self.orientation_pub.publish(target)
 
+    def set_movement_target(self, x=0, y=0):
+        target = Vector3()
+        target.x = x
+        target.y = y
+        self.planar_move_pub.publish(target)
+
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
-        Commands sent using this method will expire after a configurable amount of time. This should be repeated called
-        in the process loop.
-        Forces are specified relative to the submarine's reference frame.
-
-        :param Fx:
-        :param Fy:
-        :param Tz:
+        This is no longer supported! Use set_movement_target instead.
         """
-        w = Wrench()
-        w.force.x = Fx
-        w.force.y = Fy
-        w.force.z = 0
-        w.torque.x = 0
-        w.torque.y = 0
-        w.torque.z = Tz
-        self.planar_move_pub.publish(w)
+        raise NotImplemented
 
     def send_direct_motor_thrusts(self, thrusts):
         """

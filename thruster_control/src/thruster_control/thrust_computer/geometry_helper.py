@@ -23,6 +23,7 @@ def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
     # Moment is r x f
     offset = np.array([x, y, z])
     moment = np.cross(offset, force, axis=0)
+    # TODO: add torque based on propeller handedness
 
     return np.concatenate((force, moment))
 
