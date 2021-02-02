@@ -66,13 +66,7 @@ class ROSControlsModule:
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
-        Commands sent using this method will expire after a configurable amount of time. This should be repeated called
-        in the process loop.
-        Forces are specified relative to the submarine's reference frame.
-
-        :param Fx:
-        :param Fy:
-        :param Tz:
+        This is no longer supported! Use set_movement_target instead.
         """
         raise NotImplemented
 
