@@ -75,7 +75,7 @@ class ROSControlsModule:
         This command will only work if the thrust_computer node is not running.
         Otherwise, this command will immediately be overwritten.
 
-        :param thrusts: Array of 8 floats for the 8 motors.
+        :param thrusts: Array of floats for each of the motors.
         """
         msg = MotorControls()
         msg.motorThrusts = thrusts
