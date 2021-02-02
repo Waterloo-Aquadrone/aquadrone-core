@@ -2,53 +2,49 @@
 
 import rospy
 import rospkg
-import numpy as np
+import json
 
-from thruster_control.thruster_interfaces.v28_interface import V28ThrusterInterface
-from thruster_control.thruster_types import BlueRoboticsT100
-
-import board
-import busio
-import adafruit_pca9685
+from thrust_computer.thruster_configurations import V28Configuration
+from uuv_gazebo_ros_plugins_msgs.msg import FloatStamped
 
 
 if __name__ == "__main__":
-    #rospy.init_node('sim_thruster_controller')
+    # rospy.init_node('sim_thruster_controller')
 
-    interface = V28ThrusterInterface()
+    config = V28Configuration()
 
-    spec = BlueRoboticsT100(interface.get_frequency())
-    spec.initialize()
-    specs = [spec, spec, spec, spec, spec, spec, spec, spec]
+    pwm_frequency = 400
+    rospack = rospkg.RosPack()
+    with open(rospack.get_path('thruster_control') + "/config/thruster_gpio.json") as gpio_json:
+        gpio_config = json.load(gpio_json)
 
-    interface.init_gpio()
-    
-    interface.init_thrusters(specs)
+    thrusters = []
+    for i in range(config.get_num_thrusters()):
+        ThrusterClass = config.get_thruster_class(i)
+        thrusters.append(ThrusterClass(pwm_frequency, i, gpio_config[i]['gpio']))
 
-    
-
-    def send_command(i, T):
-        sig = spec.thrust_to_signal(T)
-        interface.command(i, sig)
+    def send_command(idx, T):
+        thrust = FloatStamped()
+        thrust.data = T
+        thrusters[idx].apply_thrust(thrust)
 
     THRUST = 0.5
 
     while not rospy.is_shutdown():
-        for i in range(0, 1):
+        for i in range(config.get_num_thrusters()):
             if rospy.is_shutdown():
                 break
 
             print("Testing thruster %d" % i)
 
             for th in range(0, 30):
-                send_command(i, th/10.0)
+                send_command(i, th / 10.0)
                 rospy.sleep(0.1)
 
             rospy.sleep(3.0)
 
             send_command(i, 0)
             rospy.sleep(3.0)
-
 
             for th in range(0, 30):
                 send_command(i, -th/10.0)

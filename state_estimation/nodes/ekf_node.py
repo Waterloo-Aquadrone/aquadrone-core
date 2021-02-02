@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import math
 
 from state_estimation.ekf import EKF
-from thruster_control.thruster_configurations import V1Configuration, V2Configuration, V28Configuration
+from thruster_control.thrust_computer.thruster_configurations import V1Configuration, V2Configuration, V28Configuration
 
 
 if __name__ == "__main__":

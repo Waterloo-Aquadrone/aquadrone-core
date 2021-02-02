@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import rostest
@@ -6,13 +6,15 @@ import unittest
 from mock import MagicMock
 
 from state_estimation.ekf import EKF
-from thruster_control.thruster_configurations import V28Configuration
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 
 
 class TestEKF(unittest.TestCase):
 
     def test_contruction(self):
-        ekf = EKF(V28Configuration())
+        config = ThrusterConfiguration('v28')
+        config.initialize()
+        ekf = EKF(config)
 
 
 if __name__ == '__main__':

@@ -37,7 +37,7 @@ class PathPlanner:
 				search_for_gate(competition_map)
 			else:
 				go_through_gate(sub, gate)
-		else if self.state == 'POLE':
+		elif self.state == 'POLE':
 			if competition_map.pole is None or competition_map.pole.position_std.magnitude() > self.searching_tolerance:
 				search_for_pole(competition_map)
 			else:

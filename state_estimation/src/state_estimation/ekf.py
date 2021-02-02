@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 import math
 #import numpy as np
@@ -15,8 +13,8 @@ from std_srvs.srv import Trigger, TriggerResponse
 
 from aquadrone_msgs.msg import SubState, MotorControls
 
-from ekf_indices import IDx as IDx
-from ekf_sensors import IMUSensorListener, PressureSensorListener
+from state_estimation.ekf_indices import IDx as IDx
+from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
 
 
@@ -60,13 +58,13 @@ class EKF:
         '''
 
         self.n = IDx.NUM # Number of state elements
-        self.m = config.get_num_thrusters() # Number of inputs
+        self.m = config.get_num_thrusters()  # Number of inputs
 
         self.x = None
         self.P = None
         self.initialize_state()
 
-        self.u = np.zeros((self.m,1))
+        self.u = np.zeros((self.m, 1))
 
         self.B = np.array(config.get_thrusts_to_wrench_matrix())
 
@@ -97,6 +95,7 @@ class EKF:
     def initialize_state(self, msg=None):
         self.x = np.zeros((self.n, 1))
         self.x[IDx.Ow] = 1
+        # Shouldn't x and y variance be initialized to 0, since the sub is by definition starting at (0, 0)
         self.P = np.eye(self.n)
         return TriggerResponse(success=True, message="reset")
 
@@ -371,7 +370,10 @@ class EKF:
 
     def run(self):
         while not rospy.is_shutdown():
-            self.rate_ctrl.sleep()
+            try:
+                self.rate_ctrl.sleep()
+            except ROSInterruptException:
+                break
 
             self.output()
 
