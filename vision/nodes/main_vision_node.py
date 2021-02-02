@@ -17,4 +17,3 @@ class VisionNode:
 if __name__ == '__main__':
     vision_node = VisionNode()
     vision_node.run()
-    rospy.spin()
