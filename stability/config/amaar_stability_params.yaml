@@ -1,25 +1,25 @@
 stability:
     x:
         Kp: 100
-        Ki: 0.0
+        Ki: 1.0
         Kd: 0
     y:
         Kp: 100
-        Ki: 0.0
+        Ki: 1.0
         Kd: 0
     depth:
         Kp: 100
-        Ki: 0.0
+        Ki: 1.0
         Kd: 0
     roll:
         Kp: 75
         Ki: 0.0
-        Kd: 20
+        Kd: 150
         limit: 10
     pitch:
         Kp: 75
         Ki: 0.0
-        Kd: 30
+        Kd: 1000
         limit: 10
     yaw:
         Kp: 40
