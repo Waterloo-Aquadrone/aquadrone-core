@@ -27,11 +27,11 @@ class ROSControlsModule:
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
 
-    def set_orientation_goal(self, r=0, p=0, y=0):
+    def set_orientation_goal(self, roll=0, pitch=0, yaw=0):
         target = Vector3()
-        target.x = normalize_angle(r)
-        target.y = normalize_angle(p)
-        target.z = normalize_angle(y)
+        target.x = normalize_angle(roll)
+        target.y = normalize_angle(pitch)
+        target.z = normalize_angle(yaw)
         self.orientation_pub.publish(target)
 
     def set_roll_goal(self, roll):
