@@ -27,6 +27,7 @@ class OrientationPIDController:
 
     def goal_cb(self, msg):
         self.target_rotation = Rotation.from_euler('ZYX', [msg.z, -msg.y, msg.x])
+        print('target ', self.target_rotation.as_quat())
 
     def state_cb(self, msg):
         self.rotation = Rotation.from_quat([msg.orientation_quat.w, msg.orientation_quat.x,
@@ -51,4 +52,5 @@ class OrientationPIDController:
         axis_error = quat_error[1:] * (1 if quat_error[0] > 0 else -1)
         # Assumes omega is in absolute frame but should be in relative frame
         relative_torque = -10 * axis_error - 5 * np.dot(self.rotation.as_matrix(), self.omega)
+        print('torque', relative_torque)
         return relative_torque
