@@ -98,7 +98,13 @@ class Quaternion:
         return (1 / 2) * q * Quaternion.from_real_imag(0, omega_vec_prime)
 
 
-def main():
+def test_controller():
+    """
+    Attempt to implement a Quaternion-based PD controller.
+    The system is numerically integrated to see if the controller successfully stabilizes to the target orientation.
+    The notation used is based off of this paper:
+    https://drive.google.com/file/d/12m8hsQJ-EKk8vDQYVwyyOT0U7RaDDAJw/view?usp=sharing
+    """
     data = []
 
     target_quat = Quaternion.from_array(Rotation.from_euler('ZYX', np.array([0, 0, 0])).as_quat())
@@ -150,4 +156,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    test_controller()
