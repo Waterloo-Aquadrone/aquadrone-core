@@ -109,7 +109,7 @@ def main():
                   [-26, 200, 2700]])
     J_inv = np.linalg.inv(J)
 
-    # Create starting quaternion and angular velocity randomly
+    # Create starting quaternion and angular velocity
     q = Quaternion.from_array([0.1, 0.1, 0.1, 1]).normalize()
     omega_vec_prime = np.zeros(3)  # np.random.random(3)
 
