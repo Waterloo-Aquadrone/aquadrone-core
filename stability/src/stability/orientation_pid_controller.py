@@ -30,11 +30,10 @@ class OrientationPIDController:
 
     def goal_cb(self, msg):
         self.target_rotation = Rotation.from_euler('ZYX', [msg.z, -msg.y, msg.x])
-        print('target ', self.target_rotation.as_quat())
 
     def state_cb(self, msg):
-        self.rotation = Rotation.from_quat([msg.orientation_quat.w, msg.orientation_quat.x,
-                                            msg.orientation_quat.y, msg.orientation_quat.z])
+        self.rotation = Rotation.from_quat([msg.orientation_quat.x, msg.orientation_quat.y,
+                                            msg.orientation_quat.z, msg.orientation_quat.w])
         self.omega = np.array([msg.ang_vel.x, msg.ang_vel.y, msg.ang_vel.z])
 
     def run(self):
