@@ -18,6 +18,11 @@ class Quaternion:
     def from_array(arr):
         return Quaternion(arr[0], arr[1], arr[2], arr[3])
 
+    @staticmethod
+    def from_scipy(rotation):
+        x, y, z, w = rotation.as_quat()
+        return Quaternion.from_array([w, x, y, z])
+
     def real(self):
         return self.q_0
 
@@ -43,18 +48,21 @@ class Quaternion:
                          [-self.q_2, -self.q_3,  self.q_0,  self.q_1],
                          [-self.q_3,  self.q_2, -self.q_1,  self.q_0]])
 
+    def as_scipy(self):
+        return Rotation.from_quat(np.array([self.q_1, self.q_2, self. q_3, self.q_0]))
+
     def as_array(self):
         return np.array([self.q_0, self.q_1, self.q_2, self. q_3])
 
     def as_matrix(self):
-        return Rotation.from_quat(self.as_array()).as_matrix()
+        return self.as_scipy().as_matrix()
 
     def normalize(self):
         arr = self.as_array()
         return Quaternion.from_array(arr / np.linalg.norm(arr))
 
     def as_rpy(self):
-        rpy = Rotation.from_quat(self.as_array()).as_euler('ZYX')[::-1]
+        rpy = self.as_scipy().as_euler('ZYX')[::-1]
         rpy[1] *= -1
         return rpy
 
@@ -107,7 +115,7 @@ def test_controller():
     """
     data = []
 
-    target_quat = Quaternion.from_array(Rotation.from_euler('ZYX', np.array([0, 0, 0])).as_quat())
+    target_quat = Quaternion.from_scipy(Rotation.from_euler('ZYX', np.array([0, 0, 0])))
     dt = 0.001
     # inertia matrix based on SolidWorks model
     J = np.array([[2850, 1, -25],
