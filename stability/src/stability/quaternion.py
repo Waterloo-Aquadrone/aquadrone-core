@@ -120,7 +120,7 @@ def test_controller():
     # inertia matrix based on SolidWorks model
     J = np.array([[2850, 1, -25],
                   [1, 3800, 200],
-                  [-26, 200, 2700]])
+                  [-25, 200, 2700]])
     J_inv = np.linalg.inv(J)
 
     # Create starting quaternion and angular velocity
