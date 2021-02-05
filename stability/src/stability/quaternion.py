@@ -122,6 +122,7 @@ def main():
         # tau_vec_prime = np.dot(q.as_matrix(), -k_p * (q.as_rpy() - target_quat.as_rpy()) - k_d * omega_vec_prime)
 
         # calculate torque directly from quaternions
+        # based on this paper: https://drive.google.com/file/d/1E2Oj3E-XInCSGpyhnBP0luWHWV0s0z9m/view?usp=sharing
         quat_error = target_quat * q.conj()
         axis_error = quat_error.imag() * (1 if (quat_error.real() > 0) else -1)
         tau_vec_prime = -k_p * axis_error - k_d * omega_vec_prime
