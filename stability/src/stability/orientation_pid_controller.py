@@ -56,5 +56,4 @@ class OrientationPIDController:
         axis_error = np.array([x, y, z]) * (1 if w > 0 else -1)
         # Assumes omega is in absolute frame but should be in relative frame
         relative_torque = -self.k_ps * axis_error - self.k_ds * np.dot(self.rotation.as_matrix(), self.omega)
-        print('torque', relative_torque)
         return relative_torque
