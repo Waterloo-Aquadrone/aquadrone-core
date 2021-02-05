@@ -18,6 +18,9 @@ class OrientationPIDController:
         if rate is None:
             self.rate = rospy.Rate(10)
 
+        self.k_ps = np.array([rospy.get_param('/stability/' + angle + '/Kp') for angle in ['roll', 'pitch', 'yaw']])
+        self.k_ds = np.array([rospy.get_param('/stability/' + angle + '/Kd') for angle in ['roll', 'pitch', 'yaw']])
+
         self.target_rotation = Rotation.identity()
         self.rotation = Rotation.identity()
         self.omega = np.array([0, 0, 0])
@@ -51,6 +54,6 @@ class OrientationPIDController:
         quat_error = (self.target_rotation * self.rotation.inv()).as_quat()
         axis_error = quat_error[1:] * (1 if quat_error[0] > 0 else -1)
         # Assumes omega is in absolute frame but should be in relative frame
-        relative_torque = -10 * axis_error - 5 * np.dot(self.rotation.as_matrix(), self.omega)
+        relative_torque = -self.k_ps * axis_error - self.k_ds * np.dot(self.rotation.as_matrix(), self.omega)
         print('torque', relative_torque)
         return relative_torque
