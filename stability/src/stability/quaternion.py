@@ -60,7 +60,7 @@ class Quaternion:
 
     def __mul__(self, other):
         if type(other) is Quaternion:
-            real = self.real() * other.real() - self.imag() * other.imag()
+            real = self.real() * other.real() - np.sum(self.imag() * other.imag())
             imag = self.real() * other.imag() + other.real() * self.imag() + np.cross(self.imag(), other.imag())
             return Quaternion.from_real_imag(real, imag)
         if type(other) is int or type(other) is float:
