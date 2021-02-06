@@ -124,14 +124,14 @@ def test_controller():
     J_inv = np.linalg.inv(J)
 
     # Create starting quaternion and angular velocity
-    q = Quaternion.from_array([0.1, 0.1, 0.1, 1]).normalize()
-    omega_vec_prime = np.zeros(3)  # np.random.random(3)
+    q = Quaternion.from_array(np.random.random(4)).normalize()
+    omega_vec_prime = np.random.random(3)
 
     # PID coefficients
     k_p = np.array([75, 75, 40])
     k_d = np.array([150, 1000, 2000])
 
-    for _ in range(int(90 / dt)):
+    for _ in range(int(400 / dt)):
         # calculate torque based on roll, pitch, yaw
         # tau_vec_prime = np.dot(q.as_matrix(), -k_p * (q.as_rpy() - target_quat.as_rpy()) - k_d * omega_vec_prime)
 
