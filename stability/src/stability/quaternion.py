@@ -49,10 +49,10 @@ class Quaternion:
                          [-self.q_3,  self.q_2, -self.q_1,  self.q_0]])
 
     def as_scipy(self):
-        return Rotation.from_quat(np.array([self.q_1, self.q_2, self. q_3, self.q_0]))
+        return Rotation.from_quat(np.array([self.q_1, self.q_2, self.q_3, self.q_0]))
 
     def as_array(self):
-        return np.array([self.q_0, self.q_1, self.q_2, self. q_3])
+        return np.array([self.q_0, self.q_1, self.q_2, self.q_3])
 
     def as_matrix(self):
         return self.as_scipy().as_matrix()
@@ -141,7 +141,7 @@ def test_controller():
         axis_error = quat_error.imag() * (1 if (quat_error.real() > 0) else -1)
         tau_vec_prime = -k_p * axis_error - k_d * omega_vec_prime
 
-        q_dot = Quaternion.from_array((1/2) * np.dot(q.G().transpose(), omega_vec_prime))
+        q_dot = Quaternion.from_array((-1/2) * np.dot(q.G().transpose(), omega_vec_prime))
         omega_vec_prime_dot = np.dot(J_inv, tau_vec_prime) - \
             np.dot(J_inv, np.cross(omega_vec_prime, np.dot(J, omega_vec_prime)))
         q += q_dot * dt
