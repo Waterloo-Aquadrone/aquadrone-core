@@ -1,6 +1,5 @@
 <launch>
-
-    <include file="$(find aquadrone_sim_worlds)/launch/pole_world.launch">
+    <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
         <arg name="paused" value="false"/>
     </include>
 
@@ -18,6 +17,6 @@
     <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py"/>
     <node name="omniscient_vision_node" pkg="vision" type="faker.py" />
 
-    <node name="dive_test" pkg="path_planning" type="dive_test.py" output="screen"/>
+    <node name="square_travel" pkg="path_planning" type="square_travel_test.py" output="screen"/>
 
 </launch>

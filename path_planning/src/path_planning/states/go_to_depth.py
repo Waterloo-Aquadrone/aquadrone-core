@@ -8,13 +8,14 @@ class GoToDepthState(BaseState):
     system during initialization (which will remain active after finalization as well).
     """
 
-    def __init__(self, depth, verbose=False):
+    def __init__(self, depth, tolerance=0.25, velocity_tolerance=0.1, verbose=False):
         self.depth_goal = depth
         self.completed = False
+        self.tolerance = tolerance
+        self.velocity_tolerance = velocity_tolerance
         self.verbose = verbose
 
-    @staticmethod
-    def state_name():
+    def state_name(self):
         return "go_to_depth_state"
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
@@ -32,7 +33,7 @@ class GoToDepthState(BaseState):
             print("Depth err (abs): %f" % depth_err)
 
         v_z = sub_state.get_submarine_state().velocity.z
-        if depth_err < 0.25 and abs(v_z) < 0.1:
+        if depth_err < self.tolerance and abs(v_z) < self.velocity_tolerance:
             self.completed = True
             print(self.state_name(), 'completed!')
 

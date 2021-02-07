@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-import rospy
-from simple_pid import PID
+#!/usr/bin/env python3
 
-from stability.depth_control.depth_pid_controller import DepthPIDController
+import rospy
+
+from stability.depth_pid_controller import DepthPIDController
 
 
 if __name__ == "__main__":

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 import numpy as np
 
@@ -34,7 +32,7 @@ class MovementCommandCollector:
         # Set up command sources
         # First added is highest priority
         self.sources = [CommandSubscriber(topic) for topic in
-                        ['stability_command', 'depth_command', 'movement_command']]
+                        ['/stability_command', '/depth_command', '/movement_command']]
         self.cmd_timeout = cmd_timeout
 
     def get_recent_thrusts(self, drop=0):

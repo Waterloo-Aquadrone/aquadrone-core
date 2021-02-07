@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-
 from path_planning.states.base_state import BaseState
 
 
 class ParallelStateMachine(BaseState):
     """
-    This state machine will simultaneous run all of the states assigned to it.
+    This state machine will simultaneously run all of the states assigned to it.
     Note that the states must take care not to interfere with each other.
     Ideally, there should be at most one state that interacts with each of
     the depth control, orientation stability, and movement command systems.
@@ -13,7 +11,7 @@ class ParallelStateMachine(BaseState):
     Daemon states (similar to a daemon thread in Java) can optionally be provided.
     Daemon states will not prevent this state machine from terminating.
     If all non-daemon states have completed, then the state machine will be terminated,
-    and any still running daemon states will be finalized. Thus can be useful for logging for example.
+    and any still running daemon states will be finalized. Thus can be useful for logging, for example.
 
     The exit code of this state machine is the exit code of the state machine that is
     last in the list of non-daemons states provided.
