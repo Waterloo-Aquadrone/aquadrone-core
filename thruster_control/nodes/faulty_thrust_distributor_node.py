@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 
 import rospy
-import traceback
 
 from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 from thruster_control.thrust_distributor.faulty_thrust_distributor import FaultyThrustDistributor
-
-
 
 
 """
