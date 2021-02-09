@@ -1,9 +1,10 @@
 <launch>
-    <arg name="real" default="False">
+    <arg name="world" default="empty"/>
     <arg name="model_name" default="v28"/>
+    <arg name="omniscient_ekf" default="True"/>
     <arg name="computation_factor" default="1"/>
 
-    <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
+    <include file="$(find aquadrone_sim_worlds)/launch/$(arg world)_world.launch">
         <arg name="paused" value="false"/>
         <arg name="computation_factor" value="$(arg computation_factor)"/>
     </include>
@@ -17,11 +18,14 @@
     </include>
 
     <include file="$(find thruster_control)/launch/control.launch">
-        <arg name="real" value="$(arg real)"/>
+        <arg name="real" value="False"/>
         <arg name="model" value="$(arg model_name)"/>
     </include>
 
-    <param name="model" value="$(arg model_name)"/>
-    <node name="state_est" pkg="state_estimation" type="ekf_node.py" output="screen" required="True"/>
+    <include file="$(find stability)/launch/stability.launch" />
+
+    <include file="$(find state_estimation)/launch/localization.launch">
+        <arg name="omniscient" value="$(arg omniscient_ekf)"/>
+    </include>
 
 </launch>

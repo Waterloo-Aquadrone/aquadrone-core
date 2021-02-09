@@ -1,26 +1,14 @@
 <launch>
-    <arg name="real" default="False">
+    <arg name="model_name" default="v28"/>
+    <arg name="omniscient_ekf" default="True"/>
+    <arg name="computation_factor" default="1"/>
 
-    <include file="$(find aquadrone_sim_worlds)/launch/pole_world.launch">
-        <arg name="paused" value="false"/>
+    <include file="$(find aquadrone_sim_demos)/launch/empty.launch">
+        <arg name="world" value="empty"/>
+        <arg name="model_name" value="$(arg model_name)"/>
+        <arg name="omniscient_ekf" value="$(arg omniscient_ekf)"/>
+        <arg name="computation_factor" value="$(arg computation_factor)"/>
     </include>
-
-    <include file="$(find aquadrone_description)/launch/upload_sub.launch">
-        <arg name="model_file" value="v28.urdf.xacro"/>
-    </include>
-
-    <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
-        <arg name="model" value="aquadrone"/>
-    </include>
-
-    <include file="$(find thruster_control)/launch/control.launch">
-        <arg name="real" value="$(arg real)"/>
-    </include>
-    <include file="$(find stability)/launch/stability.launch" />
-
-    <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py"/>
-    <node name="omniscient_vision_node" pkg="vision" type="faker.py" />
 
     <node name="dive_test" pkg="path_planning" type="dive_test.py" output="screen"/>
-
 </launch>
