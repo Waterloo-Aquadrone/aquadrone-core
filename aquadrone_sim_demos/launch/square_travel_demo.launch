@@ -1,4 +1,6 @@
 <launch>
+    <arg name="real" default="False">
+
     <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
         <arg name="paused" value="false"/>
     </include>
@@ -11,7 +13,9 @@
         <arg name="model" value="aquadrone"/>
     </include>
 
-    <include file="$(find thruster_control)/launch/sim_control.launch"/>
+    <include file="$(find thruster_control)/launch/control.launch">
+        <arg name="real" value="$(arg real)"/>
+    </include>
     <include file="$(find stability)/launch/stability.launch" />
 
     <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py"/>

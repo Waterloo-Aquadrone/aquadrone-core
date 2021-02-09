@@ -1,4 +1,5 @@
 <launch>
+    <arg name="real" default="False">
     <arg name="model_name" default="v28"/>
     <arg name="computation_factor" default="1"/>
 
@@ -15,7 +16,8 @@
         <arg name="model" value="aquadrone"/>
     </include>
 
-    <include file="$(find thruster_control)/launch/sim_control.launch">
+    <include file="$(find thruster_control)/launch/control.launch">
+        <arg name="real" value="$(arg real)"/>
         <arg name="model" value="$(arg model_name)"/>
     </include>
 
