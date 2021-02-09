@@ -1,51 +1,69 @@
-class SearchingState:
+from path_planning.states.base_state import BaseState
+import math
+
+class SearchingState(BaseState):
     """
-    Each state should define how it interacts with the depth and orientation control systems, because those are
-    persisted across state changes.
-    """
+      Moves the submarine to the target position, assuming there are no obstacles in the way.
+     """
+
+    def __init__(self, target_x=None, target_y=None, target_z=None, target_yaw=None, target = ""):
+        """
+        This class assumes that the target roll and pitch are 0.
+        """
+        self.target = target
+        self.completed = False
+        self.checkpoints = self.spiral_calc(target_x, target_y)
+        self.target_x = target_x
+        self.target_y = target_y
+        self.target_z = target_z
+        self.target_yaw = target_yaw
+
+    def spiral_calc(self, target_x, target_y):
+        """
+        Calculates the x and y coordinates in a spiral
+        plot and updates an origin x and y coordinate by
+        accepting the target_x and target_y in its arguments
+        """
+        checkpoints = []
+        num_x_y_pts = 200
+        space_btw_lines = 5
+        velo_time_rate = 20
+        for i in range(num_x_y_pts):
+            t = i / velo_time_rate * pi
+            x = (1 + space_btw_lines * t) * cos(t)
+            y = (1 + space_btw_lines * t) * sin(t)
+            new_target_x = target_x + x
+            new_target_y = target_y + y
+            checkpoints.append((new_target_x, new_target_y))
+        return checkpoints
+
+
     def state_name(self):
         return "searching_state"
-
     def initialize(self, t, controls, sub_state, world_state, sensors):
-        """
-        Set up anything that needs initializing
-        Run EACH time the state is chosen as the next state
-        process(...) will be called with the next available data
-        Note the parameters passed into function may be the same as the ones first passed into process.
-        """
-        pass
+        target_x, target_y = self.checkpoints[0]
+        controls.set_movement_target(target_x, target_y)
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        """
-        This function will be called at a regular rate.
-        When the state has finished and wants to finalize, it should just ensure that has_completed returns True.
-        Do not manually call finalize, or else it will be called twice!
-        """
-        pass
+        target_x, target_y = self.checkpoints[0]
+        position = sub_state.get_submarine_state().position
+        subpos_x = position.x
+        subpos_y = position.y
+        tolerance = 1
+        if abs(target_x - subpos_x) < tolerance and abs(target_y - subpos_y) < tolerance:
+            self.checkpoints.pop(0)
+            new_target_x, new_target_y = self.checkpoints[0]
+            controls.set_movement_target(new_target_x, new_target_y)
+
+        if self.target in world_state.get_world_state().keys():
+            self.completed = True
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
-        """
-        Clean up anything necessary.
-        Note the parameters passed into function may be the same as the last ones passed into process.
-        Note this may be called before the state has completed. If this occurs,
-        the state should clean up any resources like normal; the exit_code in this case is not important.
-        """
         pass
 
     def has_completed(self):
-        """
-        When this function returns True, the state should exit.
-        Control may be passed to another state if this is part of a state machine.
-        The reason for exiting should be documented and returned in the exit_code function.
-        """
-        pass
+        return self.completed
 
     def exit_code(self):
-        """
-        This function should only be called once has_completed returns True.
-        Indicates the reason that the state has exited.
-        The code 0 signifies that the state completed its objective and exited successfully.
-        The code -1 signifies that ros was shutdown.
-        Other codes should be numbered 1 and higher, and their explanations should be documented.
-        """
         return 0
+
