@@ -1,7 +1,7 @@
 # Aquadrone 2020
 
 ## First Time Setup and Usage instructions
-1. Download VirtualBox from this link: https://www.virtualbox.org/wiki/Downloads. The host OS is the operating system that you are running on your computer.
+1. Download and install VirtualBox from this link: https://www.virtualbox.org/wiki/Downloads. The host OS is the operating system that you are running on your computer.
 2. Download the Virtual Machine (VM) files from [this link](https://drive.google.com/file/d/1xM4aIALtoE3ixZoi0Vh-BiYUIwNcSH-c/view?usp=sharing) (8.41 GB): 
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose **Aquadrone VM.vbox** in the file chooser dialog.
@@ -83,3 +83,6 @@ command: ```chmod +x \<file name>.py```. This can also be done outside the VM (i
 - It is strongly suggested that internal calculations within a ROS node are done in metric
 - Values in config files should be in metric where possible, but this is less essential
 - Any values/calculations that are not in metric should be clearly noted via comments or variable names
+
+## Development Environment
+Although the above process is needed for running the simulations using ROS and Gazebo, the actual code development can be done on whatever platform you want. I would recommend using Pycharm (you can get the professional version for free with a university email address). I would also recommend installing the [Hatchery](https://github.com/duckietown/hatchery) Pycharm plugin.
