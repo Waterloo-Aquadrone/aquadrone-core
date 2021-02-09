@@ -54,7 +54,7 @@ class OrientationPIDController:
         x, y, z, w = quat_error
         axis_error = np.array([x, y, z]) * (1 if w > 0 else -1)
         # Assumes omega is in absolute frame but should be in relative frame
-        relative_torque = self.k_ps * axis_error + self.k_ds * np.dot(self.rotation.as_matrix(), self.omega)
+        relative_torque = self.k_ps * axis_error - self.k_ds * self.rotation.apply(self.omega)
         absolute_torque = self.rotation.inv().apply(relative_torque)
         print(f'Target: {self.target_rotation.as_quat()}, current: {self.rotation.as_quat()}, torque: {absolute_torque}')
         return absolute_torque
