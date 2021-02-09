@@ -1,6 +1,6 @@
 <launch>
     <arg name="world" default="empty"/>
-    <arg name="model_name" default="v28"/>
+    <arg name="model" default="v28"/>
     <arg name="omniscient_ekf" default="True"/>
     <arg name="computation_factor" default="1"/>
 
@@ -10,7 +10,7 @@
     </include>
     
     <include file="$(find aquadrone_description)/launch/upload_sub.launch">
-        <arg name="model_file" value="$(arg model_name).urdf.xacro"/>
+        <arg name="model_file" value="$(arg model).urdf.xacro"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
@@ -19,7 +19,7 @@
 
     <include file="$(find thruster_control)/launch/control.launch">
         <arg name="real" value="False"/>
-        <arg name="model" value="$(arg model_name)"/>
+        <arg name="model" value="$(arg model)"/>
     </include>
 
     <include file="$(find stability)/launch/stability.launch" />
