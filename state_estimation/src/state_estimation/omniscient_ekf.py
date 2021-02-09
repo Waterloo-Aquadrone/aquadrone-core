@@ -44,7 +44,7 @@ class OmniscientEKF:
         msg.velocity = twist.linear
         msg.orientation_quat = pose.orientation
         roll, pitch, yaw = Rotation.from_quat([pose.orientation.x, pose.orientation.y,
-                                               pose.orientation.z, pose.orientation.w]).as_euler('ZYX')
+                                               pose.orientation.z, pose.orientation.w]).as_euler('ZYX')[::-1]
         pitch *= -1
         msg.orientation_RPY.x, msg.orientation_RPY.y, msg.orientation_RPY.z = roll, pitch, yaw
         msg.ang_vel = twist.angular
