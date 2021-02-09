@@ -83,3 +83,6 @@ command: ```chmod +x \<file name>.py```. This can also be done outside the VM (i
 - It is strongly suggested that internal calculations within a ROS node are done in metric
 - Values in config files should be in metric where possible, but this is less essential
 - Any values/calculations that are not in metric should be clearly noted via comments or variable names
+
+## Development Environment
+Although the above process is needed for running the simulations using ROS and Gazebo, the actual code development can be done on whatever platform you want. I would recommend using Pycharm (you can get the professional version for free with a university email address). I would also recommend installing the [Hatchery](https://github.com/duckietown/hatchery) Pycharm plugin.
