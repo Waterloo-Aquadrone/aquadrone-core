@@ -21,7 +21,7 @@ class RelativeTravelState(BaseState):
         self.y_offset = y_offset
         self.z_offset = z_offset
         self.relative_yaw = relative_yaw
-        self.absolute_target_yaw = math.atan2(-y_offset, -x_offset) + relative_yaw
+        self.absolute_target_yaw = math.degrees(math.atan2(-y_offset, -x_offset)) + relative_yaw
         
     def update_target(self, target):
         self.target = target
@@ -31,7 +31,7 @@ class RelativeTravelState(BaseState):
         self.y_offset = y_offset
         self.z_offset = z_offset
         self.relative_yaw = relative_yaw
-        self.absolute_target_yaw = math.atan2(-y_offset, -x_offset) + relative_yaw
+        self.absolute_target_yaw = math.degrees(math.atan2(-y_offset, -x_offset)) + relative_yaw
 
     def update_travel_state_helper(self, world_state):
         targetPos = world_state.get_world_state()[self.target].position
