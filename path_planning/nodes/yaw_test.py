@@ -28,7 +28,7 @@ def plot_yaw_data(data):
 if __name__ == "__main__":
     rospy.init_node("yaw_test")
 
-    target_depth = 3  # m
+    target_depth = -3  # m
     target_yaw = 90  #
 
     yaw_machine = SequentialStateMachine('yaw', [WaitingState(20), StabilizeState(),
