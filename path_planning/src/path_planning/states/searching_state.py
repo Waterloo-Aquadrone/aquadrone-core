@@ -18,7 +18,8 @@ class SearchingState(BaseState):
         self.origin_z = origin_z
         self.target_yaw = target_yaw
 
-    def spiral_calc(self, target_x, target_y):
+    @staticmethod
+    def spiral_calc(origin_x, origin_y):
         """
         Calculates the x and y coordinates in a spiral
         plot and updates an origin x and y coordinate by
@@ -32,8 +33,8 @@ class SearchingState(BaseState):
             t = i / velo_time_rate * pi
             x = (1 + space_btw_lines * t) * cos(t)
             y = (1 + space_btw_lines * t) * sin(t)
-            new_target_x = target_x + x
-            new_target_y = target_y + y
+            new_target_x = origin_x + x
+            new_target_y = origin_y + y
             checkpoints.append((new_target_x, new_target_y))
         return checkpoints
 
@@ -41,14 +42,19 @@ class SearchingState(BaseState):
     def state_name(self):
         return "searching_state"
     def initialize(self, t, controls, sub_state, world_state, sensors):
-        target_x, target_y = self.checkpoints[0]
-        controls.set_movement_target(target_x, target_y)
         if origin_x is None:
             position = sub_state.get_submarine_state().position
             self.origin_x = position.x
         if origin_y is None:
             position = sub_state.get_submarine_state().position
             self.origin_y = position.y
+        if origin_z is None:
+            position = sub_state.get_submarine_state().position
+            self.origin_z = position.z
+        self.checkpoints = self.spiral_calc(self.origin_x, self.origin_y)
+
+        target_x, target_y = self.checkpoints[0]
+        controls.set_movement_target(target_x, target_y)
 
     def process(self, t, controls, sub_state, world_state, sensors):
         target_x, target_y = self.checkpoints[0]
