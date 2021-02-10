@@ -31,8 +31,8 @@ class SearchingState(BaseState):
         velo_time_rate = 20
         for i in range(num_x_y_pts):
             t = i / velo_time_rate * math.pi
-            x = (1 + space_btw_lines * t) * cos(t)
-            y = (1 + space_btw_lines * t) * sin(t)
+            x = (1 + space_btw_lines * t) * math.cos(t)
+            y = (1 + space_btw_lines * t) * math.sin(t)
             new_target_x = origin_x + x
             new_target_y = origin_y + y
             checkpoints.append((new_target_x, new_target_y))
