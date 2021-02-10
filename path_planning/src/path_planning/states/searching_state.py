@@ -42,13 +42,13 @@ class SearchingState(BaseState):
     def state_name(self):
         return "searching_state"
     def initialize(self, t, controls, sub_state, world_state, sensors):
-        if origin_x is None:
+        if self.origin_x is None:
             position = sub_state.get_submarine_state().position
             self.origin_x = position.x
-        if origin_y is None:
+        if self.origin_y is None:
             position = sub_state.get_submarine_state().position
             self.origin_y = position.y
-        if origin_z is None:
+        if self.origin_z is None:
             position = sub_state.get_submarine_state().position
             self.origin_z = position.z
         self.checkpoints = self.spiral_calc(self.origin_x, self.origin_y)

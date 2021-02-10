@@ -23,8 +23,8 @@ if __name__ == "__main__":
     target_depth = 6  # m
 
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(),
-                                                   GoToDepthState(target_depth, tolerance=0.05,
-                                                                  velocity_tolerance=0.01),
+                                                   GoToDepthState(target_depth, tolerance=0.5,
+                                                                  velocity_tolerance=0.5),
                                                    WaitingState(10), SearchingState(target='blue_pole'), WaitingState(10), ExitCodeState(0)])
     data_logger = DataLogger('dive-test')
 
