@@ -29,13 +29,13 @@ def plot_circling_data(data):
 if __name__ == "__main__":
     rospy.init_node("pole_circling_test")
 
-    target_depth = 4
+    target_depth = 3
     target_radius = 3
-    relative_yaw = 90
-    laps = 5
+    relative_yaw = 0
+    laps = 1
 
-    dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(), GoToDepthState(target_depth),
-                                                   WaitingState(10)])
+    dive_machine = SequentialStateMachine('dive', [WaitingState(5), StabilizeState(), GoToDepthState(target_depth, 0.5, 0.5),
+                                                   WaitingState(1)])
     circling_machine = SequentialStateMachine('circle', [RelativeTravelState('red_pole',0,target_radius,
                                                                              target_depth, relative_yaw),
                                                          RelativeTravelState('green_pole', target_radius, 0,
