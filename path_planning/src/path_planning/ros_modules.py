@@ -21,7 +21,7 @@ class ROSControlsModule:
         self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_target", Vector3, queue_size=1)
-        self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
+        self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=1)
         self.controls_halted = False
 
     def set_depth_goal(self, d):

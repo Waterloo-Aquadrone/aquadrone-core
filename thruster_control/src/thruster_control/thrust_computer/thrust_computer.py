@@ -18,7 +18,7 @@ class ThrustComputer:
         self.rate = rate if rate is not None else rospy.Rate(10)
 
         # Will need motor commands published for state estimation
-        self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=0)
+        self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=1)
 
     def run(self):
         while not rospy.is_shutdown():
