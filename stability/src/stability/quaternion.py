@@ -2,6 +2,9 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 from matplotlib import pyplot as plt
 
+"""
+This file is a toy example to understand and test using Quaternion for rotations and PID controllers.
+"""
 
 class Quaternion:
     def __init__(self, q_0=0, q_1=0, q_2=0, q_3=1):
