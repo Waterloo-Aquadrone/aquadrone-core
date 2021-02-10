@@ -8,7 +8,7 @@
 5. Click the **Aquadrone VM** tab that just appeared. 
 6. (optional) Click settings (gear icon). Click system. Change base memory and number of processors to reasonable values for your computer. Half of your system's resources are a good starting point. 
 7. Click Start (green arrow icon). The VM's password is **aquadrone**.
-8. (recommended) Open a terminal and type ```sudo apt update && sudo apt upgrade -y && git pull && cd ../../ && catkin clean -y && catkin build```
+8. (recommended) Open a terminal and type ```sudo apt update && sudo apt upgrade -y && git pull && pip3 install -r pip_requirements.txt --upgrade && cd ../../ && catkin clean -y && catkin build```
 9. (optional) On the VM home screen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
 10. (optional) Run the following command to see the submarine do a barrel roll: ```roslaunch aquadrone_sim_demos barrel_roll_demo.launch```
 11. (optional) If you are having issues pushing to our git repos with your personal account from the VM, use this account: https://github.com/waterloo-aquadrone-vm-account. Message Amaar for the password.
