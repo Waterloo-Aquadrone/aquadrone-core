@@ -2,7 +2,7 @@ import rospy
 from aquadrone_msgs.msg import SubState, WorldObjectState, WorldState
 from gazebo_msgs.msg import ModelStates
 from std_srvs.srv import Trigger, TriggerResponse
-import aquadrone_math_utils.orientation_math as OMath
+from scipy.spatial.transform import Rotation
 
 
 class OmniscientEKF:
@@ -43,7 +43,10 @@ class OmniscientEKF:
         msg.position = pose.position
         msg.velocity = twist.linear
         msg.orientation_quat = pose.orientation
-        msg.orientation_RPY = OMath.msg_quaternion_to_euler(pose.orientation)
+        roll, pitch, yaw = Rotation.from_quat([pose.orientation.x, pose.orientation.y,
+                                               pose.orientation.z, pose.orientation.w]).as_euler('ZYX')[::-1]
+        pitch *= -1
+        msg.orientation_RPY.x, msg.orientation_RPY.y, msg.orientation_RPY.z = roll, pitch, yaw
         msg.ang_vel = twist.angular
 
         self.sub_state_pub.publish(msg)
