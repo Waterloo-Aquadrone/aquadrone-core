@@ -20,7 +20,7 @@ from path_planning.states.searching_state import SearchingState
 if __name__ == "__main__":
     rospy.init_node("dive_test")
 
-    target_depth = 6  # m
+    target_depth = 3  # m
 
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(),
                                                    GoToDepthState(target_depth, tolerance=0.5,
