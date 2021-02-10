@@ -33,20 +33,19 @@ class DepthPIDController:
         self.w_pub = rospy.Publisher('/depth_command', Wrench, queue_size=3)
         self.depth_sub = rospy.Subscriber("/depth_control/goal_depth", Float64, callback=self.goal_cb)
 
-        # Increasing depth (positive) will be negatively increasing position.z
-        self.depth_goal = 3
+        self.depth_goal = -3
         self.pid.setpoint = self.depth_goal
 
         self.rotation = Rotation.identity()
 
     def goal_cb(self, msg):
-        if msg.data < 0:
-            print('Warning: depth < 0 corresponds to above water!')
+        if msg.data > 0:
+            print('Warning: depth > 0 corresponds to above water!')
         self.depth_goal = msg.data
         self.pid.setpoint = self.depth_goal
 
     def state_cb(self, msg):
-        self.depth = -msg.position.z
+        self.depth = msg.position.z
         self.rotation = Rotation.from_quat([msg.orientation_quat.x, msg.orientation_quat.y,
                                             msg.orientation_quat.z, msg.orientation_quat.w])
 
@@ -62,7 +61,7 @@ class DepthPIDController:
                 break
 
     def control_loop(self):
-        u = -self.pid(self.depth)
+        u = self.pid(self.depth)
         self.publish_wrench(u)
         # print("Goal/Depth = %f/%f" % (self.depth_goal, self.depth))
 
