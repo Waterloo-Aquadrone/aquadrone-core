@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import rospy
 import rospkg
 
@@ -29,7 +30,7 @@ def plot_circling_data(data):
 if __name__ == "__main__":
     rospy.init_node("pole_circling_test")
 
-    target_depth = 3
+    target_depth = -3
     target_radius = 3
     relative_yaw = 0
     laps = 1
