@@ -18,8 +18,9 @@
     <include file="$(find thruster_control)/launch/sim_control.launch">
         <arg name="model" value="$(arg model_name)"/>
     </include>
+    <include file="$(find stability)/launch/stability.launch" />
 
-    <param name="model" value="$(arg model_name)"/>
-    <node name="state_est" pkg="state_estimation" type="ekf_node.py" output="screen" required="True"/>
+    <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py" output="screen" required="True"/>
+    <node name="omniscient_vision_node" pkg="vision" type="faker.py" output="screen" required="True"/>
 
 </launch>
