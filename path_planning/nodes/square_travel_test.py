@@ -31,7 +31,7 @@ def plot_travel_data(data):
 if __name__ == "__main__":
     rospy.init_node("square_test")
 
-    target_depth = 4  # m
+    target_depth = -4  # m
     target_radius = 3  # m
     laps = 4
 
