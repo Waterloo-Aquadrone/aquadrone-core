@@ -6,16 +6,16 @@ class SearchingState(BaseState):
       Moves the submarine to the target position, assuming there are no obstacles in the way.
      """
 
-    def __init__(self, target_x=None, target_y=None, target_z=None, target_yaw=None, target = ""):
+    def __init__(self, origin_x=None, origin_y=None, origin_z=None, target_yaw=None, target =""):
         """
         This class assumes that the target roll and pitch are 0.
         """
         self.target = target
         self.completed = False
-        self.checkpoints = self.spiral_calc(target_x, target_y)
-        self.target_x = target_x
-        self.target_y = target_y
-        self.target_z = target_z
+        self.checkpoints = None
+        self.origin_x = origin_x
+        self.origin_y = origin_y
+        self.origin_z = origin_z
         self.target_yaw = target_yaw
 
     def spiral_calc(self, target_x, target_y):
@@ -43,6 +43,12 @@ class SearchingState(BaseState):
     def initialize(self, t, controls, sub_state, world_state, sensors):
         target_x, target_y = self.checkpoints[0]
         controls.set_movement_target(target_x, target_y)
+        if origin_x is None:
+            position = sub_state.get_submarine_state().position
+            self.origin_x = position.x
+        if origin_y is None:
+            position = sub_state.get_submarine_state().position
+            self.origin_y = position.y
 
     def process(self, t, controls, sub_state, world_state, sensors):
         target_x, target_y = self.checkpoints[0]
