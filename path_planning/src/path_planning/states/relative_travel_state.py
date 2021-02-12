@@ -16,7 +16,7 @@ class RelativeTravelState(BaseState):
         :param relative_yaw: This parameter is the yaw that makes the submarine face the target plus the added relative yaw
         """
         self.target = target
-        self.travel_state_helper = TravelState(verbose = False)
+        self.travel_state_helper = TravelState(verbose=False)
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.z_offset = z_offset
