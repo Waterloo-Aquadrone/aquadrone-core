@@ -27,7 +27,7 @@ class GoToDepthState(BaseState):
         pass
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        current_depth = -sub_state.get_submarine_state().position.z
+        current_depth = sub_state.get_submarine_state().position.z
         depth_err = abs(current_depth - self.depth_goal)
         if self.verbose:
             print("Depth err (abs): %f" % depth_err)
