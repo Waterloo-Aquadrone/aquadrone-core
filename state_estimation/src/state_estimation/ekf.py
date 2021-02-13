@@ -66,7 +66,10 @@ class EKF:
         self.volume = 10  # used for buoyancy calculations, TODO: add this to config
         self.buoyancy_offset = np.array(
             [0, 0, 0.5])  # location where buoyancy force is applied (center of buoyancy) TODO: add this to config
-        self.inertia_inv = np.zeros((3, 3))  # inverse of moment of inertia matrix, TODO: add this to config
+        inertia = np.array([[2850, 1, -25],
+                            [1, 3800, 200],
+                            [-25, 200, 2700]])
+        self.inertia_inv = np.linalg.inv(inertia)  # inverse of moment of inertia matrix, TODO: add this to config
 
         self.n = Idx.NUM  # Number of state elements
         self.x = None  # state
