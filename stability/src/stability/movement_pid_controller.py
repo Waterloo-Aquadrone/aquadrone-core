@@ -25,7 +25,7 @@ class MovementPIDController:
             pid.setpoint = 0  # all target angles initialized to 0
             self.pids.append(pid)
 
-        self.quaternion = np.array([0, 0, 0, 1])
+        self.rotation = Rotation.identity()
         self.position = np.array([0, 0, 0])
 
         rospy.Subscriber("/movement_target", Vector3, callback=self.goal_cb)
@@ -37,15 +37,15 @@ class MovementPIDController:
             pid.setpoint = target
 
     def state_cb(self, msg):
-        self.quaternion = np.array([msg.orientation_quat.x, msg.orientation_quat.y,
-                                    msg.orientation_quat.z, msg.orientation_quat.w])
+        self.rotation = Rotation.from_quat([msg.orientation_quat.x, msg.orientation_quat.y,
+                                            msg.orientation_quat.z, msg.orientation_quat.w])
         self.position = np.array([msg.position.x, msg.position.y])
 
     def run(self):
         control = Wrench()
         while not rospy.is_shutdown():
             absolute_force = np.array([self.pids[0](self.position[0]), self.pids[1](self.position[1]), 0])
-            relative_force = np.dot(Rotation.from_quat(self.quaternion).inv().as_matrix(), absolute_force)
+            relative_force = self.rotation.inv().apply(absolute_force)
             for var, value in zip('xyz', relative_force):
                 setattr(control.force, var, value)
             self.pub.publish(control)

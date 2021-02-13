@@ -27,7 +27,7 @@ def plot_depth_data(data):
 if __name__ == "__main__":
     rospy.init_node("dive_test")
 
-    target_depth = 6  # m
+    target_depth = -6  # m
 
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(),
                                                    GoToDepthState(target_depth, tolerance=0.05,
