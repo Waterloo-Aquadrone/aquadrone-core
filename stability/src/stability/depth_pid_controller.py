@@ -7,7 +7,7 @@ from geometry_msgs.msg import Wrench
 
 from aquadrone_msgs.msg import SubState
 
-import aquadrone_math_utils.orientation_math as OH
+from scipy.spatial.transform import Rotation
 
 
 class DepthPIDController:
@@ -30,29 +30,24 @@ class DepthPIDController:
         self.pressure_offset = 100.0
         self.g = 9.8  # m/s^2
 
-        self.w_pub = rospy.Publisher('/depth_command', Wrench, queue_size=3)
+        self.w_pub = rospy.Publisher('/depth_command', Wrench, queue_size=1)
         self.depth_sub = rospy.Subscriber("/depth_control/goal_depth", Float64, callback=self.goal_cb)
 
-        # Increasing depth (positive) will be negatively increasing position.z
-        self.depth_goal = 3
+        self.depth_goal = -3
         self.pid.setpoint = self.depth_goal
 
-        self.roll = 0
-        self.pitch = 0
-        self.yaw = 0
+        self.rotation = Rotation.identity()
 
     def goal_cb(self, msg):
-        if msg.data < 0:
-            print('Warning: depth < 0 corresponds to above water!')
+        if msg.data > 0:
+            print('Warning: depth > 0 corresponds to above water!')
         self.depth_goal = msg.data
         self.pid.setpoint = self.depth_goal
 
     def state_cb(self, msg):
-        self.depth = -msg.position.z
-
-        self.roll = msg.orientation_RPY.x
-        self.pitch = msg.orientation_RPY.y
-        self.yaw = msg.orientation_RPY.z
+        self.depth = msg.position.z
+        self.rotation = Rotation.from_quat([msg.orientation_quat.x, msg.orientation_quat.y,
+                                            msg.orientation_quat.z, msg.orientation_quat.w])
 
     def pressure_to_m(self, p):
         return (p - self.pressure_offset) / self.g
@@ -66,15 +61,12 @@ class DepthPIDController:
                 break
 
     def control_loop(self):
-        u = -self.pid(self.depth)
+        u = self.pid(self.depth)
         self.publish_wrench(u)
         # print("Goal/Depth = %f/%f" % (self.depth_goal, self.depth))
 
     def publish_wrench(self, u):
-
-        vec = np.array([[0], [0], [u]])
-
-        vec = np.dot(OH.RPY_Matrix(self.roll, self.pitch, self.yaw).transpose(), vec)
+        vec = self.rotation.inv().apply(np.array([0, 0, u]))
         # print(vec)
 
         msg = Wrench()

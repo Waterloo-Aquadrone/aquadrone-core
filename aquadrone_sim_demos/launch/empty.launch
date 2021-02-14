@@ -21,11 +21,11 @@
         <arg name="real" value="False"/>
         <arg name="model" value="$(arg model)"/>
     </include>
+    <include file="$(find stability)/launch/stability.launch" />
 
     <include file="$(find stability)/launch/stability.launch" />
 
     <include file="$(find state_estimation)/launch/localization.launch">
         <arg name="omniscient" value="$(arg omniscient_ekf)"/>
     </include>
-
 </launch>

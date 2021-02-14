@@ -12,7 +12,7 @@ from path_planning.state_executor import StateExecutor
 if __name__ == "__main__":
     rospy.init_node("pole_finder_demo")
 
-    goal_depth = 3
+    goal_depth = -3
 
     # BGR
     red_low = (0, 0, 40)
