@@ -2,6 +2,7 @@
     <arg name="world" default="empty"/>
     <arg name="model" default="v28"/>
     <arg name="omniscient_ekf" default="True"/>
+    <arg name="enable_computer" default="True"/>
     <arg name="computation_factor" default="1"/>
 
     <include file="$(find aquadrone_sim_worlds)/launch/$(arg world)_world.launch">
@@ -20,6 +21,7 @@
     <include file="$(find thruster_control)/launch/control.launch">
         <arg name="real" value="False"/>
         <arg name="model" value="$(arg model)"/>
+        <arg name="enable_computer" value="$(arg enable_computer)"/>
     </include>
     <include file="$(find stability)/launch/stability.launch" />
 
