@@ -17,5 +17,7 @@
         <arg name="omniscient" value="False"/>
     </include>
 
-    <!-- TODO vision launch file -->
+    <include file="$(find vision)/launch/vision.launch">
+        <arg name="real" value="True"/>
+    </include>
 </launch>

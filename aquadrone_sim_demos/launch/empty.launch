@@ -34,5 +34,7 @@
         <arg name="omniscient" value="$(arg omniscient_ekf)"/>
     </include>
 
-    <node name="omniscient_vision_node" pkg="vision" type="faker.py" />
+    <include file="$(find vision)/launch/vision.launch">
+        <arg name="real" value="False"/>
+    </include>
 </launch>
