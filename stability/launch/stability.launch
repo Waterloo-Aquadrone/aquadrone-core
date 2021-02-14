@@ -1,6 +1,6 @@
 <launch>
     <arg name="real" default="False"/>
-    <rosparam command="load" file="$(eval find('stability') + '/config/' + ('real' if arg('real') else 'sim') + _stability_params.yaml)"/>
+    <rosparam command="load" file="$(eval find('stability') + '/config/' + ('real' if arg('real') else 'sim') + '_stability_params.yaml')"/>
 
     <node name="depth_pid" pkg="stability" type="depth_control_node.py" output="screen"/>
     <node name="orientation_pid" pkg="stability" type="orientation_control_node.py" output="screen"/>
