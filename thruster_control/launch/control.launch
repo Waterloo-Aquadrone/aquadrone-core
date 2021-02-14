@@ -1,0 +1,16 @@
+<launch>
+    <arg name="real" default="False"/>
+    <arg name="model" default="v28"/>
+    <arg name="enable_computer" default="True"/>
+    <arg name="faulty_distributor" default="False"/>
+    <param name="model" value="$(arg model)"/>
+
+    <node name="thrust_computer" pkg="thruster_control" type="thrust_computer_node.py" output="screen" if="$(arg enable_computer)"/>
+
+    <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py"
+          output="screen" if="$(eval not arg('faulty_distributor'))"/>
+    <node name="faulty_thrust_distributor" pkg="thruster_control" type="faulty_thrust_distributor_node.py"
+          output="screen" if="$(arg faulty_distributor)"/>
+
+    <node name="real_thruster_output" pkg="thruster_control" type="real_thruster_pwm_node.py" output="screen" if="$(arg real)"/>
+</launch>

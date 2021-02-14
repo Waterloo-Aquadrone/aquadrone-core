@@ -1,14 +1,11 @@
-#!/usr/bin/env python3
-
 import rospy
 
 from geometry_msgs.msg import Point, Pose, Vector3
-from std_msgs.msg import String
 from gazebo_msgs.msg import ModelStates
 from aquadrone_msgs.msg import Vision_Array, Vision
 
 
-class Omniscient_Vision:
+class OmniscientVision:
     def __init__(self):
         self.relative_pos_pub = rospy.Publisher("Vision_Data", Vision_Array, queue_size=1)
         self.object_pos_sub = rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos)
@@ -80,10 +77,3 @@ class Omniscient_Vision:
                 self.rate.sleep()
             except rospy.ROSInterruptException:
                 break
-
-
-if __name__ == "__main__":
-    rospy.init_node("omniscient_vision_node")
-
-    faker = Omniscient_Vision()
-    faker.run()
