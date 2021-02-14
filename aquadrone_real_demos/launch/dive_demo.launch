@@ -3,8 +3,8 @@
 
     <include file="$(find aquadrone_real_demos)/launch/empty.launch">
         <arg name="model" value="$(arg model)"/>
-        <arg name="enable_computer" value="False"/>
+        <arg name="enable_computer" value="True"/>
     </include>
 
-    <node name="thruster_test" pkg="path_planning" type="thruster_test.py" output="screen"/>
+    <node name="dive_test" pkg="path_planning" type="dive_test.py" output="screen"/>
 </launch>

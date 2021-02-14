@@ -1,0 +1,7 @@
+<launch>
+    <arg name="real" default="False"/>
+
+    <!-- TODO: add real vision node -->
+    <node name="omniscient_vision_node" pkg="vision" type="omniscient_vision_node.py" output="screen"
+          if="$(eval not arg('real'))"/>
+</launch>
