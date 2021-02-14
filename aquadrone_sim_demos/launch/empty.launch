@@ -26,7 +26,9 @@
         <arg name="faulty_distributor" value="$(arg faulty_distributor)"/>
     </include>
 
-    <include file="$(find stability)/launch/stability.launch" />
+    <include file="$(find stability)/launch/stability.launch">
+        <arg name="real" value="False"/>
+    </include>
 
     <include file="$(find state_estimation)/launch/localization.launch">
         <arg name="omniscient" value="$(arg omniscient_ekf)"/>
