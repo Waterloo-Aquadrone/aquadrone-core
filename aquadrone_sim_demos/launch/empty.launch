@@ -23,11 +23,12 @@
         <arg name="model" value="$(arg model)"/>
         <arg name="enable_computer" value="$(arg enable_computer)"/>
     </include>
-    <include file="$(find stability)/launch/stability.launch" />
 
     <include file="$(find stability)/launch/stability.launch" />
 
     <include file="$(find state_estimation)/launch/localization.launch">
         <arg name="omniscient" value="$(arg omniscient_ekf)"/>
     </include>
+
+    <node name="omniscient_vision_node" pkg="vision" type="faker.py" />
 </launch>
