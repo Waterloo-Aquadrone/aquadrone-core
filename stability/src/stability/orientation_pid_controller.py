@@ -56,5 +56,4 @@ class OrientationPIDController:
         # Assumes omega is in absolute frame but should be in relative frame
         relative_torque = self.k_ps * axis_error - self.k_ds * self.rotation.apply(self.omega)
         absolute_torque = self.rotation.inv().apply(relative_torque)
-        print(f'Target: {self.target_rotation.as_quat()}, current: {self.rotation.as_quat()}, torque: {absolute_torque}')
         return absolute_torque
