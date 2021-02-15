@@ -201,8 +201,7 @@ class EKF:
         :param u: The motor thrusts.
         :return: The total wrench being applied to the submarine.
         """
-        net_wrench = np.zeros(6)
-        net_wrench += np.dot(self.B, u)
+        net_wrench = np.dot(self.B, u)
 
         # linear drag forces
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1]
