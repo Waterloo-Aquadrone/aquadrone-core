@@ -1,6 +1,5 @@
 import rospy
 
-from geometry_msgs.msg import Point, Pose, Vector3
 from gazebo_msgs.msg import ModelStates
 from aquadrone_msgs.msg import Vision_Array, Vision
 from aquadrone_math_utils.ros_utils import make_vector
