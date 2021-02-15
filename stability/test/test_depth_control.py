@@ -47,9 +47,9 @@ class TestDepthPIDController(unittest.TestCase):
         pid.depth = 0  # Make sure we have init condition
 
         # Set up message
-        in_depth = 5.0
+        in_depth = -5.0
         msg = SubState()
-        msg.position.z = -in_depth
+        msg.position.z = in_depth
         msg.orientation_quat.w = 1
 
         # Run code
