@@ -2,6 +2,10 @@
     <arg name="model" default="v28"/>
     <arg name="enable_computer" default="True"/>
 
+    <include file="$(find aquadrone_sensors)/launch/sensors.launch">
+        <arg name="real" value="True"/>
+    </include>
+
     <include file="$(find thruster_control)/launch/control.launch">
         <arg name="real" value="True"/>
         <arg name="model" value="$(arg model)"/>
