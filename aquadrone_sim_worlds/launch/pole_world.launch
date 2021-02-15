@@ -5,6 +5,11 @@
     <arg name="timeout" default="0.0"/>
     <arg name="debug" default="false"/>
 
+    <arg name="computation_factor" default="1"/>
+    <include file="$(find aquadrone_sim_worlds)/launch/computation_factor.launch">
+        <arg name="computation_factor" value="$(arg computation_factor)"/>
+    </include>
+
     <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find aquadrone_sim_worlds)/worlds/empty_underwater.world"/>
