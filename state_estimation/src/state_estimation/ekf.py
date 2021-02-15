@@ -161,24 +161,25 @@ class EKF:
         :param dt: The amount of elapsed time.
         :return: The resulting state.
         """
+        new_x = np.copy(x)
         total_wrench = self.get_net_wrench(x, u)
 
         # update position
-        x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
+        new_x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
 
         # update orientation
-        x[Idx.Ow:Idx.Oz + 1] += (dt / 2) * np.dot(Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1]).E().transpose(),
+        new_x[Idx.Ow:Idx.Oz + 1] += (dt / 2) * np.dot(Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1]).E().transpose(),
                                                   x[Idx.Wx:Idx.Wz + 1])
         # rescale to unit quaternion
-        x[Idx.Ow:Idx.Oz + 1] /= np.sum(x[Idx.Ow:Idx.Oz + 1] ** 2) ** 0.5  # can't use np.linalg.norm with sympy
+        new_x[Idx.Ow:Idx.Oz + 1] /= np.sum(x[Idx.Ow:Idx.Oz + 1] ** 2) ** 0.5  # can't use np.linalg.norm with sympy
 
         # update linear velocity
-        x[Idx.Vx:Idx.Vz + 1] += total_wrench[:3] / self.mass * dt
+        new_x[Idx.Vx:Idx.Vz + 1] += total_wrench[:3] / self.mass * dt
 
         # update angular velocity
-        x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
+        new_x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
 
-        return x
+        return new_x
 
     def get_f_jacobian_func(self):
         x_vars = np.asarray(sp.symbols(', '.join([f'x_{i}' for i in range(self.n)])))
