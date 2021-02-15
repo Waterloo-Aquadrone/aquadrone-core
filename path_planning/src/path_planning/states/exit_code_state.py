@@ -12,15 +12,6 @@ class ExitCodeState(BaseState):
     def state_name(self):
         return 'exit_code'
 
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
     def has_completed(self):
         return True
 

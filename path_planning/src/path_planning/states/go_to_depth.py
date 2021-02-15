@@ -23,9 +23,6 @@ class GoToDepthState(BaseState):
         controls.set_depth_goal(self.depth_goal)
         print(self.state_name(), 'starting to go to depth', self.depth_goal, 'm')
 
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
     def process(self, t, controls, sub_state, world_state, sensors):
         current_depth = sub_state.get_submarine_state().position.z
         depth_err = abs(current_depth - self.depth_goal)

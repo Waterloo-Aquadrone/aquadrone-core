@@ -25,8 +25,5 @@ class WaitingState(BaseState):
             self.completed = True
             print(self.state_name(), 'completed waiting!')
 
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
     def has_completed(self):
         return self.completed

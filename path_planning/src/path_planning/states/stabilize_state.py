@@ -34,8 +34,5 @@ class StabilizeState(BaseState):
             self.completed = True
             print(self.state_name(), 'stabilized!')
 
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
     def has_completed(self):
         return self.completed
