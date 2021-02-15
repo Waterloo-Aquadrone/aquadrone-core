@@ -17,7 +17,7 @@ class SimPressureSensor:
     def get_obj_pos(self, data):
         for name, pose in zip(data.name, data.pose):
             if name == self.sub_name:
-                self.measurement_z = pose.z
+                self.measurement_z = pose.position.z
 
     def publish_message(self):
         depth = -self.measurement_z
