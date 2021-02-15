@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from aquadrone_sensors.sim_pressure_sensor import SimPressureSensor
 
