@@ -15,6 +15,7 @@ from aquadrone_msgs.msg import SubState, MotorControls
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
+from aquadrone_math_utils.ros_utils import ros_time
 
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
 
@@ -57,7 +58,7 @@ class EKF:
         rospy.Subscriber("motor_command", MotorControls, self.motor_callback)
         self.state_publisher = rospy.Publisher("state_estimation", SubState, queue_size=1)
         rospy.Service('reset_sub_state_estimation', Trigger, self.initialize_state)
-        self.last_t = self.get_t()
+        self.last_t = ros_time()
 
         # constants related to ambient conditions and submarine properties
         self.g = 9.81  # m/s^2
@@ -100,10 +101,6 @@ class EKF:
 
     def motor_callback(self, msg):
         self.u = np.asarray(msg.motorThrusts)
-
-    @staticmethod
-    def get_t():
-        return rospy.Time.now().to_sec()
 
     def prediction(self, dt):
         f_jacobian = self.f_jacobian_func(self.x, self.u, dt)
@@ -290,7 +287,7 @@ class EKF:
             except ROSInterruptException:
                 break
 
-            current_t = self.get_t()
+            current_t = ros_time()
             dt = current_t - self.last_t
             self.last_t = current_t
 

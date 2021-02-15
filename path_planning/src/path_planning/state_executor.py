@@ -1,6 +1,7 @@
 import rospy
 from .ros_modules import ROSControlsModule, ROSStateEstimationModule, \
     ROSWorldEstimationModule, ROSSensorDataModule
+from aquadrone_math_utils.ros_utils import ros_time
 
 
 class StateExecutor:
@@ -21,15 +22,11 @@ class StateExecutor:
         self._exit_code = None
         rospy.on_shutdown(self.shutdown_hook)
 
-    @staticmethod
-    def t():
-        return rospy.Time.now().to_sec()
-
     def run(self):
         """
         This function will execute the state and block until it terminates.
         """
-        self.state.initialize(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
+        self.state.initialize(ros_time(), self.controls, self.sub_state, self.world_state, self.sensors)
 
         while not rospy.is_shutdown():
             try:
@@ -37,10 +34,10 @@ class StateExecutor:
             except rospy.ROSInterruptException:
                 break
 
-            self.state.process(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
+            self.state.process(ros_time(), self.controls, self.sub_state, self.world_state, self.sensors)
 
             if self.state.has_completed():
-                self.state.finalize(self.t(), self.controls, self.sub_state, self.world_state, self.sensors)
+                self.state.finalize(ros_time(), self.controls, self.sub_state, self.world_state, self.sensors)
                 self._exit_code = self.state.exit_code()
 
                 # still need to halt controls to send the thruster shutdown request

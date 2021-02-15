@@ -7,22 +7,19 @@ from autograd import jacobian
 from sensor_msgs.msg import Imu, FluidPressure
 
 from state_estimation.ekf_indices import Idx
+from aquadrone_math_utils.ros_utils import ros_time
 
 
 class BaseSensorListener(object):
     # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
     def __init__(self, parent_ekf):
-        self.last_time = rospy.Time.now().to_sec()
+        self.last_time = ros_time()
         self.h_jacobian_func = jacobian(self.state_to_measurement_h)
         self.parent_ekf = parent_ekf
 
-    @staticmethod
-    def get_t():
-        return rospy.Time.now().to_sec()
-
     def is_valid(self):
-        return self.get_t() - self.last_time < self.get_timeout_sec()
+        return ros_time() - self.last_time < self.get_timeout_sec()
 
     def get_h_jacobian(self, x, u):
         """
@@ -104,7 +101,7 @@ class PressureSensorListener(BaseSensorListener):
 
         self.z = -self.pressure_to_depth(pressure)
         self.variance = variance / self.g
-        self.last_time = self.get_t()
+        self.last_time = ros_time()
 
     def pressure_to_depth(self, pressure):
         return (pressure - self.pressure_offset) / self.g
@@ -174,4 +171,4 @@ class IMUSensorListener(BaseSensorListener):
                                           msg.angular_velocity_covariance[4],
                                           msg.angular_velocity_covariance[8]])
 
-        self.last_time = self.get_t()
+        self.last_time = ros_time()
