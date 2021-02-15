@@ -1,6 +1,7 @@
 simple-pid
 mock
 numpy
+sympy
 autograd
 pandas
 matplotlib

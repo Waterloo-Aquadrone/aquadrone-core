@@ -1,8 +1,8 @@
+from abc import ABC, abstractmethod
 import rospy
 
-# import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
-import autograd.numpy as np  # Thinly-wrapped numpy
-from autograd import jacobian
+import numpy as np
+import sympy as sp
 
 from sensor_msgs.msg import Imu, FluidPressure
 
@@ -10,12 +10,12 @@ from state_estimation.ekf_indices import Idx
 from aquadrone_math_utils.ros_utils import ros_time
 
 
-class BaseSensorListener(object):
+class BaseSensorListener(ABC):
     # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
     def __init__(self, parent_ekf):
         self.last_time = ros_time()
-        self.h_jacobian_func = jacobian(self.state_to_measurement_h)
+        self.get_h_jacobian = self.get_h_jacobian_func()
         self.parent_ekf = parent_ekf
 
     def is_valid(self):
@@ -23,49 +23,67 @@ class BaseSensorListener(object):
 
     def get_h_jacobian(self, x, u):
         """
-        Must return a matrix of shape (self.get_p(), n) where x is of shape (n, n)
+        Must return a matrix of shape (self.get_p(), n) where x is of shape (n,)
 
         :param x: The current state.
         :param u: The current control inputs.
         :return: Jacobian of self.state_to_measurement_h(x, u)
         """
         # Jacobian of measurement with respect to state (as calculated by get_measurement_z)
-        return self.h_jacobian_func(x, u)
+        pass
 
+    def get_h_jacobian_func(self):
+        x_vars = list(sp.symbols(', '.join([f'x_{i}' for i in range(self.parent_ekf.n)])))
+        u_vars = list(sp.symbols(', '.join([f'u_{i}' for i in range(self.parent_ekf.m)])))
+
+        h = self.state_to_measurement_h(x_vars, u_vars)
+        jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(h_i, x_i)) for x_i in x_vars] for h_i in h]
+
+        return lambda x, u: np.array([[func(x, u) for func in jacobian_row]
+                                      for jacobian_row in jacobian_matrix])
+
+    @abstractmethod
     def get_timeout_sec(self):
         # Amount of time to use old measurements for
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def get_p(self):
-        # Number of elements in measurement vector
-        raise NotImplementedError
+        """
+        :return: The number of elements in the measurement vector
+                 (the size of the vector returned by self.get_measurement_z()).
+        """
+        pass
 
+    @abstractmethod
     def get_measurement_z(self):
         """
         Must be a vector of length self.get_p()
 
         :return: The most recent reading of the actual measurement of the sensor.
         """
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def get_R(self):
         """
         Must be a matrix with shape (self.get_p(), self.get_p())
 
         :return: The uncertainty matrix of measurements.
         """
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def state_to_measurement_h(self, x, u):
         """
         Must return an array of length self.get_p()
-        Must be autograd-able
+        Must be sympy-able
 
         :param x: The current state.
         :param u: The current control inputs.
         :return: The expected sensor readings based on the given state and inputs.
         """
-        raise NotImplementedError
+        pass
 
 
 class PressureSensorListener(BaseSensorListener):
