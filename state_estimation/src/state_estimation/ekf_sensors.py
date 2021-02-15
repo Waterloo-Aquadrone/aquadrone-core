@@ -172,7 +172,7 @@ class IMUSensorListener(BaseSensorListener):
         # Need to verify what our onboard sensor reports
         # Keep as this as an initial estimate
         # TODO: convert RPY covariances (3x3) to quaternion covariances (4x4)
-        #  page 69 of this paper: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.6.4173&rep=rep1&type=pdf
+        #  page 69 of this paper: https://drive.google.com/file/d/1p1gx4UxiwRlnUXe5bEa_7E2FWrMfDk3y/view?usp=sharing
         self.orientation_var = np.diag([msg.orientation_covariance[0],
                                         msg.orientation_covariance[0],
                                         msg.orientation_covariance[0],
