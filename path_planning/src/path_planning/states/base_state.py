@@ -1,4 +1,7 @@
-class BaseState:
+from abc import ABC, abstractmethod
+
+
+class BaseState(ABC):
     """
     Each state should define how it interacts with the depth and orientation control systems, because those are
     persisted across state changes.
@@ -32,6 +35,7 @@ class BaseState:
         """
         pass
 
+    @abstractmethod
     def has_completed(self):
         """
         When this function returns True, the state should exit.

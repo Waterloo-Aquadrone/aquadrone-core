@@ -86,8 +86,5 @@ class BarrelRoll(BaseState):
         # If within 5 deg of level and |roll_rate| < 2 deg/s
         return (roll < np.radians(5) or roll > np.radians(355)) and np.abs(roll_rate) < np.radians(2)
 
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
     def has_completed(self):
         return self.completed
