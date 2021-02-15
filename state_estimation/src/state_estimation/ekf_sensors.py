@@ -33,8 +33,8 @@ class BaseSensorListener(ABC):
         pass
 
     def get_h_jacobian_func(self):
-        x_vars = list(sp.symbols(', '.join([f'x_{i}' for i in range(self.parent_ekf.n)])))
-        u_vars = list(sp.symbols(', '.join([f'u_{i}' for i in range(self.parent_ekf.m)])))
+        x_vars = np.asarray(sp.symbols(', '.join([f'x_{i}' for i in range(self.parent_ekf.n)])))
+        u_vars = np.asarray(sp.symbols(', '.join([f'u_{i}' for i in range(self.parent_ekf.m)])))
 
         h = self.state_to_measurement_h(x_vars, u_vars)
         jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(h_i, x_i)) for x_i in x_vars] for h_i in h]

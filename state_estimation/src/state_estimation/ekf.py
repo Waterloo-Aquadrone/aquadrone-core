@@ -181,8 +181,8 @@ class EKF:
         return x
 
     def get_f_jacobian_func(self):
-        x_vars = list(sp.symbols(', '.join([f'x_{i}' for i in range(self.n)])))
-        u_vars = list(sp.symbols(', '.join([f'u_{i}' for i in range(self.m)])))
+        x_vars = np.asarray(sp.symbols(', '.join([f'x_{i}' for i in range(self.n)])))
+        u_vars = np.asarray(sp.symbols(', '.join([f'u_{i}' for i in range(self.m)])))
         dt_var = sp.symbols('dt')
 
         new_x = self.f(x_vars, u_vars, dt_var)
@@ -212,8 +212,8 @@ class EKF:
         return net_wrench
 
     def get_net_wrench_jacobian_func(self):
-        x_vars = list(sp.symbols(', '.join([f'x_{i}' for i in range(self.n)])))
-        u_vars = list(sp.symbols(', '.join([f'u_{i}' for i in range(self.m)])))
+        x_vars = np.asarray(sp.symbols(', '.join([f'x_{i}' for i in range(self.n)])))
+        u_vars = np.asarray(sp.symbols(', '.join([f'u_{i}' for i in range(self.m)])))
 
         net_wrench = self.get_net_wrench(x_vars, u_vars)
         jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(wrench_component, x_i)) for x_i in x_vars]
