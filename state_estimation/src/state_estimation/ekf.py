@@ -244,10 +244,8 @@ class EKF:
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
-        Cq = np.diag([quat_variance.w, quat_variance.x, quat_variance.y, quat_variance.z])
-
-        quat_vec = OMath.quat_msg_to_vec(quaternion)
-        G = quat_to_euler_jacobian(quat_vec).reshape((3, 4))
+        Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
+        G = quat_to_euler_jacobian(self.x[Idx.Ow:Idx.Oz + 1]).reshape((3, 4))
 
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
         sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
