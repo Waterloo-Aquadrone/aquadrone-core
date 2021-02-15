@@ -90,9 +90,12 @@ class BaseSensorListener(ABC):
 
 
 class PressureSensorListener(BaseSensorListener):
+    WATER_SPECIFIC_GRAVITY = 1000 * 9.81  # Pa/m
+    ATMOSPHERIC_PRESSURE = 101325  # Pa
+
     def __init__(self, parent_ekf):
         super(PressureSensorListener, self).__init__(parent_ekf)
-        rospy.Subscriber("aquadrone/out/pressure", FluidPressure, self.depth_cb)
+        rospy.Subscriber("aquadrone/sensors/pressure", FluidPressure, self.depth_cb)
 
         self.z = 0
         self.variance = 1
@@ -117,15 +120,15 @@ class PressureSensorListener(BaseSensorListener):
         return np.array([x[Idx.z]])
 
     def depth_cb(self, msg):
-        pressure = msg.fluid_pressure
+        absolute_pressure = msg.fluid_pressure
         variance = msg.variance
 
-        self.z = -self.pressure_to_depth(pressure)
-        self.variance = variance / self.g
-        self.last_time = ros_time()
+        gauge_pressure = absolute_pressure - self.ATMOSPHERIC_PRESSURE
+        depth = gauge_pressure / self.WATER_SPECIFIC_GRAVITY
 
-    def pressure_to_depth(self, pressure):
-        return (pressure - self.pressure_offset) / self.g
+        self.z = -depth
+        self.variance = variance / self.WATER_SPECIFIC_GRAVITY
+        self.last_time = ros_time()
 
 
 class IMUSensorListener(BaseSensorListener):
