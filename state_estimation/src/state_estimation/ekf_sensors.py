@@ -15,8 +15,10 @@ class BaseSensorListener(ABC):
 
     def __init__(self, parent_ekf):
         self.last_time = ros_time()
-        self.get_h_jacobian = self.get_h_jacobian_func()
         self.parent_ekf = parent_ekf
+
+        # this must be calculated after self.parent_ekf is assigned
+        self.get_h_jacobian = self.get_h_jacobian_func()
 
     def is_valid(self):
         return ros_time() - self.last_time < self.get_timeout_sec()
