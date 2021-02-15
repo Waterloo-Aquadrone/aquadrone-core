@@ -20,7 +20,7 @@ class TestGoToDepth(unittest.TestCase):
         s = GoToDepthState(0)
     
     def test_wait_for_stabilized_at_depth(self):
-        s = GoToDepthState(5)
+        s = GoToDepthState(-5)
         controls = ROSControlsModule()
         sub_state = ROSStateEstimationModule()
         sensors = ROSSensorDataModule()
