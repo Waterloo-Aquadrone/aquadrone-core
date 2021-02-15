@@ -2,7 +2,7 @@ import rospy
 
 from gazebo_msgs.msg import ModelStates
 from aquadrone_msgs.msg import Vision_Array, Vision
-from aquadrone_math_utils.ros_utils import make_vector
+from aquadrone_math_utils.ros_utils import make_vector, vector_to_np
 
 
 class OmniscientVision:
@@ -24,10 +24,10 @@ class OmniscientVision:
         if not self.testing:
             for name, pose in zip(data.name, data.pose):
                 if name != "aquadrone":
-                    world_object_poses.append([pose.x, pose.y, pose.z])
+                    world_object_poses.append(vector_to_np(pose.position))
                     world_object_names.append(name)
                 else:
-                    sub_pose = [pose.x, pose.y, pose.z]
+                    sub_pose = vector_to_np(pose.position)
         else:
             world_object_poses = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
             sub_pose = [0, 0, 0]
