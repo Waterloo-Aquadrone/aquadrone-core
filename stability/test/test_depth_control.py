@@ -50,6 +50,7 @@ class TestDepthPIDController(unittest.TestCase):
         in_depth = 5.0
         msg = SubState()
         msg.position.z = -in_depth
+        msg.orientation_quat.w = 1
 
         # Run code
         pid.state_cb(msg)
