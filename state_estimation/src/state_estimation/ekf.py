@@ -14,7 +14,7 @@ from aquadrone_msgs.msg import SubState, MotorControls
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
-from aquadrone_math_utils.ros_utils import ros_time
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
 from aquadrone_math_utils.quaternion import Quaternion
 
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
@@ -226,41 +226,17 @@ class EKF:
         sub_state_msg = SubState()
 
         # copy position
-        position = Vector3()
-        position.x = self.x[Idx.x]
-        position.y = self.x[Idx.y]
-        position.z = self.x[Idx.z]
-        sub_state_msg.position = position
-        pos_variance = Vector3()
-        pos_variance.x = self.P[Idx.x, Idx.x]
-        pos_variance.y = self.P[Idx.y, Idx.y]
-        pos_variance.z = self.P[Idx.z, Idx.z]
-        sub_state_msg.pos_variance = pos_variance
+        sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
+        sub_state_msg.pos_variance = make_vector(np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
 
         # copy velocity
-        velocity = Vector3()
-        velocity.x = self.x[Idx.Vx]
-        velocity.y = self.x[Idx.Vy]
-        velocity.z = self.x[Idx.Vz]
-        sub_state_msg.velocity = velocity
-        vel_variance = Vector3()
-        vel_variance.x = self.P[Idx.Vx, Idx.Vx]
-        vel_variance.y = self.P[Idx.Vy, Idx.Vy]
-        vel_variance.z = self.P[Idx.Vz, Idx.Vz]
-        sub_state_msg.vel_variance = vel_variance
+        sub_state_msg.velocity = make_vector(self.x[Idx.Vx:Idx.Vz + 1])
+        sub_state_msg.vel_variance = make_vector(np.diag(self.P[Idx.Vx:Idx.Vz + 1, Idx.Vx:Idx.Vz + 1]))
 
         # copy orientation
-        quaternion = Quaternion()
-        quaternion.x = self.x[Idx.Ox]
-        quaternion.y = self.x[Idx.Oy]
-        quaternion.z = self.x[Idx.Oz]
-        quaternion.w = self.x[Idx.Ow]
+        quaternion = make_quaternion(self.x[Idx.Ow:Idx.Oz + 1])
         sub_state_msg.orientation_quat = quaternion
-        quat_variance = Quaternion()
-        quat_variance.w = self.P[Idx.Ow, Idx.Ow]
-        quat_variance.x = self.P[Idx.Ox, Idx.Ox]
-        quat_variance.y = self.P[Idx.Oy, Idx.Oy]
-        quat_variance.z = self.P[Idx.Oz, Idx.Oz]
+        quat_variance = make_quaternion(np.diag(self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]))
         sub_state_msg.orientation_quat_variance = quat_variance
 
         # create roll, pitch, yaw copy of orientation
@@ -268,34 +244,17 @@ class EKF:
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
-        Cq = np.diag([sub_state_msg.orientation_quat_variance.w,
-                      sub_state_msg.orientation_quat_variance.x,
-                      sub_state_msg.orientation_quat_variance.y,
-                      sub_state_msg.orientation_quat_variance.z])
+        Cq = np.diag([quat_variance.w, quat_variance.x, quat_variance.y, quat_variance.z])
 
-        quat_vec = OMath.quat_msg_to_vec(sub_state_msg.orientation_quat)
-        G = quat_to_euler_jacobian(quat_vec)
-        G.shape = (3, 4)
+        quat_vec = OMath.quat_msg_to_vec(quaternion)
+        G = quat_to_euler_jacobian(quat_vec).reshape((3, 4))
 
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
-        RPY_variance = Vector3()
-        RPY_variance.x = rpy_var_mat[0, 0]
-        RPY_variance.y = rpy_var_mat[1, 1]
-        RPY_variance.z = rpy_var_mat[2, 2]
-        sub_state_msg.orientation_RPY_variance = RPY_variance
+        sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
 
         # copy angular velocity
-        ang_vel = Vector3()
-        ang_vel.x = self.x[Idx.Wx]
-        ang_vel.y = self.x[Idx.Wy]
-        ang_vel.z = self.x[Idx.Wz]
-        sub_state_msg.ang_vel = ang_vel
-
-        ang_vel_var = Vector3()
-        ang_vel_var.x = self.P[Idx.Wx][Idx.Wx]
-        ang_vel_var.y = self.P[Idx.Wy][Idx.Wy]
-        ang_vel_var.z = self.P[Idx.Wz][Idx.Wz]
-        sub_state_msg.ang_vel_variance = ang_vel_var
+        sub_state_msg.ang_vel = make_vector(self.x[Idx.Wx:Idx.Wz + 1])
+        sub_state_msg.ang_vel_variance = make_vector(np.diag(self.P[Idx.Wx:Idx.Wz + 1, Idx.Wx:Idx.Wz + 1]))
 
         return sub_state_msg
 

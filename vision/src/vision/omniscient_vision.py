@@ -3,6 +3,7 @@ import rospy
 from geometry_msgs.msg import Point, Pose, Vector3
 from gazebo_msgs.msg import ModelStates
 from aquadrone_msgs.msg import Vision_Array, Vision
+from aquadrone_math_utils.ros_utils import make_vector
 
 
 class OmniscientVision:
@@ -58,11 +59,7 @@ class OmniscientVision:
             message.data = []
             for i in range(len(self.relative_pos)):
                 message.data.append(Vision())
-                new_data = Vector3()
-                new_data.x = self.relative_pos[i][0]
-                new_data.y = self.relative_pos[i][1]
-                new_data.z = self.relative_pos[i][2]
-                message.data[i].obj_data = new_data
+                message.data[i].obj_data = make_vector(self.relative_pos[i])
                 message.data[i].identifier = self.object_ident[i]
 
         self.pub_msg = message
