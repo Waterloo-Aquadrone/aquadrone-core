@@ -5,28 +5,10 @@
     <arg name="timeout" default="0.0"/>
     <arg name="debug" default="false"/>
 
-    <!-- Use Xacro to prepare world with arguments to control simulation time-->
     <arg name="computation_factor" default="1"/>
-
-    <!-- These versions may modify how fast the simulation runs-->
-    <!--
-    <arg name="max_step_size" value="0.002"/>
-    <arg name="real_time_update_rate" value="$(eval 500*arg('computation_factor'))"/>
-    -->
-    <!--
-    <arg name="max_step_size" value="$(eval 0.002/arg('computation_factor'))"/>
-    <arg name="real_time_update_rate" value="500"/>
-    -->
-
-    <!-- this method should try to keep the sim running at real-time, unless out of cpu power-->
-    <arg name="max_step_size" value="$(eval 0.002/arg('computation_factor'))"/>
-    <arg name="real_time_update_rate" value="$(eval 500*arg('computation_factor'))"/>
-    
-    
-    
-
-    <node name="xacro" pkg="xacro" type="xacro"
-         args="--inorder -o $(find aquadrone_sim_worlds)/worlds/empty_underwater_timed.world $(find aquadrone_sim_worlds)/worlds/empty_underwater.world max_step_size:=$(arg max_step_size) real_time_update_rate:=$(arg real_time_update_rate)"/>
+    <include file="$(find aquadrone_sim_worlds)/launch/computation_factor.launch">
+        <arg name="computation_factor" value="$(arg computation_factor)"/>
+    </include>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find aquadrone_sim_worlds)/worlds/empty_underwater_timed.world"/>
