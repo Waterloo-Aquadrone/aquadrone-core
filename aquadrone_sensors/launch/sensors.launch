@@ -1,0 +1,11 @@
+<launch>
+    <arg name="real" default="False"/>
+
+    <group if="$(arg real)">
+        <node pkg="aquadrone_sensors" type="ms5837_node.py"/>
+    </group>
+
+    <group if="$(eval not arg('real'))">
+        <node pkg="aquadrone_sensors" type="sim_pressure_sensor_node.py"/>
+    </group>
+</launch>
