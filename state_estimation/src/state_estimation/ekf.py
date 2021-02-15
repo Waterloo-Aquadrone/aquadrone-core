@@ -105,7 +105,7 @@ class EKF:
         self.u = np.asarray(msg.motorThrusts)
 
     def prediction(self, dt):
-        f_jacobian = self.f_jacobian(self.x, self.u, dt).reshape((self.n, self.n))
+        f_jacobian = self.f_jacobian(self.x, self.u, dt)
 
         # Update x and uncertainty P
         self.x = self.f(self.x, self.u, dt)
