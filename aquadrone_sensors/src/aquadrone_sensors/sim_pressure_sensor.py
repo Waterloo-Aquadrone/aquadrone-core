@@ -8,7 +8,7 @@ class SimPressureSensor:
     ATMOSPHERIC_PRESSURE = 101325  # Pa
 
     def __init__(self, rate=None, sub_name='aquadrone'):
-        self.rate = rate if rate is not None else rospy.rate(10)
+        self.rate = rate if rate is not None else rospy.Rate(10)
         self.sub_name = sub_name
         self.object_pos_sub = rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos)
         self.pub = rospy.Publisher("/aquadrone/sensors/pressure", FluidPressure, queue_size=1)
