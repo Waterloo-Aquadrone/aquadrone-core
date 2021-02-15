@@ -2,10 +2,10 @@
     <arg name="real" default="False"/>
 
     <group if="$(arg real)">
-        <node pkg="aquadrone_sensors" type="ms5837_node.py"/>
+        <node name="real_imu_sensor" pkg="aquadrone_sensors" type="ms5837_node.py" output="screen"/>
     </group>
 
     <group if="$(eval not arg('real'))">
-        <node pkg="aquadrone_sensors" type="sim_pressure_sensor_node.py"/>
+        <node name="sim_pressure_sensor" pkg="aquadrone_sensors" type="sim_pressure_sensor_node.py" output="screen"/>
     </group>
 </launch>
