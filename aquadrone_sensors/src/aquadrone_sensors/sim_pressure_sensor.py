@@ -6,6 +6,7 @@ from sensor_msgs.msg import FluidPressure
 class SimPressureSensor:
     WATER_SPECIFIC_GRAVITY = 1000 * 9.81  # Pa/m
     ATMOSPHERIC_PRESSURE = 101325  # Pa
+    VARIANCE = (0.1 * WATER_SPECIFIC_GRAVITY) ** 2  # Pa^2
 
     def __init__(self, rate=None, sub_name='aquadrone'):
         self.rate = rate if rate is not None else rospy.Rate(10)
@@ -26,6 +27,7 @@ class SimPressureSensor:
 
         msg = FluidPressure()
         msg.fluid_pressure = absolute_pressure
+        msg.variance = self.VARIANCE
         self.pub.publish(msg)
 
     def run(self):
