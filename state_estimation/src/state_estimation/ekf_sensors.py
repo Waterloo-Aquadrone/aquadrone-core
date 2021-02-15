@@ -7,7 +7,8 @@ import sympy as sp
 from sensor_msgs.msg import Imu, FluidPressure
 
 from state_estimation.ekf_indices import Idx
-from aquadrone_math_utils.ros_utils import ros_time
+from aquadrone_math_utils.ros_utils import ros_time, vector_to_np, quaternion_to_np
+from scipy.linalg import block_diag
 
 
 class BaseSensorListener(ABC):
@@ -155,7 +156,7 @@ class IMUSensorListener(BaseSensorListener):
 
     def get_R(self):
         # Variance of measurements
-        return np.diag(np.concatenate((self.accel_var, self.orientation_var, self.ang_vel_variance)))
+        return block_diag(self.accel_var, self.orientation_var, self.ang_vel_variance)
 
     def state_to_measurement_h(self, x, u):
         net_wrench = self.parent_ekf.get_net_wrench(x, u)
@@ -163,32 +164,21 @@ class IMUSensorListener(BaseSensorListener):
         return np.concatenate((acceleration, x[Idx.Ow:Idx.Oz + 1], x[Idx.Wx:Idx.Wz + 1]))
 
     def imu_cb(self, msg):
-        self.accel = np.array([msg.linear_acceleration.x,
-                               msg.linear_acceleration.y,
-                               msg.linear_acceleration.z])
+        self.accel = vector_to_np(msg.linear_acceleration)
+        self.accel_var = np.array(msg.linear_acceleration_covariance).reshape((3, 3))
 
-        self.accel_var = np.array([msg.linear_acceleration_covariance[0],
-                                   msg.linear_acceleration_covariance[0],
-                                   msg.linear_acceleration_covariance[0]])
-
-        self.orientation = np.array([msg.orientation.w,
-                                     msg.orientation.x,
-                                     msg.orientation.y,
-                                     msg.orientation.z])
+        self.orientation = quaternion_to_np(msg.orientation)
 
         # Need to verify what our onboard sensor reports
         # Keep as this as an initial estimate
-        self.orientation_var = np.array([msg.orientation_covariance[0],
-                                         msg.orientation_covariance[0],
-                                         msg.orientation_covariance[0],
-                                         msg.orientation_covariance[0]])
+        # TODO: convert RPY covariances (3x3) to quaternion covariances (4x4)
+        #  page 69 of this paper: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.6.4173&rep=rep1&type=pdf
+        self.orientation_var = np.diag([msg.orientation_covariance[0],
+                                        msg.orientation_covariance[0],
+                                        msg.orientation_covariance[0],
+                                        msg.orientation_covariance[0]])
 
-        self.ang_vel = np.array([msg.angular_velocity.x,
-                                 msg.angular_velocity.y,
-                                 msg.angular_velocity.z])
-
-        self.ang_vel_variance = np.array([msg.angular_velocity_covariance[0],
-                                          msg.angular_velocity_covariance[4],
-                                          msg.angular_velocity_covariance[8]])
+        self.ang_vel = vector_to_np(msg.angular_velocity)
+        self.ang_vel_variance = np.array(msg.angular_velocity_covariance).reshape((3, 3))
 
         self.last_time = ros_time()
