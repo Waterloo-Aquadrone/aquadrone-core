@@ -17,9 +17,9 @@ from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListen
 import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.ros_utils import ros_time
 
-quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
+quat_to_euler_jacobian = OMath.sympy_quaternion_to_euler_jacobian()
 
-
+# test
 class EKF:
     def __init__(self, config, rate=None):
         # https://en.wikipedia.org/wiki/Kalman_filter
@@ -254,8 +254,8 @@ class EKF:
                       sub_state_msg.orientation_quat_variance.y,
                       sub_state_msg.orientation_quat_variance.z])
 
-        quat_vec = OMath.quat_msg_to_vec(sub_state_msg.orientation_quat)
-        G = quat_to_euler_jacobian(quat_vec)
+        quat_vec = OMath.quat_msg_to_dict(sub_state_msg.orientation_quat)
+        G = quat_to_euler_jacobian.subs(quat_vec)
         G.shape = (3, 4)
 
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])

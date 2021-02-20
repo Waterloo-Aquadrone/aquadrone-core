@@ -6,3 +6,4 @@ pandas
 matplotlib
 scipy
 # adafruit-circuitpython-pca9685  # only needed on Jetson, will cause Travis CI build to fail
+sympy

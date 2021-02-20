@@ -1,6 +1,9 @@
 import autograd.numpy as np  # Thinly-wrapped numpy
 import math
 
+from sympy import asin, atan2, Matrix
+from sympy.abc import w, x, y, z
+
 from geometry_msgs.msg import Vector3
 
 
@@ -10,6 +13,13 @@ from geometry_msgs.msg import Vector3
 def quat_msg_to_vec(q):
     return np.array([q.w, q.x, q.y, q.z])
 
+def quat_msg_to_dict(q):
+    return {
+        'w': q.w,
+        'x': q.x,
+        'y': q.y,
+        'z': q.z,
+    }
 
 def rpy_vec_to_msg(vec):
     angles = Vector3()
@@ -24,6 +34,22 @@ def msg_quaternion_to_euler(quat):
     rpy_vec = quaternion_to_euler(q_vec)
     return rpy_vec_to_msg(rpy_vec)
 
+def sympy_quaternion_to_euler():
+    sinp = +2.0 * (w * y - z * x)
+    sinr_cosp = +2.0 * (w * x + y * z)
+    cosr_cosp = +1.0 - 2.0 * (x * x + y * y)
+
+    siny_cosp = +2.0 * (w * z + x * y)
+    cosy_cosp = +1.0 - 2.0 * (y * y + z * z)
+
+    return Matrix([
+        atan2(sinr_cosp, cosr_cosp),
+        asin(sinp),
+        atan2(siny_cosp, cosy_cosp)
+    ])
+
+def sympy_quaternion_to_euler_jacobian():
+    return sympy_quaternion_to_euler().jacobian(Matrix([w, x, y, z]))
 
 def quaternion_to_euler(quat_vec):
     # From wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
