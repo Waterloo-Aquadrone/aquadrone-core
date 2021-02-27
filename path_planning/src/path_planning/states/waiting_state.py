@@ -11,6 +11,9 @@ class WaitingState(BaseState):
         self.start_time = None
         self.completed = False
 
+    def __repr__(self):
+        return "{}({})".format(self.state_name(), self.delay)
+
     @staticmethod
     def state_name():
         return "waiting_state"

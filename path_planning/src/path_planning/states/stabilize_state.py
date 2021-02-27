@@ -17,6 +17,9 @@ class StabilizeState(BaseState):
         self.velocity_tolerance = np.radians(velocity_tolerance_degrees)
         self.completed = False
 
+    def __repr__(self):
+        return self.state_name()
+
     def state_name(self):
         return "stabilize_state"
 
