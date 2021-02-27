@@ -36,7 +36,7 @@ class Tree:
         """
     def __init__(self, name, nodeType, children=[], daemon=[], depth=0, number=1):
         if nodeType != "state" and len(children) < 1:
-            assert Exception("Parallel or Sequential State has no Children")
+            raise Exception("Parallel or Sequential State has no Children")
         self.name = name
         self.children = children
         self.daemon = daemon
