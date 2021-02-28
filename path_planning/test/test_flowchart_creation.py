@@ -38,7 +38,6 @@ class TestFlowchartCreation(unittest.TestCase):
         Tree.create_flowchart(dive_logging_machine, 'test-flowchart')
 
 
-
 if __name__ == '__main__':
     rospy.init_node('test_flowchart_creation')
     rostest.rosrun('path_planning', 'test_flowchart_creation', TestFlowchartCreation)
