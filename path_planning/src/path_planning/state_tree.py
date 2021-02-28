@@ -43,8 +43,8 @@ class Tree:
         state.get_tree().render_graph(path)
         print('Flowchart generated!')
 
-    def __init__(self, name, nodeType, children=[], daemon=[], depth=0, number=1):
-        if nodeType != "State" and len(children) < 1:
+    def __init__(self, name, nodeType, children=None, daemon=None, depth=0, number=1):
+        if nodeType != "State" and children is None:
             raise ValueError("Parallel or Sequential State has no Children: " + name)
         self.name = name
         self.children = children
@@ -57,18 +57,20 @@ class Tree:
     # assigns numbers to each node of the tree
     def __assign_nums(self, freqArr=[]):
         if len(freqArr) == 0:
-            freqArr = [i for i in range(1, self.size() + 1)]
+            freqArr = list(range(1, self.size() + 1))
 
         self.number = freqArr[0]
         freqArr.pop(0)
 
-        for child in self.children:
-            child.__assign_nums(freqArr)
-        for child in self.daemon:
-            child.__assign_nums(freqArr)
+        if self.children is not None:
+            for child in self.children:
+                child.__assign_nums(freqArr)
+        if self.daemon is not None:
+            for child in self.daemon:
+                child.__assign_nums(freqArr)
 
     # returns handles for graph
-    def __return_handle(self, parent="") -> str:
+    def __return_handle(self, parent=None) -> str:
         if self.nodeType == "State":
             return parent.name + str(self.depth) + str(self.number)
         else:
@@ -136,7 +138,7 @@ class Tree:
                             g.edge(child1.__return_handle(parent1), child2.__return_handle(parent2))
 
                 # parallel state
-                else:
+                elif self.nodeType == "ParallelState" and self.daemon is not None:
                     # declaring unimportant nodes
                     for child in self.daemon:
                         if child.nodeType == "State":
@@ -147,24 +149,31 @@ class Tree:
                         elif child.nodeType == "SequentialState" or child.nodeType == "ParallelState":
                             child.__create_graph(g, unimportant=True)
 
+                else:
+                    raise NotImplementedError(self.nodeType + " is not implemented yet")
+
     # renders only current tree
     def __render_curr_tree(self, dot: Digraph):
-        for child in self.children:
-            dot.node(child.__return_handle(self), label=child.name)
-            dot.edge(self.__return_handle(), child.__return_handle(self))
-            child.__render_curr_tree(dot=dot)
-        for child in self.daemon:
-            dot.node(child.__return_handle(self), label=child.name, style='filled', fillcolor='#d67272')
-            dot.edge(self.__return_handle(), child.__return_handle(self))
-            child.__render_curr_tree(dot=dot)
+        if self.children is not None:
+            for child in self.children:
+                dot.node(child.__return_handle(self), label=child.name)
+                dot.edge(self.__return_handle(), child.__return_handle(self))
+                child.__render_curr_tree(dot=dot)
+        if self.daemon is not None:
+            for child in self.daemon:
+                dot.node(child.__return_handle(self), label=child.name, style='filled', fillcolor='#d67272')
+                dot.edge(self.__return_handle(), child.__return_handle(self))
+                child.__render_curr_tree(dot=dot)
 
     # returns number of nodes
     def size(self) -> int:
         total = 1
-        for child in self.children:
-            total += child.size()
-        for child in self.daemon:
-            total += child.size()
+        if self.children is not None:
+            for child in self.children:
+                total += child.size()
+        if self.daemon is not None:
+            for child in self.daemon:
+                total += child.size()
         return total
 
     # renders tree structure
