@@ -1,0 +1,58 @@
+// Flowchart
+digraph pole_logger {
+	subgraph cluster_01 {
+		node [fillcolor=white style=filled]
+		label=pole_logger
+		subgraph cluster_12 {
+			node [fillcolor=white style=filled]
+			label=main
+			subgraph cluster_23 {
+				node [fillcolor=white style=filled]
+				label=dive
+				dive34 [label="waiting_state(5)"]
+				dive35 [label=stabilize_state]
+				dive36 [label="go_to_depth_state(-3)"]
+				dive37 [label="waiting_state(1)"]
+				dive34 -> dive35
+				dive35 -> dive36
+				dive36 -> dive37
+			}
+			subgraph cluster_28 {
+				node [fillcolor=white style=filled]
+				label=circle
+				circle39 [label="relative_travel(red_pole)"]
+				circle310 [label="relative_travel(green_pole)"]
+				circle311 [label="relative_travel(green_pole)"]
+				circle312 [label="relative_travel(green_pole)"]
+				circle313 [label="relative_travel(red_pole)"]
+				circle314 [label="relative_travel(red_pole)"]
+				circle315 [label="relative_travel(red_pole)"]
+				circle316 [label="relative_travel(red_pole)"]
+				circle317 [label="relative_travel(red_pole)"]
+				circle39 -> circle310
+				circle310 -> circle311
+				circle311 -> circle312
+				circle312 -> circle313
+				circle313 -> circle314
+				circle314 -> circle315
+				circle315 -> circle316
+				circle316 -> circle317
+			}
+			subgraph cluster_218 {
+				node [fillcolor=white style=filled]
+				label=surface
+				surface319 [label="go_to_depth_state(0)"]
+				surface320 [label="waiting_state(10)"]
+				surface321 [label=exit_code]
+				surface319 -> surface320
+				surface320 -> surface321
+			}
+			dive34 -> circle39 [lhead=cluster_28 ltail=cluster_23]
+			circle39 -> surface319 [lhead=cluster_218 ltail=cluster_28]
+		}
+		node [fillcolor="#d67272" style=filled]
+		pole_logger122 [label=data_logger]
+		node [fillcolor=white style=filled]
+	}
+	graph [compound=True nodesep=1]
+}
