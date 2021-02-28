@@ -17,6 +17,9 @@ class BarrelRoll(BaseState):
         self.crossed_270 = False  # True once the sub has rotated 270 deg
         self.completed = False  # True once the sub has stabilized and completed the barrel roll
 
+    def __repr__(self):
+        return self.state_name()
+
     @staticmethod
     def state_name():
         return "barrel_roll"

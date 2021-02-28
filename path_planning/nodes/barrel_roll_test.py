@@ -33,6 +33,8 @@ if __name__ == "__main__":
                                (failure_surface_machine, {1: -1}))       # 3
     markovMachine = MarkovChainStateMachine('barrel_roll_test', states, dictionaries)
     machine = ParallelStateMachine('logging_state_machine', [markovMachine], daemon_states=[DataLogger()])
+    
+    # TODO: add flowchart generation once MarkovChainStateMachine is supported
     executor = StateExecutor(machine, rospy.Rate(5))
     executor.run()
 

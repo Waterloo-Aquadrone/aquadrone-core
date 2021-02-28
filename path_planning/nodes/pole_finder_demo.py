@@ -33,5 +33,7 @@ if __name__ == "__main__":
     machine = MarkovChainStateMachine('pole_finder_demo', states, mappings)
     timed_machine = TimedStateMachine(machine, timeout=5 * 60, timeout_exit_code=0)
 
+    # TODO: add flowchart generation once MarkovChainStateMachine is supported
     executor = StateExecutor(timed_machine, rate=rospy.Rate(5))
     executor.run()
+

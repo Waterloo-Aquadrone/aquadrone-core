@@ -1,0 +1,13 @@
+// Flowchart
+digraph thruster_test {
+	subgraph cluster_01 {
+		node [fillcolor=white style=filled]
+		label=thruster_test
+		thruster_test12 [label="waiting_state(20)"]
+		thruster_test13 [label=thruster_test_state5]
+		thruster_test14 [label="waiting_state(10)"]
+		thruster_test12 -> thruster_test13
+		thruster_test13 -> thruster_test14
+	}
+	graph [compound=True nodesep=1]
+}

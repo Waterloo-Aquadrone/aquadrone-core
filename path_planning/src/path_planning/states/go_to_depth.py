@@ -15,6 +15,9 @@ class GoToDepthState(BaseState):
         self.velocity_tolerance = velocity_tolerance
         self.verbose = verbose
 
+    def __repr__(self):
+        return "{}({})".format(self.state_name(), self.depth_goal)
+
     def state_name(self):
         return "go_to_depth_state"
 

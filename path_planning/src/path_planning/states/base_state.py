@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from path_planning.state_tree import Tree
 
 
 class BaseState(ABC):
@@ -8,6 +9,9 @@ class BaseState(ABC):
     """
     def state_name(self):
         return "base_state"
+
+    def __repr__(self):
+        return self.state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         """
@@ -53,3 +57,8 @@ class BaseState(ABC):
         Other codes should be numbered 1 and higher, and their explanations should be documented.
         """
         return 0
+
+    def get_tree(self, depth=0):
+        return Tree(name=self.__repr__(),
+                    nodeType="State",
+                    depth=depth)
