@@ -55,8 +55,8 @@ class Tree:
         self.__assign_nums()
 
     # assigns numbers to each node of the tree
-    def __assign_nums(self, freqArr=[]):
-        if len(freqArr) == 0:
+    def __assign_nums(self, freqArr=None):
+        if freqArr is None:
             freqArr = list(range(1, self.size() + 1))
 
         self.number = freqArr[0]
