@@ -1,42 +1,50 @@
 # tree data structure
 from graphviz import Digraph, Source
+import rospkg
 
 
 class Tree:
     """
-        A class to represent the structure of a node
+	A class to represent the structure of a node
 
-        ...
+	...
 
-        Attributes
-        ----------
-        name : str
-            Name of the state.
-        nodeType : str
-            Type of state machine - state, parallel state machine, sequential state machine.
-        children : list
-            A list of the children, or substates, of the state.
-        daemon : list
-            A list of the UNIMPORTANT children, or substates, of the state.
-        depth : int
-            Represents the depth of the node of the tree within the state machine.
-        number : int
-            A unique integer value assigned to each state to easily differentiate between states.
+	Attributes
+	----------
+	name : str
+	    Name of the state.
+	nodeType : str
+	    Type of state machine - state, parallel state machine, sequential state machine.
+	children : list
+	    A list of the children, or substates, of the state.
+	daemon : list
+	    A list of the UNIMPORTANT children, or substates, of the state.
+	depth : int
+	    Represents the depth of the node of the tree within the state machine.
+	number : int
+	    A unique integer value assigned to each state to easily differentiate between states.
 
-        Methods
-        -------
-        renderTree(path : str):
-            Renders the structure of the state machine tree to the specified path in the form of a .pdf file.
+	Methods
+	-------
+	renderTree(path : str):
+	    Renders the structure of the state machine tree to the specified path in the form of a .pdf file.
 
-        renderGraph(path : str):
-            Renders the flowchart of the state machine to the specified path in the form of a .pdf file.
+	renderGraph(path : str):
+	    Renders the flowchart of the state machine to the specified path in the form of a .pdf file.
 
-        size() -> int:
-            returns the number of nodes within the state machine
-        """
+	size() -> int:
+	    returns the number of nodes within the state machine
+	"""
+    @staticmethod
+    def create_flowchart(state, file_name='test'):
+        # path to destination of flowchart (PDF)
+        path = rospkg.RosPack().get_path('path_planning') + '/node_flowcharts/' + file_name
+        state.get_tree().render_graph(path)
+        print('Flowchart generated!')
+    
     def __init__(self, name, nodeType, children=[], daemon=[], depth=0, number=1):
-        if nodeType != "state" and len(children) < 1:
-            raise Exception("Parallel or Sequential State has no Children")
+        if nodeType != "State" and len(children) < 1:
+            raise ValueError("Parallel or Sequential State has no Children: " + name)
         self.name = name
         self.children = children
         self.daemon = daemon
