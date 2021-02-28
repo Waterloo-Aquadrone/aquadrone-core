@@ -20,7 +20,7 @@ class TestFlowchartCreation(unittest.TestCase):
     This is an example of automatically generating a flowchart of a node.
     The example given is of the dive_test node.
     """
-    
+
     def test_dive_test_flowchart(self):
         # create the states/state machines
         target_depth = -6  # m
@@ -41,4 +41,3 @@ class TestFlowchartCreation(unittest.TestCase):
 if __name__ == '__main__':
     rospy.init_node('test_flowchart_creation')
     rostest.rosrun('path_planning', 'test_flowchart_creation', TestFlowchartCreation)
-
