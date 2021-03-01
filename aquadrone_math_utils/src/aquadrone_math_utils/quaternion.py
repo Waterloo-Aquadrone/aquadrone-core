@@ -27,6 +27,10 @@ class Quaternion:
         x, y, z, w = rotation.as_quat()
         return Quaternion.from_array([w, x, y, z])
 
+    @staticmethod
+    def identity():
+        return Quaternion.from_scipy(Rotation.identity())
+
     def real(self):
         return self.q_0
 
@@ -55,8 +59,9 @@ class Quaternion:
     def as_scipy(self):
         return Rotation.from_quat(np.array([self.q_1, self.q_2, self.q_3, self.q_0]))
 
-    def as_array(self):
-        return np.array([self.q_0, self.q_1, self.q_2, self.q_3])
+    def as_array(self, real_first=True):
+        return np.array([self.q_0, self.q_1, self.q_2, self.q_3]) if real_first \
+            else np.array([self.q_1, self.q_2, self.q_3, self.q_0])
 
     def as_matrix(self):
         return self.as_scipy().as_matrix()
