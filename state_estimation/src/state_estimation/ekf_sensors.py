@@ -5,9 +5,11 @@ import numpy as np
 import sympy as sp
 
 from sensor_msgs.msg import Imu, FluidPressure
+from aquadrone_msgs.msg import VisionArray, WorldObjectState, WorldState
 
 from state_estimation.ekf_indices import Idx
-from aquadrone_math_utils.ros_utils import ros_time, vector_to_np, quaternion_to_np
+from aquadrone_math_utils.quaternion import Quaternion
+from aquadrone_math_utils.ros_utils import ros_time, vector_to_np, quaternion_to_np, make_vector, make_quaternion
 from scipy.linalg import block_diag
 
 
@@ -26,17 +28,18 @@ class BaseSensorListener(ABC):
 
     def get_h_jacobian(self, x, u):
         """
+        Calculates the jacobian of the measurement with respect to state (as calculated by get_measurement_z)
         Must return a matrix of shape (self.get_p(), n) where x is of shape (n,)
+        This function will be defined automatically using self.get_h_jacobian_func during initialization.
 
         :param x: The current state.
         :param u: The current control inputs.
         :return: Jacobian of self.state_to_measurement_h(x, u)
         """
-        # Jacobian of measurement with respect to state (as calculated by get_measurement_z)
         pass
 
     def get_h_jacobian_func(self):
-        x_vars = np.asarray(sp.symbols(f'x_:{self.parent_ekf.n}', real=True))
+        x_vars = np.asarray(sp.symbols(f'x_:{self.parent_ekf.n + self.parent_ekf.p}', real=True))
         u_vars = np.asarray(sp.symbols(f'u_:{self.parent_ekf.m}', real=True))
 
         h = self.state_to_measurement_h(x_vars, u_vars)
@@ -47,7 +50,9 @@ class BaseSensorListener(ABC):
 
     @abstractmethod
     def get_timeout_sec(self):
-        # Amount of time to use old measurements for
+        """
+        :return: The amount of time (in seconds) to use old measurements for.
+        """
         pass
 
     @abstractmethod
@@ -80,7 +85,7 @@ class BaseSensorListener(ABC):
     def state_to_measurement_h(self, x, u):
         """
         Must return an array of length self.get_p()
-        Must be sympy-able
+        Must be sympy-able.
 
         :param x: The current state.
         :param u: The current control inputs.
@@ -185,3 +190,87 @@ class IMUSensorListener(BaseSensorListener):
         self.ang_vel_variance = np.array(msg.angular_velocity_covariance).reshape((3, 3))
 
         self.last_time = ros_time()
+
+
+class VisionSensorManager:
+    # TODO: expand to support non-point objects
+    WORLD_OBJECTS = ['red_pole', 'green_pole', 'blue_pole', 'white_pole']
+
+    def __init__(self, parent_ekf, world_objects=None):
+        if world_objects is None:
+            world_objects = self.WORLD_OBJECTS
+        self.listeners = {identifier: PointObjectListener(parent_ekf, identifier,
+                                                          slice(Idx.NUM + 3 * index, Idx.NUM + 3 * (index + 1)))
+                          for index, identifier in enumerate(world_objects)}
+        rospy.Subscriber("aquadrone/vision_data", VisionArray, self.vision_cb)
+
+    def vision_cb(self, vision_data):
+        for world_object_state in vision_data:
+            if world_object_state.identifier in self.listeners.keys():
+                self.listeners[world_object_state.identifier].vision_cb(world_object_state.pose_with_covariance)
+
+    def create_msg(self, x, P):
+        msg = WorldState()
+        msg.data = filter(lambda m: m is not None, [listener.create_msg(x, P) for listener in self.get_listeners()])
+
+    def get_listeners(self):
+        return self.listeners.values()
+
+    def get_total_state_variables(self):
+        return sum([listener.get_p() for listener in self.listeners.values()])
+
+
+class PointObjectListener(BaseSensorListener):
+    def __init__(self, parent_ekf, identifier, state_slice):
+        """
+        :param parent_ekf:
+        :param identifier:
+        :param state_slice: Slice object representing the indices in the state vector where the point object's
+                            absolute position is located.
+        """
+        super(PointObjectListener, self).__init__(parent_ekf)
+        self.identifier = identifier
+        self.state_slice = state_slice
+        self.pose = np.zeros(3)
+        self.covariance = 0.1 * np.identity(3)
+
+    def vision_cb(self, pose_with_covariance):
+        self.pose = vector_to_np(pose_with_covariance.pose.position)
+        self.covariance = np.array(pose_with_covariance.covariance).reshape((6, 6))[:3, :3]
+        self.last_time = ros_time()
+
+    def create_msg(self, x, P):
+        pos_covariance = P[self.state_slice, self.state_slice]
+        if np.any(pos_covariance >= self.parent_ekf.MAX_VARIANCE):
+            return None
+
+        msg = WorldObjectState()
+        msg.identifier = self.identifier
+        msg.pose_with_covariance.pose.position = make_vector(x[self.state_slice])
+        msg.pose_with_covariance.pose.orientation = make_quaternion(Quaternion.identity().as_array())
+        covariance = np.zeros((6, 6))
+        covariance[:3, :3] = pos_covariance
+        msg.pose_with_covariance.covariance = list(covariance.flatten())
+        return msg
+
+    def get_timeout_sec(self):
+        return 0.1
+
+    def get_p(self):
+        return 3
+
+    def get_measurement_z(self):
+        return self.pose
+
+    def get_R(self):
+        return self.covariance
+
+    def state_to_measurement_h(self, x, u):
+        # combine submarine's state and absolute position of the target to compute the relative position of the target
+        sub_pos = x[Idx.x:Idx.z + 1]
+        sub_quat = Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1])
+        absolute_target_pos = x[self.state_slice]
+
+        # TODO: verify that we need rotate and not unrotate
+        relative_target_pos = sub_quat.rotate(absolute_target_pos - sub_pos)
+        return relative_target_pos
