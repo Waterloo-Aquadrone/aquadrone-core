@@ -18,7 +18,7 @@ from path_planning.state_machines.branching_state_machine import BranchingStateM
 from path_planning.state_executor import StateExecutor
 
 
-def plot_depth_data(data):
+def plot_orientation_data(data):
     directory = rospkg.RosPack().get_path('path_planning')
     for angle in ['roll', 'pitch', 'yaw']:
         plt.plot(data['t'], data[angle], label=angle)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
                                     failure_surface_machine)
 
     data_logger = DataLogger()
-    data_logger.add_data_post_processing_func(plot_depth_data)
+    data_logger.add_data_post_processing_func(plot_orientation_data)
     logging_machine = ParallelStateMachine('logging_state_machine', [machine], daemon_states=[data_logger])
 
     # TODO: add flowchart generation once BranchingStateMachine is supported
