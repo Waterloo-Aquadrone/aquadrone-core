@@ -1,4 +1,5 @@
 from path_planning.states.base_state import BaseState
+from path_planning.state_tree import Tree
 
 
 class ParallelStateMachine(BaseState):
@@ -66,3 +67,10 @@ class ParallelStateMachine(BaseState):
     def exit_code(self):
         # return the exit code of the last non-daemon state
         return self.states[-1].exit_code()
+
+    def get_tree(self, depth=0):
+        return Tree(name=self.name,
+                    children=[child.get_tree(depth=depth+1) for child in self.states],
+                    daemon=[child.get_tree(depth=depth+1) for child in self.daemon_states],
+                    nodeType="ParallelState",
+                    depth=depth)

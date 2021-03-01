@@ -21,6 +21,9 @@ class TravelState(BaseState):
         self.invalidated = True
         self.completed = False
 
+    def __repr__(self):
+        return "{}({}, {}, {})".format(self.state_name(), self.target_x, self.target_y, self.target_z)
+
     def update_target(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
         """
         Updates the target to the new location. Any parameters left as None will be ignored.

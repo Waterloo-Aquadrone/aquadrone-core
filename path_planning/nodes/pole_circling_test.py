@@ -11,6 +11,7 @@ from path_planning.states.data_logger import DataLogger
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_executor import StateExecutor
+from path_planning.state_tree import Tree
 from matplotlib import pyplot as plt
 from time import time
 
@@ -64,6 +65,7 @@ if __name__ == "__main__":
 
     pole_logging_machine = ParallelStateMachine('pole_logger', states=[mission_machine], daemon_states=[data_logger])
 
+    Tree.create_flowchart(pole_logging_machine, 'pole-circling-test')
     executor = StateExecutor(pole_logging_machine, rate=rospy.Rate(5))
     executor.run()
 

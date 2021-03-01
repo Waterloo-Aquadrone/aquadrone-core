@@ -9,6 +9,9 @@ class ExitCodeState(BaseState):
     def __init__(self, code):
         self.code = code
 
+    def __repr__(self):
+        return self.state_name()
+
     def state_name(self):
         return 'exit_code'
 

@@ -30,7 +30,7 @@ class RealThruster:
 
 class T100Thruster(RealThruster):
     PULSE_WIDTH_CALIBRATION_OFFSET = -84  # determined via testing at a frequency of 60 Hz
-    POUNDS_TO_NEWTONS = 0.2248089431
+    POUNDS_TO_NEWTONS = 4.44822
 
     def __init__(self, pwm_freq, motor_index, pwm, namespace='aquadrone'):
         self.pwm_freq = pwm_freq

@@ -1,4 +1,5 @@
 from path_planning.states.base_state import BaseState
+from path_planning.state_tree import Tree
 
 
 class SequentialStateMachine(BaseState):
@@ -52,3 +53,9 @@ class SequentialStateMachine(BaseState):
     def exit_code(self):
         # return the exit code of the last state
         return self.states[-1].exit_code()
+
+    def get_tree(self, depth=0):
+        return Tree(name=self.name,
+                    children=[child.get_tree(depth=depth+1) for child in self.states],
+                    nodeType="SequentialState",
+                    depth=depth)

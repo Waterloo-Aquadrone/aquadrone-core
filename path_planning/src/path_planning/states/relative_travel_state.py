@@ -22,7 +22,10 @@ class RelativeTravelState(BaseState):
         self.z_offset = z_offset
         self.relative_yaw = relative_yaw
         self.absolute_target_yaw = math.degrees(math.atan2(-y_offset, -x_offset)) + relative_yaw
-        
+
+    def __repr__(self):
+        return "{}({})".format(self.state_name(), self.target)
+
     def update_target(self, target):
         self.target = target
         
