@@ -8,6 +8,18 @@ class BaseState(ABC):
     persisted across state changes.
     """
     def __repr__(self):
+        """
+        All subclasses should override this function if they accept arguments in __init__.
+        All of those arguments should be included in the string representation for repr,
+        such that eval(repr(state)) == state.
+        That way, repr will provide an unambiguous representation of the state.
+        State machines should recursively call __repr__ for any child states.
+
+        If the representation is too verbose, you can optionally also implement __str__ and provide a more human
+        readable representation.
+        As a rule of thumb, exclude any tolerance values or verbose flags from the __str__ representation.
+        State machines should also exclude recursive calls to child states in __str__.
+        """
         return f'{self.__class__.__name__}()'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
