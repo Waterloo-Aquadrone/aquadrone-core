@@ -1,20 +1,20 @@
 import rospy
 
 from gazebo_msgs.msg import ModelStates
-from aquadrone_msgs.msg import Vision_Array, Vision
+from aquadrone_msgs.msg import VisionArray, Vision
 from aquadrone_math_utils.ros_utils import make_vector, vector_to_np
 
 
 class OmniscientVision:
     def __init__(self):
-        self.relative_pos_pub = rospy.Publisher("Vision_Data", Vision_Array, queue_size=1)
+        self.relative_pos_pub = rospy.Publisher("aquadrone/vision_data", VisionArray, queue_size=1)
         self.object_pos_sub = rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos)
         self.world_object_poses = []
         self.world_object_names = []
         self.sub_pos = [0, 0, 0]
         self.relative_pos = []
         self.rate = rospy.Rate(20)
-        self.pub_msg = Vision_Array()
+        self.pub_msg = VisionArray()
         self.testing = False
 
     def get_obj_pos(self, data):
@@ -49,7 +49,7 @@ class OmniscientVision:
     def get_pub_msg(
             self):  # currently outputting the absolute vectors between objects, not in the perspective of the sub
         # print(self.object_pos)
-        message = Vision_Array()
+        message = VisionArray()
         # initializing message
         if len(self.relative_pos) != 0 and len(self.world_object_names) != 0:
             message.data = []
