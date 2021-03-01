@@ -1,9 +1,8 @@
-import math
 import numpy as np
 
 from geometry_msgs.msg import Wrench
 
-import aquadrone_math_utils.orientation_math as OH
+import aquadrone_math_utils.orientation_math as OMath
 
 
 def vector_to_wrench(v):
@@ -23,20 +22,19 @@ def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
     
     # Moment is r x f
     offset = np.array([x, y, z])
-    offset.shape = (3, 1)
     moment = np.cross(offset, force, axis=0)
+    # TODO: add torque based on propeller handedness
 
-    return np.vstack((force, moment))
+    return np.concatenate((force, moment))
 
 
 def get_thruster_force(r, p, y):
-    return np.dot(OH.RPY_Matrix(r, p, y), thruster_force_dir_vec())
+    return np.dot(OMath.RPY_Matrix(r, p, y), thruster_force_dir_vec())
 
 
 def thruster_force_dir_vec():
     # Constant direction that a thruster applies force in
     # Local to the thruster's own body
     v = np.array([1, 0, 0])
-    v.shape = (3, 1)
     return v
 

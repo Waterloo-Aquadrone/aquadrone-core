@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from path_planning.states.base_state import BaseState
 
 
@@ -11,17 +9,11 @@ class ExitCodeState(BaseState):
     def __init__(self, code):
         self.code = code
 
+    def __repr__(self):
+        return self.state_name()
+
     def state_name(self):
         return 'exit_code'
-
-    def initialize(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def process(self, t, controls, sub_state, world_state, sensors):
-        pass
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
 
     def has_completed(self):
         return True

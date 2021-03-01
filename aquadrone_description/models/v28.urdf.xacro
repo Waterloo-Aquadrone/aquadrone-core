@@ -1,77 +1,74 @@
 <?xml version="1.0"?>
-<robot name="aquadrone" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+<robot name="aquadrone" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
 
-<!-- https://github.com/uuvsimulator/uuv_simulator/wiki/Templates-to-create-a-new-thruster-actuated-vehicle-model -->
-
-  <!-- Input debug flag -->
-  <xacro:arg name="debug" default="0"/>
+    <!-- Input debug flag -->
+    <xacro:arg name="debug" default="0"/>
 
 
     <xacro:property name="strut_thickness" value="0.02"/>
 
-  <!-- Describing the dimensions of the vehicle's bounding box -->
-  <xacro:property name="length" value="0.51"/>
-  <xacro:property name="width"  value="0.46"/>
-  <xacro:property name="height" value="0.2"/>
+    <!-- Describing the dimensions of the vehicle's bounding box -->
+    <xacro:property name="length" value="0.51"/>
+    <xacro:property name="width" value="0.46"/>
+    <xacro:property name="height" value="0.2"/>
 
 
-  <!-- Include the ROV macro file -->
-  <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
-  <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
+    <!-- Include the ROV macro file -->
+    <xacro:include filename="$(find aquadrone_description)/urdf/aquadrone_v2.urdf.xacro"/>
+    <xacro:include filename="$(find aquadrone_description)/urdf/thruster.urdf.xacro"/>
 
-  <!-- Create the rov_example -->
-  <xacro:aquadrone_base debug="$(arg debug)" cog="0 0 0" cob="0 0 0"/>
+    <!-- Create the rov_example -->
+    <xacro:aquadrone_base debug="$(arg debug)" cog="0 0 0" cob="0 0 0"/>
 
 
     <!-- Pressure  -->
-  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/pressure_snippets.xacro"/>
-  <xacro:default_pressure namespace="aquadrone/out/" parent_link="base_link">
+    <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/pressure_snippets.xacro"/>
+    <xacro:default_pressure namespace="aquadrone/out/" parent_link="base_link">
         <origin xyz="0 0 ${0.11 + 0.2/2.0}" rpy="0 ${pi/2.0} 0"/>
+    </xacro:default_pressure>
 
-  </xacro:default_pressure>
+    <!-- IMU -->
+    <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/imu_snippets.xacro"/>
+    <xacro:default_imu namespace="aquadrone/out/" parent_link="base_link">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:default_imu>
 
-  <!-- IMU -->
-  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/imu_snippets.xacro"/>
-  <xacro:default_imu namespace="aquadrone/out/" parent_link="base_link">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </xacro:default_imu>
-
-
-  <xacro:include filename="$(find aquadrone_description)/urdf/simple_camera.urdf.xacro"/>
-  <xacro:simple_camera_macro name="front_cam">
-    <origin xyz="${0.91/2.0 - 0.08 - 0.22/2.0} 0 ${0.11 + 0.2/2.0}" rpy="0 0 0"/>
-  </xacro:simple_camera_macro>
-
-  <!-- UP/DOWN-->
-  <xacro:thruster_macro thruster_id="0">
-    <origin xyz="0.2 0.285 0.1" rpy="0 ${pi/2} 0"/>
-  </xacro:thruster_macro>
-  <xacro:thruster_macro thruster_id="1">
-    <origin xyz="0.2 -0.285 0.1" rpy="0 ${pi/2} 0"/>
-  </xacro:thruster_macro>
-
-  <xacro:thruster_macro thruster_id="2">
-    <origin xyz="-0.2 0.285 0.1" rpy="0 ${pi/2} 0"/>
-  </xacro:thruster_macro>
-  <xacro:thruster_macro thruster_id="3">
-    <origin xyz="-0.2 -0.285 0.1" rpy="0 ${pi/2} 0"/>
-  </xacro:thruster_macro>
-
-<!-- FORWARD/BACKWARD-->
- <xacro:thruster_macro thruster_id="4">
-    <origin xyz="0 0.285 0.1" rpy="0 0 0"/>
-  </xacro:thruster_macro>
-   <xacro:thruster_macro thruster_id="5">
-    <origin xyz="0 -0.285 0.1" rpy="0 0 0"/>
-  </xacro:thruster_macro>
-
-<!-- LEFT/RIGHT-->
-<xacro:thruster_macro thruster_id="6">
-    <origin xyz="0 0.17 0" rpy="0 0 ${-pi/2}"/>
-  </xacro:thruster_macro>
-   <xacro:thruster_macro thruster_id="7">
-    <origin xyz="0 -0.17 0" rpy="0 0 ${-pi/2}"/>
-  </xacro:thruster_macro>
+    <!-- Camera -->
+    <xacro:include filename="$(find aquadrone_description)/urdf/simple_camera.urdf.xacro"/>
+    <xacro:simple_camera_macro name="front_cam">
+        <origin xyz="${0.91/2.0 - 0.08 - 0.22/2.0} 0 ${0.11 + 0.2/2.0}" rpy="0 0 0"/>
+    </xacro:simple_camera_macro>
 
 
+    <!-- UP/DOWN-->
+    <xacro:thruster_macro thruster_id="0">
+        <origin xyz="0.2 0.285 0.1" rpy="0 ${pi/2} 0"/>
+    </xacro:thruster_macro>
+    <xacro:thruster_macro thruster_id="1">
+        <origin xyz="0.2 -0.285 0.1" rpy="0 ${pi/2} 0"/>
+    </xacro:thruster_macro>
+
+    <xacro:thruster_macro thruster_id="2">
+        <origin xyz="-0.2 0.285 0.1" rpy="0 ${pi/2} 0"/>
+    </xacro:thruster_macro>
+    <xacro:thruster_macro thruster_id="3">
+        <origin xyz="-0.2 -0.285 0.1" rpy="0 ${pi/2} 0"/>
+    </xacro:thruster_macro>
+
+    <!-- FORWARD/BACKWARD-->
+    <xacro:thruster_macro thruster_id="4">
+        <origin xyz="0 0.285 0.1" rpy="0 0 0"/>
+    </xacro:thruster_macro>
+    <xacro:thruster_macro thruster_id="5">
+        <origin xyz="0 -0.285 0.1" rpy="0 0 0"/>
+    </xacro:thruster_macro>
+
+    <!-- LEFT/RIGHT-->
+    <xacro:thruster_macro thruster_id="6">
+        <origin xyz="0 0.17 0" rpy="0 0 ${pi/2}"/>
+    </xacro:thruster_macro>
+    <xacro:thruster_macro thruster_id="7">
+        <origin xyz="0 -0.17 0" rpy="0 0 ${-pi/2}"/>
+    </xacro:thruster_macro>
 </robot>

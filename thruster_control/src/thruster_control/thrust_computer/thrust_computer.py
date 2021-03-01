@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import rospy
 from aquadrone_msgs.msg import MotorControls
 from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
@@ -20,12 +18,15 @@ class ThrustComputer:
         self.rate = rate if rate is not None else rospy.Rate(10)
 
         # Will need motor commands published for state estimation
-        self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=0)
+        self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=1)
 
     def run(self):
         while not rospy.is_shutdown():
             self.control_loop()
-            self.rate.sleep()
+            try:
+                self.rate.sleep()
+            except rospy.ROSInterruptException:
+                break
 
     def control_loop(self):
         wrench = self.mcc.get_recent_thrusts()

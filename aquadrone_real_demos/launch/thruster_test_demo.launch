@@ -1,0 +1,10 @@
+<launch>
+    <arg name="model" default="v28"/>
+
+    <include file="$(find aquadrone_real_demos)/launch/empty.launch">
+        <arg name="model" value="$(arg model)"/>
+        <arg name="enable_computer" value="False"/>
+    </include>
+
+    <node name="thruster_test" pkg="path_planning" type="thruster_test.py" output="screen"/>
+</launch>

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
@@ -9,6 +9,7 @@ from path_planning.states.barrel_roll import BarrelRoll
 from path_planning.states.exit_code_state import ExitCodeState
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
+from path_planning.states.data_logger import DataLogger
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.branching_state_machine import BranchingStateMachine
 from path_planning.state_executor import StateExecutor
@@ -19,7 +20,8 @@ if __name__ == "__main__":
 
     timeout = 120  # seconds
 
-    stabilise_at_depth_machine = ParallelStateMachine('stabilise_at_depth', [StabilizeState(), GoToDepthState(3)])
+    stabilise_at_depth_machine = ParallelStateMachine('stabilise_at_depth', [StabilizeState(), GoToDepthState(-3)])
+    dive_machine = SequentialStateMachine('dive', [WaitingState(20), stabilise_at_depth_machine])
     timed_barrel_roll_state = TimedStateMachine(BarrelRoll(), timeout, timeout_exit_code=1)
     dive_and_roll_machine = SequentialStateMachine('dive_and_roll', [WaitingState(20),
                                                                      stabilise_at_depth_machine,
@@ -30,8 +32,10 @@ if __name__ == "__main__":
 
     machine = BranchingStateMachine('barrel_roll_test', dive_and_roll_machine, success_surface_machine,
                                     failure_surface_machine)
+    logging_machine = machine = ParallelStateMachine('logging_state_machine', [machine], daemon_states=[DataLogger()])
 
-    executor = StateExecutor(machine, rospy.Rate(5))
+    # TODO: add flowchart generation once BranchingStateMachine is supported
+    executor = StateExecutor(logging_machine, rospy.Rate(5))
     executor.run()
 
     if executor.exit_code() == 0:

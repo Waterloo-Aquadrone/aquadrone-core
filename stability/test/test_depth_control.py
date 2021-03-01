@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import rostest
 import unittest
 from mock import MagicMock
 
-from stability.depth_control.depth_pid_controller import DepthPIDController
+from stability.depth_pid_controller import DepthPIDController
 
 from geometry_msgs.msg import Wrench
 from aquadrone_msgs.msg import SubState
@@ -47,9 +47,10 @@ class TestDepthPIDController(unittest.TestCase):
         pid.depth = 0  # Make sure we have init condition
 
         # Set up message
-        in_depth = 5.0
+        in_depth = -5.0
         msg = SubState()
-        msg.position.z = -in_depth
+        msg.position.z = in_depth
+        msg.orientation_quat.w = 1
 
         # Run code
         pid.state_cb(msg)

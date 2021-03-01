@@ -1,0 +1,15 @@
+<launch>
+    <arg name="model" default="v28"/>
+    <arg name="omniscient_ekf" default="True"/>
+    <arg name="computation_factor" default="1"/>
+
+    <include file="$(find aquadrone_sim_demos)/launch/empty.launch">
+        <arg name="world" value="empty"/>
+        <arg name="model" value="$(arg model)"/>
+        <arg name="omniscient_ekf" value="$(arg omniscient_ekf)"/>
+        <arg name="enable_computer" value="False"/>
+        <arg name="computation_factor" value="$(arg computation_factor)"/>
+    </include>
+
+    <node name="thruster_test" pkg="path_planning" type="thruster_test.py" output="screen"/>
+</launch>

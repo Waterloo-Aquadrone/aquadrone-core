@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from path_planning.states.base_state import BaseState
 
 
@@ -23,6 +21,8 @@ class BranchingStateMachine(BaseState):
         return self.name + '/' + self.states[self.idx].state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
+        self.idx = 0
+        self.completed = False
         print(self.state_name(), 'starting to execute')
         self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
@@ -44,7 +44,6 @@ class BranchingStateMachine(BaseState):
             else:
                 self.completed = True
                 print(self.name, 'completed!')
-                return
 
     def finalize(self, t, controls, sub_state, world_state, sensors):
         self.states[self.idx].finalize(t, controls, sub_state, world_state, sensors)

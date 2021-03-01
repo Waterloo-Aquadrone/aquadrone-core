@@ -1,28 +1,28 @@
-#!/usr/bin/env python
-
 import rospy
-# import numpy as np
 import scipy.linalg
-from scipy.spatial.transform import Rotation
 
-import autograd.numpy as np  # Thinly-wrapped numpy
-from autograd import grad, jacobian, elementwise_grad
+import numpy as np
+import sympy as sp
+from autograd import jacobian
 
-from geometry_msgs.msg import Point, Vector3, Quaternion
+from geometry_msgs.msg import Vector3, Quaternion
 
 from std_srvs.srv import Trigger, TriggerResponse
 
 from aquadrone_msgs.msg import SubState, MotorControls
 
-from ekf_indices import IDx as IDx
-from ekf_sensors import IMUSensorListener, PressureSensorListener
+from state_estimation.ekf_indices import Idx
+from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
+from aquadrone_math_utils.quaternion import Quaternion
 
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
 
 
 class EKF:
-    def __init__(self, config):
+    def __init__(self, config, rate=None):
+        # https://en.wikipedia.org/wiki/Kalman_filter
         # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
         """ Model Description
@@ -35,292 +35,239 @@ class EKF:
         Outputs:    z[k] = h(x[k], u[k])
 
         Linear Form:
-          x[k+1] = A*x[k] + B*u[k]
-            z[k] = C*x[k] + B*u[k]
+        x[k+1] = A*x[k] + B*u[k]
+        z[k] = C*x[k] + D*u[k]
         """
 
-        ''' Process Description
+        """ Process Description
 
         Each loop will do a prediction step based on the motor thrusts,
         gravity, buoyancy, drag, and other forces to update the expected
         state and its variance.
-        
+
         Then a measurement step, where it uses input from the pressure sensor
-        and gyro (and sensors added in hte future) to refine its expected state
+        and gyro (and sensors added in the future) to refine its expected state
         and variance.
-        
+
         Then there is a step where the new expected state/variance is converted
         to a SubState message which is then published.
 
-        '''
-        # EKF coordinate system is at the center of mass, with axes oriented as normal for submarines
-        # x is forwards, y is left, z is upwards (towards surface)
-        self.mass = 10
-        self.inertia_inv = np.zeros((3, 3))  # Inverse of moment of inertia matrix
-        self.volume = 0  # for buoyancy
-        self.cob_offset = np.array([0, 0, 0.1])  # center of buoyancy offset relative to center of mass
+        """
+        self.rate = rate if rate is not None else rospy.Rate(20)  # Hz
 
-        self.n = IDx.NUM  # Number of state elements
-        self.m = config.get_num_thrusters()  # Number of inputs
+        rospy.Subscriber("motor_command", MotorControls, self.motor_callback)
+        self.state_publisher = rospy.Publisher("state_estimation", SubState, queue_size=1)
+        rospy.Service('reset_sub_state_estimation', Trigger, self.initialize_state)
+        self.last_t = ros_time()
 
-        self.x = None
-        self.P = None
+        # constants related to ambient conditions and submarine properties
+        self.g = 9.81  # m/s^2
+        self.rho_water = 997  # kg/m^3
+        self.mass = 10  # TODO: add this to config
+        self.volume = 10  # used for buoyancy calculations, TODO: add this to config
+        self.buoyancy_offset = np.array(
+            [0, 0, 0.5])  # location where buoyancy force is applied (center of buoyancy) TODO: add this to config
+        inertia = np.array([[2850, 1, -25],
+                            [1, 3800, 200],
+                            [-25, 200, 2700]])
+        self.inertia_inv = np.linalg.inv(inertia)  # inverse of moment of inertia matrix, TODO: add this to config
+
+        self.n = Idx.NUM  # Number of state elements
+        self.x = None  # state
+        self.P = None  # uncertainty in state
         self.initialize_state()
 
-        self.u = np.zeros((self.m, 1))
+        self.m = config.get_num_thrusters()  # number of control inputs
+        self.u = np.zeros(self.m)  # most recent motor thrust received
+        self.B = config.get_thrusts_to_wrench_matrix()
 
-        self.B = np.array(config.get_thrusts_to_wrench_matrix())
+        self.f_jacobian = self.get_f_jacobian_func()
+        self.net_wrench_jacobian = self.get_net_wrench_jacobian_func()
+        self.Q = np.eye(self.n)  # uncertainty in dynamics model
 
-        self.Q = np.eye(self.n) * 0.01  # Uncertanty in dynamics model
-
-        self.depth_sub = PressureSensorListener()
-        self.imu_sub = IMUSensorListener()
+        self.depth_sub = PressureSensorListener(self)
+        self.imu_sub = IMUSensorListener(self)
         # Potential Future Sensors:
         # - ZED mini localization
         # - ZED mini IMU
         # - Position info from detecting objects
 
-        self.rate = 20
-        self.rate_ctrl = rospy.Rate(self.rate)
-
-        self.calc_F = jacobian(self.f)
-
-        self.sub_state_msg = SubState()
-        self.state_pub = rospy.Publisher("state_estimation", SubState, queue_size=1)
-
-        self.motor_sub = rospy.Subscriber("motor_command", MotorControls, self.motor_cb)
-
-        self.reset_service = rospy.Service('reset_sub_state_estimation', Trigger, self.initialize_state)
-
-        self.last_prediction_t = self.get_t()
-
     def initialize_state(self, msg=None):
-        self.x = np.zeros((self.n, 1))
-        self.x[IDx.Ow] = 1
-        # Shouldn't x and y variance be initialized to 0, since the sub is by definition starting at (0, 0)
-        self.P = np.eye(self.n)
+        self.x = np.zeros(self.n)
+        # set quaternion such that sub is upright
+        self.x[Idx.Ow] = 1  # TODO: verify that this corresponds to being upright
+
+        # x and y variance are initialized to 0 since the sub is by definition starting at (0, 0)
+        self.P = np.diag([0, 0] + [1] * (self.n - 2))
         return TriggerResponse(success=True, message="reset")
 
-    def motor_cb(self, msg):
-        self.u = np.array(msg.motorThrusts)
+    def motor_callback(self, msg):
+        self.u = np.asarray(msg.motorThrusts)
 
-    @staticmethod
-    def get_t():
-        return rospy.Time.now().to_sec()
-
-    def prediction(self):
-        # Get jacobian of function f
-        F = self.calc_F(self.x, self.u)
-        F = np.reshape(F, (self.n, self.n))
-        Fx = F[0:self.n, 0:self.n]
-        # print("Fx")
-        # print(Fx)
+    def prediction(self, dt):
+        f_jacobian = self.f_jacobian(self.x, self.u, dt)
 
         # Update x and uncertainty P
-        self.x = self.f(self.x, self.u)
-        inter = np.dot(Fx, self.P)
-        self.P = np.dot(inter, np.transpose(Fx)) + self.Q
+        self.x = self.f(self.x, self.u, dt)
+        self.P = np.linalg.multi_dot([f_jacobian, self.P, f_jacobian.T]) + self.Q
 
     def update(self):
-        # Update state based on sensor measurements
-        z = np.zeros((0, 0))  # measurements
-        h = np.zeros((0, 0))  # predicted measurements
+        """
+        Updates the state and uncertainty based on sensor measurements.
+        """
+        # extract data from sensors into lists
+        listeners = [self.depth_sub, self.imu_sub]
+        z, h, h_jacobian, R = zip(*[(listener.get_measurement_z(),
+                                     listener.state_to_measurement_h(self.x, self.u),
+                                     listener.get_h_jacobian(self.x, self.u),
+                                     listener.get_R())
+                                    for listener in listeners if listener.is_valid()])
+        # package lists into arrays/matrices as appropriate
+        z = np.concatenate(z)  # measurements
+        h = np.concatenate(h)  # predicted measurements
+        h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
+        R = scipy.linalg.block_diag(
+            *R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
 
-        H = np.zeros((0, 0))  # Jacobian of function h
-        R = np.zeros((0, 0))  # Uncertainty matrix of measurement
-
-        def add_block_diag(H, newH):
-            if H.shape[0] == 0:
-                ret = np.diag(newH)
-                ret.shape = (newH.shape[0], newH.shape[0])
-                return ret
-            return scipy.linalg.block_diag(H, newH)
-
-        def add_block_vertical(H, newH):
-            if H.shape[0] == 0:
-                return newH
-            return np.vstack([H, newH])
-
-        def read_listener(listener, z, h, H, R):
-            if listener.is_valid():
-                meas = listener.get_measurement_z()
-                z = np.append(z, np.array([meas]))
-                pred = listener.state_to_measurement_h(self.x, self.u)
-                h = np.append(h, np.array([pred]))
-
-                H = add_block_vertical(H, listener.get_H(self.x, self.u))
-                R = add_block_diag(R, listener.get_R())
-
-                return z, h, H, R
-
-        for listener in [self.depth_sub,
-                         self.imu_sub]:
-            try:
-                z, h, H, R = read_listener(listener, z, h, H, R)
-            except TypeError as e:
-                print(e)
-                return
-
-        if R.shape[0] == 0:
+        if len(z) == 0:
+            # no valid measurements
             return
 
         # Error in measurements vs predicted
         y = z - h
-        y.shape = (y.shape[0], 1)
 
         # Calculate Kalman gain
-        Ht = np.transpose(H)
-        S = np.dot(np.dot(H, self.P), Ht) + R
-        K = np.dot(np.dot(self.P, Ht), np.linalg.inv(S))
-
-        KH = np.dot(K, H)
-        I = np.eye(KH.shape[0])
-
-        diff = np.dot(K, y)
+        # This section of the code is incredibly elegant and basically black magic. Given just the actual and expected
+        # measurements, we can calculate the Kalman gain and make the appropriate updates. In essence, we provide the
+        # forward model: given the state what are the measurements; and this is enough to determine the reverse
+        # question: given the measurements what changes should be made to the state.
+        # Conceptually, components of the state that have no measurement will have a Kalman gain of 0 (and thus variance
+        # will increase by a fixed amount every time through the loop), and components of the state that have multiple
+        # measurements will have everything taken into account based on their relative variances.
+        S = np.linalg.multi_dot([h_jacobian, self.P, h_jacobian.T]) + R
+        K = np.linalg.multi_dot([self.P, h_jacobian.T, np.linalg.inv(S)])
 
         # Update state x and uncertainty P
-        self.x = self.x + diff
-        self.P = np.dot(I - KH, self.P)
+        self.x += np.dot(K, y)  # increase by error in measurement vs predicted, scaled by Kalman gain
+        self.P -= np.linalg.multi_dot([K, h_jacobian, self.P])  # decrease, scaled by Kalman gain
 
-    def f(self, x, u):
-        # Calculate next state from current state x and inputs u
-        # Must be autograd-able
+    def f(self, x, u, dt):
+        """
+        Calculate next state from current state x and inputs u.
+        Must be sympy-able.
 
-        # Update time and calculate dt
-        t = self.get_t()
-        dt = t - self.last_prediction_t
-        self.last_prediction_t = t
+        :param x: The current state.
+        :param u: The currently applied motor thrusts.
+        :param dt: The amount of elapsed time.
+        :return: The resulting state.
+        """
+        new_x = np.copy(x)
+        total_wrench = self.get_net_wrench(x, u)
 
-        accel = self.calculate_forces(x, u) / self.mass
+        # update position
+        new_x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
 
-        new_vel = np.array([x[IDx.Vx],
-                            x[IDx.Vy],
-                            x[IDx.Vz]]) + dt * accel
+        # update orientation
+        new_x[Idx.Ow:Idx.Oz + 1] += (dt / 2) * np.dot(Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1]).E().transpose(),
+                                                  x[Idx.Wx:Idx.Wz + 1])
+        # rescale to unit quaternion
+        new_x[Idx.Ow:Idx.Oz + 1] /= np.sum(x[Idx.Ow:Idx.Oz + 1] ** 2) ** 0.5  # can't use np.linalg.norm with sympy
 
-        R = Rotation.from_quat(self.x[IDx.Ow:IDx.Oz + 1]).as_matrix()
+        # update linear velocity
+        new_x[Idx.Vx:Idx.Vz + 1] += total_wrench[:3] / self.mass * dt
 
-        dp_v = dt * np.dot(R, new_vel)
-        dp_a = 0.5 * dt * dt * np.dot(R, accel)
+        # update angular velocity
+        new_x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
 
-        new_pos = np.array([x[IDx.Px],
-                            x[IDx.Py],
-                            x[IDx.Pz]]) + dp_v + dp_a
+        return new_x
 
-        new_or = self.update_orientation_quaternion(x, dt)
+    def get_f_jacobian_func(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
+        u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
+        dt_var = sp.symbols('dt', real=True)
 
-        ang_acc = np.dot(self.inertia_inv, self.calculate_torques(x, u))
-        new_ang_vel = np.array([x[IDx.Ax],
-                                x[IDx.Ay],
-                                x[IDx.Az]])
+        new_x = self.f(x_vars, u_vars, dt_var)
+        jacobian_matrix = [[sp.lambdify([x_vars, u_vars, dt_var], sp.diff(new_x_i, x_i)) for x_i in x_vars]
+                           for new_x_i in new_x]
 
-        x_out = np.vstack([new_pos, new_vel, accel, new_or, new_ang_vel])
+        return lambda x, u, dt: np.array([[func(x, u, dt) for func in jacobian_row]
+                                          for jacobian_row in jacobian_matrix])
 
-        return x_out
+    def get_net_wrench(self, x, u):
+        """
+        Calculates the net wrench (forces and torques) on the submarine.
+        Must be sympy-able
 
-    def calculate_forces(self, x, u):
-        motor_force = np.dot(self.B[:4, :], u)
+        :param x: The current state of the submarine.
+        :param u: The motor thrusts.
+        :return: The total wrench being applied to the submarine.
+        """
+        net_wrench = np.dot(self.B, u)
 
-        drag_forces_linear = np.array([-0.01 * x[IDx.Vx],
-                                       -0.01 * x[IDx.Vy],
-                                       -0.01 * x[IDx.Vz]])
+        # linear drag forces
+        net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1]
 
-        drag_forces_quad = np.array([-0.01 * x[IDx.Vx] * np.abs(x[IDx.Vx]),
-                                     -0.01 * x[IDx.Vy] * np.abs(x[IDx.Vy]),
-                                     -0.01 * x[IDx.Vz] * np.abs(x[IDx.Vz])])
+        # quadratic drag forces
+        net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1] * np.abs(x[Idx.Vx:Idx.Vz + 1])
 
-        return motor_force + drag_forces_linear + drag_forces_quad
+        return net_wrench
 
-    def calculate_torques(self, x, u):
-        motor_torque = np.dot(self.B[4:, :], u)
+    def get_net_wrench_jacobian_func(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
+        u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
 
-        # TODO: Add drag
-        # TODO: add torque and forces from buoyancy
+        net_wrench = self.get_net_wrench(x_vars, u_vars)
+        jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(wrench_component, x_i)) for x_i in x_vars]
+                           for wrench_component in net_wrench]
 
-        return motor_torque
+        return lambda x, u: np.array([[func(x, u) for func in jacobian_row] for jacobian_row in jacobian_matrix])
 
-    def update_orientation_quaternion(self, x, dt):
-        # https://gamedev.stackexchange.com/questions/108920/applying-angular-velocity-to-quaternion
-        q_old = x[IDx.Ow:IDx.Oz + 1]
+    def get_state_msg(self):
+        sub_state_msg = SubState()
 
-        w = x[IDx.Ax:IDx.Az + 1]
+        # copy position
+        sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
+        sub_state_msg.pos_variance = make_vector(np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
 
-        new_or = q_old * (1 + 0.5 * dt * w)
+        # copy velocity
+        sub_state_msg.velocity = make_vector(self.x[Idx.Vx:Idx.Vz + 1])
+        sub_state_msg.vel_variance = make_vector(np.diag(self.P[Idx.Vx:Idx.Vz + 1, Idx.Vx:Idx.Vz + 1]))
 
-        return new_or / np.linalg.norm(new_or)
+        # copy orientation
+        quaternion = make_quaternion(self.x[Idx.Ow:Idx.Oz + 1])
+        sub_state_msg.orientation_quat = quaternion
+        quat_variance = make_quaternion(np.diag(self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]))
+        sub_state_msg.orientation_quat_variance = quat_variance
 
-    def output(self):
-        var = np.array(np.diagonal(self.P))
-        var.shape = (self.n, 1)
-
-        # print("X, Var:")
-        # print(np.hstack([self.x, var]))
-
-    def fill_vector_value_variance(self, val, var, x, P, i0):
-        val.x = x[i0 + 0]
-        val.y = x[i0 + 1]
-        val.z = x[i0 + 2]
-
-        var.x = P[i0 + 0, i0 + 0]
-        var.y = P[i0 + 1, i0 + 1]
-        var.z = P[i0 + 2, i0 + 2]
-
-    def update_state_msg(self):
-        self.fill_vector_value_variance(self.sub_state_msg.position,
-                                        self.sub_state_msg.pos_variance,
-                                        self.x, self.P, IDx.Px)
-        self.fill_vector_value_variance(self.sub_state_msg.velocity,
-                                        self.sub_state_msg.vel_variance,
-                                        self.x, self.P, IDx.Vx)
-
-        quat = Quaternion()
-        quat.x = self.x[IDx.Ox]
-        quat.y = self.x[IDx.Oy]
-        quat.z = self.x[IDx.Oz]
-        quat.w = self.x[IDx.Ow]
-        self.sub_state_msg.orientation_quat = quat
-        self.sub_state_msg.orientation_quat_variance.w = self.P[IDx.Ow, IDx.Ow]
-        self.sub_state_msg.orientation_quat_variance.x = self.P[IDx.Ox, IDx.Ox]
-        self.sub_state_msg.orientation_quat_variance.y = self.P[IDx.Oy, IDx.Oy]
-        self.sub_state_msg.orientation_quat_variance.z = self.P[IDx.Oz, IDx.Oz]
-
-        self.sub_state_msg.orientation_RPY = OMath.msg_quaternion_to_euler(quat)
+        # create roll, pitch, yaw copy of orientation
+        sub_state_msg.orientation_RPY = OMath.msg_quaternion_to_euler(quaternion)
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
-        Cq = np.diag([self.sub_state_msg.orientation_quat_variance.w,
-                      self.sub_state_msg.orientation_quat_variance.x,
-                      self.sub_state_msg.orientation_quat_variance.y,
-                      self.sub_state_msg.orientation_quat_variance.z])
+        Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
+        G = quat_to_euler_jacobian(self.x[Idx.Ow:Idx.Oz + 1]).reshape((3, 4))
 
-        quat_vec = OMath.quat_msg_to_vec(self.sub_state_msg.orientation_quat)
-        G = quat_to_euler_jacobian(quat_vec)
-        G.shape = (3, 4)
+        rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
+        sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
 
-        rpy_var_mat = np.dot(G, np.dot(Cq, np.transpose(G)))
-        self.sub_state_msg.orientation_RPY_variance.x = rpy_var_mat[0, 0]
-        self.sub_state_msg.orientation_RPY_variance.y = rpy_var_mat[1, 1]
-        self.sub_state_msg.orientation_RPY_variance.z = rpy_var_mat[2, 2]
+        # copy angular velocity
+        sub_state_msg.ang_vel = make_vector(self.x[Idx.Wx:Idx.Wz + 1])
+        sub_state_msg.ang_vel_variance = make_vector(np.diag(self.P[Idx.Wx:Idx.Wz + 1, Idx.Wx:Idx.Wz + 1]))
 
-        ang_vel = Vector3()
-        ang_vel.x = self.x[IDx.Ax]
-        ang_vel.y = self.x[IDx.Ay]
-        ang_vel.z = self.x[IDx.Az]
-        self.sub_state_msg.ang_vel = ang_vel
-
-        ang_vel_var = Vector3()
-        ang_vel_var.x = self.P[IDx.Ax][IDx.Ax]
-        ang_vel_var.y = self.P[IDx.Ay][IDx.Ay]
-        ang_vel_var.z = self.P[IDx.Az][IDx.Az]
-        self.sub_state_msg.ang_vel_variance = ang_vel_var
+        return sub_state_msg
 
     def run(self):
         while not rospy.is_shutdown():
-            self.rate_ctrl.sleep()
+            try:
+                self.rate.sleep()
+            except rospy.ROSInterruptException:
+                break
 
-            self.output()
+            current_t = ros_time()
+            dt = current_t - self.last_t
+            self.last_t = current_t
 
-            self.prediction()
+            self.prediction(dt)
             self.update()
 
-            self.update_state_msg()
-            self.state_pub.publish(self.sub_state_msg)
+            self.state_publisher.publish(self.get_state_msg())
