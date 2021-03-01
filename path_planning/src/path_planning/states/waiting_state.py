@@ -12,21 +12,17 @@ class WaitingState(BaseState):
         self.completed = False
 
     def __repr__(self):
-        return "{}({})".format(self.state_name(), self.delay)
-
-    @staticmethod
-    def state_name():
-        return "waiting_state"
+        return f'WaitingState({self.delay})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.start_time = t
         self.completed = False
-        print(self.state_name(), 'starting to wait for', self.delay, 'seconds')
+        print(self, 'starting to wait for', self.delay, 'seconds')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         if t - self.start_time > self.delay:
             self.completed = True
-            print(self.state_name(), 'completed waiting!')
+            print(self, 'completed waiting!')
 
     def has_completed(self):
         return self.completed

@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     machine = SequentialStateMachine('thruster_test', [WaitingState(20),
                                                        ThrusterTestState(thruster_count=8,
-                                                                         thrust_amplitude=8, thrust_period=5),
+                                                                         amplitude=8, period=5),
                                                        WaitingState(10)])
 
     Tree.create_flowchart(machine, 'thruster-test')

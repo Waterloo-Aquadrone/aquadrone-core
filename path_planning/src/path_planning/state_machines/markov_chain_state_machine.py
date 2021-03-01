@@ -30,13 +30,18 @@ class MarkovChainStateMachine(BaseState):
         self.idx = starting_index
         self.completed = False
 
-    def state_name(self):
-        return self.name + '/' + self.states[self.idx].state_name()
+    def __repr__(self):
+        states_str = ', '.join([repr(state) for state in self.states])
+        return f'MarkovChainStateMachine({self.name}, [{states_str}], {repr(self.state_mapping_dictionaries)}, ' \
+               f'starting_index={self.starting_index})'
+
+    def __str__(self):
+        return f'MarkovChainStateMachine({self.name})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.idx = self.starting_index
         self.completed = False
-        print(self.state_name(), 'starting to execute a markov chain with', len(self.states), 'states')
+        print(self, 'starting to execute a markov chain with', len(self.states), 'states')
         self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
@@ -48,7 +53,7 @@ class MarkovChainStateMachine(BaseState):
             new_idx = self.state_mapping_dictionaries[self.idx][state.exit_code()]
             if new_idx == HALT:
                 self.completed = True
-                print(self.name, 'completed via', state.state_name(), 'sub-state!')
+                print(self.name, 'completed via', state, 'sub-state!')
                 return
 
             # Only manually finalize the state if it is not the last one
@@ -57,7 +62,7 @@ class MarkovChainStateMachine(BaseState):
 
             self.idx = new_idx
             new_state = self.states[self.idx]
-            print(self.name, 'switching from', state.state_name(), 'to', new_state.state_name())
+            print(self, 'switching from', state, 'to', new_state)
             new_state.initialize(t, controls, sub_state, world_state, sensors)
             new_state.process(t, controls, sub_state, world_state, sensors)
 

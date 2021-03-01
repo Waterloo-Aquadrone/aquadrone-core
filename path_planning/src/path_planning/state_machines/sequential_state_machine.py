@@ -13,14 +13,18 @@ class SequentialStateMachine(BaseState):
         self.idx = 0
         self.completed = False
 
-    def state_name(self):
-        return self.name + '/' + self.states[self.idx].state_name()
+    def __repr__(self):
+        states_str = ', '.join([repr(state) for state in self.states])
+        return f'SequentialStateMachine({self.name}, [{states_str}])'
+
+    def __str__(self):
+        return f'SequentialStateMachine({self.name})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.idx = 0
         self.completed = False
 
-        print(self.state_name(), 'starting to execute', len(self.states), 'states sequentially')
+        print(self, 'starting to execute', len(self.states), 'states sequentially')
         self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
@@ -40,7 +44,7 @@ class SequentialStateMachine(BaseState):
 
             self.idx += 1
             new_state = self.states[self.idx]
-            print(self.name, 'switching from', state.state_name(), 'to', new_state.state_name())
+            print(self.name, 'switching from', state, 'to', new_state)
             new_state.initialize(t, controls, sub_state, world_state, sensors)
             new_state.process(t, controls, sub_state, world_state, sensors)
 
@@ -55,7 +59,7 @@ class SequentialStateMachine(BaseState):
         return self.states[-1].exit_code()
 
     def get_tree(self, depth=0):
-        return Tree(name=self.name,
+        return Tree(name=str(self),
                     children=[child.get_tree(depth=depth+1) for child in self.states],
                     nodeType="SequentialState",
                     depth=depth)

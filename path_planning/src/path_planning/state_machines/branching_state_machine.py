@@ -17,13 +17,17 @@ class BranchingStateMachine(BaseState):
         self.idx = 0
         self.completed = False
 
-    def state_name(self):
-        return self.name + '/' + self.states[self.idx].state_name()
+    def __repr__(self):
+        return f'BranchingStateMachine({self.name}, {repr(self.states[0])}, {repr(self.states[1])}, ' \
+               f'{repr(self.states[2])}, success_code={self.success_code})'
+
+    def __str__(self):
+        return f'BranchingStateMachine({self.name})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.idx = 0
         self.completed = False
-        print(self.state_name(), 'starting to execute')
+        print(self, 'starting to execute')
         self.states[self.idx].initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
@@ -38,7 +42,7 @@ class BranchingStateMachine(BaseState):
 
                 self.idx = 1 if state.exit_code() == self.success_code else 2
                 new_state = self.states[self.idx]
-                print(self.name, 'switching from', state.state_name(), 'to', new_state.state_name())
+                print(self.name, 'switching from', state, 'to', new_state)
                 new_state.initialize(t, controls, sub_state, world_state, sensors)
                 new_state.process(t, controls, sub_state, world_state, sensors)
             else:

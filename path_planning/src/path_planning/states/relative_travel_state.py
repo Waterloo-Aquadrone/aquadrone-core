@@ -24,7 +24,8 @@ class RelativeTravelState(BaseState):
         self.absolute_target_yaw = math.degrees(math.atan2(-y_offset, -x_offset)) + relative_yaw
 
     def __repr__(self):
-        return "{}({})".format(self.state_name(), self.target)
+        return f'RelativeTravelState({self.target}, {self.x_offset}, {self.y_offset}, {self.z_offset}, ' \
+               f'relative_yaw={self.relative_yaw})'
 
     def update_target(self, target):
         self.target = target
@@ -43,9 +44,6 @@ class RelativeTravelState(BaseState):
         new_target_z = targetPos.z + self.z_offset
 
         self.travel_state_helper.update_target(new_target_x, new_target_y, new_target_z, self.absolute_target_yaw)
-
-    def state_name(self):
-        return "relative_travel"
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.update_travel_state_helper(world_state)

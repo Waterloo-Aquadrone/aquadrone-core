@@ -7,11 +7,8 @@ class BaseState(ABC):
     Each state should define how it interacts with the depth and orientation control systems, because those are
     persisted across state changes.
     """
-    def state_name(self):
-        return "base_state"
-
     def __repr__(self):
-        return self.state_name()
+        return f'{self.__class__.__name__}()'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         """
@@ -59,6 +56,6 @@ class BaseState(ABC):
         return 0
 
     def get_tree(self, depth=0):
-        return Tree(name=self.__repr__(),
+        return Tree(name=str(self),
                     nodeType="State",
                     depth=depth)

@@ -16,15 +16,16 @@ class GoToDepthState(BaseState):
         self.verbose = verbose
 
     def __repr__(self):
-        return "{}({})".format(self.state_name(), self.depth_goal)
+        return f"GoToDepthState({self.depth_goal}, tolerance={self.tolerance}, " \
+               f"velocity_tolerance={self.velocity_tolerance}, verbose={self.verbose})"
 
-    def state_name(self):
-        return "go_to_depth_state"
+    def __str__(self):
+        return f"GoToDepthState({self.depth_goal})"
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.completed = False
         controls.set_depth_goal(self.depth_goal)
-        print(self.state_name(), 'starting to go to depth', self.depth_goal, 'm')
+        print(self, 'starting to go to depth', self.depth_goal, 'm')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         current_depth = sub_state.get_submarine_state().position.z
@@ -35,7 +36,7 @@ class GoToDepthState(BaseState):
         v_z = sub_state.get_submarine_state().velocity.z
         if depth_err < self.tolerance and abs(v_z) < self.velocity_tolerance:
             self.completed = True
-            print(self.state_name(), 'completed!')
+            print(self, 'completed!')
 
     def has_completed(self):
         return self.completed

@@ -14,20 +14,24 @@ class TimedStateMachine(BaseState):
         self.timed_out = False
         self.timeout_exit_code = timeout_exit_code
 
-    def state_name(self):
-        return 'timeout_wrapper/' + self.state.state_name()
+    def __repr__(self):
+        return f'TimedStateMachine({repr(self.state)}, timeout={self.timeout}, ' \
+               f'timeout_exit_code={self.timeout_exit_code})'
+
+    def __str__(self):
+        return f'TimedStateMachine(timeout={self.timeout}, timeout_exit_code={self.timeout_exit_code})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.start_time = t
         self.timed_out = False
 
-        print(self.state_name(), 'starting to execute with timeout of', self.timeout, 'seconds')
+        print(self, 'starting to execute with timeout of', self.timeout, 'seconds')
         self.state.initialize(t, controls, sub_state, world_state, sensors)
 
     def process(self, t, controls, sub_state, world_state, sensors):
         if t - self.start_time > self.timeout:
             self.timed_out = True
-            print(self.state.state_name(), 'timed out after', self.timeout, 'seconds!')
+            print(self.state, 'timed out after', self.timeout, 'seconds!')
         else:
             self.state.process(t, controls, sub_state, world_state, sensors)
 

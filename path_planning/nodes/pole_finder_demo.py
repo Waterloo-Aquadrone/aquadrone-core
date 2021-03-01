@@ -3,7 +3,7 @@
 import rospy
 
 from path_planning.states.go_to_depth import GoToDepthState
-from path_planning.pole_finder_demo_states import ColoredPoleFinderState, ColoredPoleApproacherState
+from path_planning.states.pole_finder_demo_states import ColoredPoleFinderState, ColoredPoleApproacherState
 from path_planning.state_machines.markov_chain_state_machine import MarkovChainStateMachine
 from path_planning.state_machines.timed_state_machine import TimedStateMachine
 from path_planning.state_executor import StateExecutor

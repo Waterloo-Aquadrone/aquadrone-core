@@ -10,10 +10,7 @@ class ExitCodeState(BaseState):
         self.code = code
 
     def __repr__(self):
-        return self.state_name()
-
-    def state_name(self):
-        return 'exit_code'
+        return f'ExitCode({self.code})'
 
     def has_completed(self):
         return True

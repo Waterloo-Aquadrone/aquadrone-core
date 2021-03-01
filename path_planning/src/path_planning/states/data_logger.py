@@ -22,7 +22,7 @@ class DataLogger(BaseState):
         self.data_post_processing_funcs = []
 
     def __repr__(self):
-        return self.state_name()
+        return f'DataLogger(file_name={self.file_name})'
 
     def add_data_post_processing_func(self, data_post_processing_func):
         """
@@ -38,13 +38,10 @@ class DataLogger(BaseState):
         if not self.completed and len(self.data) > 0:
             self.save_data()
 
-    def state_name(self):
-        return "data_logger"
-
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.completed = False
         self.data = []
-        print(self.state_name(), 'starting to log data')
+        print(self, 'starting to log data')
 
     def process(self, t, controls, sub_state, world_state, sensors):
         # for now just log the depth
