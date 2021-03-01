@@ -9,9 +9,9 @@ class StateExecutor:
     This class is for executing a single top level state or state machine.
     """
 
-    def __init__(self, state, rate):
+    def __init__(self, state, rate=None):
         self.state = state
-        self.rate = rate if rate is not None else rospy.rate(5)
+        self.rate = rate if rate is not None else rospy.Rate(5)
 
         self.controls = ROSControlsModule()
         self.sub_state = ROSStateEstimationModule()

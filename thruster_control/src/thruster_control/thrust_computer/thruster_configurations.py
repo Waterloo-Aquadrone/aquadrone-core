@@ -11,7 +11,7 @@ class ThrusterConfiguration:
 
     All calculations throughout the thruster_control class are done in the frame of reference of the submarine.
     As such, all commands sent to the thrusters must be provided in the submarine's reference frame.
-    For example, a positive x force will push the submarine forward, regardless of the direction that is facing.
+    For example, a positive x force will push the submarine forward, regardless of the direction that it is facing.
     """
 
     def __init__(self, model='v28'):

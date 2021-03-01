@@ -1,16 +1,16 @@
 import rospy
 
-from geometry_msgs.msg import Point, Pose, Vector3
 from gazebo_msgs.msg import ModelStates
 from aquadrone_msgs.msg import Vision_Array, Vision
+from aquadrone_math_utils.ros_utils import make_vector, vector_to_np
 
 
 class OmniscientVision:
     def __init__(self):
         self.relative_pos_pub = rospy.Publisher("Vision_Data", Vision_Array, queue_size=1)
         self.object_pos_sub = rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos)
-        self.object_pos = []
-        self.object_ident = []
+        self.world_object_poses = []
+        self.world_object_names = []
         self.sub_pos = [0, 0, 0]
         self.relative_pos = []
         self.rate = rospy.Rate(20)
@@ -18,34 +18,31 @@ class OmniscientVision:
         self.testing = False
 
     def get_obj_pos(self, data):
-        names = data.name
-        model_pos = [pose.position for pose in data.pose]
-        temp_obj = []
-        temp_sub = []
-        temp_ident = []
+        sub_pose = []
+        world_object_names = []
+        world_object_poses = []
         if not self.testing:
-            if len(names) != 0:
-                for i in range(len(names)):
-                    if names[i] != "aquadrone":
-                        temp_obj.append([model_pos[i].x, model_pos[i].y, model_pos[i].z])
-                        temp_ident.append(names[i])
-                    else:
-                        temp_sub = [model_pos[i].x, model_pos[i].y, model_pos[i].z]
+            for name, pose in zip(data.name, data.pose):
+                if name != "aquadrone":
+                    world_object_poses.append(vector_to_np(pose.position))
+                    world_object_names.append(name)
+                else:
+                    sub_pose = vector_to_np(pose.position)
         else:
-            temp_obj = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
-            temp_sub = [0, 0, 0]
-            temp_ident = ["a", "a", "a", "a"]
-        self.object_pos = temp_obj
-        self.sub_pos = temp_sub
-        self.object_ident = temp_ident
+            world_object_poses = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
+            sub_pose = [0, 0, 0]
+            world_object_names = ["a", "a", "a", "a"]
+        self.world_object_poses = world_object_poses
+        self.world_object_names = world_object_names
+        self.sub_pos = sub_pose
 
     def calc_rel_pos(self):
         self.relative_pos = []
-        if len(self.object_pos) != 0 and len(self.sub_pos) != 0:
-            for i in range(len(self.object_pos)):
-                self.relative_pos.append([self.object_pos[i][0] - self.sub_pos[0],
-                                          self.object_pos[i][1] - self.sub_pos[1],
-                                          self.object_pos[i][2] - self.sub_pos[2]])
+        if len(self.world_object_poses) != 0 and len(self.sub_pos) != 0:
+            for i in range(len(self.world_object_poses)):
+                self.relative_pos.append([self.world_object_poses[i][0] - self.sub_pos[0],
+                                          self.world_object_poses[i][1] - self.sub_pos[1],
+                                          self.world_object_poses[i][2] - self.sub_pos[2]])
         else:
             self.relative_pos = [[0, 0, 0]]
 
@@ -54,16 +51,12 @@ class OmniscientVision:
         # print(self.object_pos)
         message = Vision_Array()
         # initializing message
-        if len(self.relative_pos) != 0 and len(self.object_ident) != 0:
+        if len(self.relative_pos) != 0 and len(self.world_object_names) != 0:
             message.data = []
             for i in range(len(self.relative_pos)):
                 message.data.append(Vision())
-                new_data = Vector3()
-                new_data.x = self.relative_pos[i][0]
-                new_data.y = self.relative_pos[i][1]
-                new_data.z = self.relative_pos[i][2]
-                message.data[i].obj_data = new_data
-                message.data[i].identifier = self.object_ident[i]
+                message.data[i].obj_data = make_vector(self.relative_pos[i])
+                message.data[i].identifier = self.world_object_names[i]
 
         self.pub_msg = message
 

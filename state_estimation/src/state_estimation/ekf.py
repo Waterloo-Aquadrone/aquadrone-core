@@ -1,9 +1,8 @@
 import rospy
 import scipy.linalg
 
-import autograd
-# import numpy as np  # only used for local testing, must use autograd wrapper to actually run this
-import autograd.numpy as np  # Thinly-wrapped numpy
+import numpy as np
+import sympy as sp
 from autograd import jacobian
 
 from geometry_msgs.msg import Vector3, Quaternion
@@ -15,7 +14,8 @@ from aquadrone_msgs.msg import SubState, MotorControls
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
-from aquadrone_math_utils.ros_utils import ros_time
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
+from aquadrone_math_utils.quaternion import Quaternion
 
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
 
@@ -36,7 +36,7 @@ class EKF:
 
         Linear Form:
         x[k+1] = A*x[k] + B*u[k]
-        z[k] = C*x[k] + B*u[k]
+        z[k] = C*x[k] + D*u[k]
         """
 
         """ Process Description
@@ -77,11 +77,13 @@ class EKF:
         self.P = None  # uncertainty in state
         self.initialize_state()
 
-        self.u = np.zeros(config.get_num_thrusters())  # most recent motor thrust received
-        self.B = np.asarray(config.get_thrusts_to_wrench_matrix())  # thrust to wrench matrix
+        self.m = config.get_num_thrusters()  # number of control inputs
+        self.u = np.zeros(self.m)  # most recent motor thrust received
+        self.B = config.get_thrusts_to_wrench_matrix()
 
-        self.f_jacobian_func = jacobian(self.f)
-        self.Q = np.eye(self.n) * 1  # uncertainty in dynamics model
+        self.f_jacobian = self.get_f_jacobian_func()
+        self.net_wrench_jacobian = self.get_net_wrench_jacobian_func()
+        self.Q = np.eye(self.n)  # uncertainty in dynamics model
 
         self.depth_sub = PressureSensorListener(self)
         self.imu_sub = IMUSensorListener(self)
@@ -103,8 +105,7 @@ class EKF:
         self.u = np.asarray(msg.motorThrusts)
 
     def prediction(self, dt):
-        f_jacobian = self.f_jacobian_func(self.x, self.u, dt)
-        f_jacobian = np.reshape(f_jacobian, (self.n, self.n))
+        f_jacobian = self.f_jacobian(self.x, self.u, dt)
 
         # Update x and uncertainty P
         self.x = self.f(self.x, self.u, dt)
@@ -125,7 +126,8 @@ class EKF:
         z = np.concatenate(z)  # measurements
         h = np.concatenate(h)  # predicted measurements
         h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
-        R = scipy.linalg.block_diag(*R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
+        R = scipy.linalg.block_diag(
+            *R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
 
         if len(z) == 0:
             # no valid measurements
@@ -152,96 +154,89 @@ class EKF:
     def f(self, x, u, dt):
         """
         Calculate next state from current state x and inputs u.
-        Must be autograd-able.
+        Must be sympy-able.
 
         :param x: The current state.
         :param u: The currently applied motor thrusts.
-        :param dt: The amount of ellapsed time.
+        :param dt: The amount of elapsed time.
         :return: The resulting state.
         """
-        x = self.fix(x)
-
+        new_x = np.copy(x)
         total_wrench = self.get_net_wrench(x, u)
 
         # update position
-        x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
+        new_x[Idx.x:Idx.z + 1] += x[Idx.Vx:Idx.Vz + 1] * dt
 
         # update orientation
-        x[Idx.Ow:Idx.Oz + 1] += np.concatenate(([0], x[Idx.Wx:Idx.Wz + 1])) * x[Idx.Ow:Idx.Oz + 1] * (dt / 2)
-        x[Idx.Ow:Idx.Oz + 1] /= np.linalg.norm(x[Idx.Ow:Idx.Oz + 1])  # rescale to unit quaternion
+        new_x[Idx.Ow:Idx.Oz + 1] += (dt / 2) * np.dot(Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1]).E().transpose(),
+                                                  x[Idx.Wx:Idx.Wz + 1])
+        # rescale to unit quaternion
+        new_x[Idx.Ow:Idx.Oz + 1] /= np.sum(x[Idx.Ow:Idx.Oz + 1] ** 2) ** 0.5  # can't use np.linalg.norm with sympy
 
         # update linear velocity
-        x[Idx.Vx:Idx.Vz + 1] += total_wrench[:3] / self.mass * dt
+        new_x[Idx.Vx:Idx.Vz + 1] += total_wrench[:3] / self.mass * dt
 
         # update angular velocity
-        x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
+        new_x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
 
-        return x
+        return new_x
+
+    def get_f_jacobian_func(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
+        u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
+        dt_var = sp.symbols('dt', real=True)
+
+        new_x = self.f(x_vars, u_vars, dt_var)
+        jacobian_matrix = [[sp.lambdify([x_vars, u_vars, dt_var], sp.diff(new_x_i, x_i)) for x_i in x_vars]
+                           for new_x_i in new_x]
+
+        return lambda x, u, dt: np.array([[func(x, u, dt) for func in jacobian_row]
+                                          for jacobian_row in jacobian_matrix])
 
     def get_net_wrench(self, x, u):
         """
         Calculates the net wrench (forces and torques) on the submarine.
+        Must be sympy-able
 
         :param x: The current state of the submarine.
         :param u: The motor thrusts.
         :return: The total wrench being applied to the submarine.
         """
-        x = self.fix(x)
-
-        net_wrench = np.zeros(6)
-        net_wrench += np.dot(self.B, u)
+        net_wrench = np.dot(self.B, u)
 
         # linear drag forces
-        net_wrench[:3] += np.array([-0.01 * x[Idx.Vx],
-                                    -0.01 * x[Idx.Vy],
-                                    -0.01 * x[Idx.Vz]])
+        net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1]
 
         # quadratic drag forces
-        net_wrench[:3] += np.array([-0.01 * x[Idx.Vx] * np.abs(x[Idx.Vx]),
-                                    -0.01 * x[Idx.Vy] * np.abs(x[Idx.Vy]),
-                                    -0.01 * x[Idx.Vz] * np.abs(x[Idx.Vz])])
+        net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1] * np.abs(x[Idx.Vx:Idx.Vz + 1])
 
         return net_wrench
+
+    def get_net_wrench_jacobian_func(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
+        u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
+
+        net_wrench = self.get_net_wrench(x_vars, u_vars)
+        jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(wrench_component, x_i)) for x_i in x_vars]
+                           for wrench_component in net_wrench]
+
+        return lambda x, u: np.array([[func(x, u) for func in jacobian_row] for jacobian_row in jacobian_matrix])
 
     def get_state_msg(self):
         sub_state_msg = SubState()
 
         # copy position
-        position = Vector3()
-        position.x = self.x[Idx.x]
-        position.y = self.x[Idx.y]
-        position.z = self.x[Idx.z]
-        sub_state_msg.position = position
-        pos_variance = Vector3()
-        pos_variance.x = self.P[Idx.x, Idx.x]
-        pos_variance.y = self.P[Idx.y, Idx.y]
-        pos_variance.z = self.P[Idx.z, Idx.z]
-        sub_state_msg.pos_variance = pos_variance
+        sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
+        sub_state_msg.pos_variance = make_vector(np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
 
         # copy velocity
-        velocity = Vector3()
-        velocity.x = self.x[Idx.Vx]
-        velocity.y = self.x[Idx.Vy]
-        velocity.z = self.x[Idx.Vz]
-        sub_state_msg.velocity = velocity
-        vel_variance = Vector3()
-        vel_variance.x = self.P[Idx.Vx, Idx.Vx]
-        vel_variance.y = self.P[Idx.Vy, Idx.Vy]
-        vel_variance.z = self.P[Idx.Vz, Idx.Vz]
-        sub_state_msg.vel_variance = vel_variance
+        sub_state_msg.velocity = make_vector(self.x[Idx.Vx:Idx.Vz + 1])
+        sub_state_msg.vel_variance = make_vector(np.diag(self.P[Idx.Vx:Idx.Vz + 1, Idx.Vx:Idx.Vz + 1]))
 
         # copy orientation
-        quaternion = Quaternion()
-        quaternion.x = self.x[Idx.Ox]
-        quaternion.y = self.x[Idx.Oy]
-        quaternion.z = self.x[Idx.Oz]
-        quaternion.w = self.x[Idx.Ow]
+        quaternion = make_quaternion(self.x[Idx.Ow:Idx.Oz + 1])
         sub_state_msg.orientation_quat = quaternion
-        quat_variance = Quaternion()
-        quat_variance.w = self.P[Idx.Ow, Idx.Ow]
-        quat_variance.x = self.P[Idx.Ox, Idx.Ox]
-        quat_variance.y = self.P[Idx.Oy, Idx.Oy]
-        quat_variance.z = self.P[Idx.Oz, Idx.Oz]
+        quat_variance = make_quaternion(np.diag(self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]))
         sub_state_msg.orientation_quat_variance = quat_variance
 
         # create roll, pitch, yaw copy of orientation
@@ -249,34 +244,15 @@ class EKF:
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
-        Cq = np.diag([sub_state_msg.orientation_quat_variance.w,
-                      sub_state_msg.orientation_quat_variance.x,
-                      sub_state_msg.orientation_quat_variance.y,
-                      sub_state_msg.orientation_quat_variance.z])
-
-        quat_vec = OMath.quat_msg_to_vec(sub_state_msg.orientation_quat)
-        G = quat_to_euler_jacobian(quat_vec)
-        G.shape = (3, 4)
+        Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
+        G = quat_to_euler_jacobian(self.x[Idx.Ow:Idx.Oz + 1]).reshape((3, 4))
 
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
-        RPY_variance = Vector3()
-        RPY_variance.x = rpy_var_mat[0, 0]
-        RPY_variance.y = rpy_var_mat[1, 1]
-        RPY_variance.z = rpy_var_mat[2, 2]
-        sub_state_msg.orientation_RPY_variance = RPY_variance
+        sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
 
         # copy angular velocity
-        ang_vel = Vector3()
-        ang_vel.x = self.x[Idx.Wx]
-        ang_vel.y = self.x[Idx.Wy]
-        ang_vel.z = self.x[Idx.Wz]
-        sub_state_msg.ang_vel = ang_vel
-
-        ang_vel_var = Vector3()
-        ang_vel_var.x = self.P[Idx.Wx][Idx.Wx]
-        ang_vel_var.y = self.P[Idx.Wy][Idx.Wy]
-        ang_vel_var.z = self.P[Idx.Wz][Idx.Wz]
-        sub_state_msg.ang_vel_variance = ang_vel_var
+        sub_state_msg.ang_vel = make_vector(self.x[Idx.Wx:Idx.Wz + 1])
+        sub_state_msg.ang_vel_variance = make_vector(np.diag(self.P[Idx.Wx:Idx.Wz + 1, Idx.Wx:Idx.Wz + 1]))
 
         return sub_state_msg
 
@@ -284,7 +260,7 @@ class EKF:
         while not rospy.is_shutdown():
             try:
                 self.rate.sleep()
-            except ROSInterruptException:
+            except rospy.ROSInterruptException:
                 break
 
             current_t = ros_time()
@@ -295,10 +271,3 @@ class EKF:
             self.update()
 
             self.state_publisher.publish(self.get_state_msg())
-
-    @staticmethod
-    def fix(arr):
-        if type(arr) == autograd.numpy.numpy_boxes.ArrayBox:
-            return arr._value
-        else:
-            return arr
