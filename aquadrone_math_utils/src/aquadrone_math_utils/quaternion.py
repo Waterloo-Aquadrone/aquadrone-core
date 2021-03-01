@@ -9,10 +9,10 @@ This file is a toy example to understand and test using Quaternion for rotations
 
 class Quaternion:
     def __init__(self, q_0=0, q_1=0, q_2=0, q_3=1):
-        self.q_0 = q_0
-        self.q_1 = q_1
-        self.q_2 = q_2
-        self.q_3 = q_3
+        self.q_0 = q_0  # real
+        self.q_1 = q_1  # x
+        self.q_2 = q_2  # y
+        self.q_3 = q_3  # z
 
     @staticmethod
     def from_real_imag(q_0, q_vec):
