@@ -212,6 +212,7 @@ class VisionSensorManager:
     def create_msg(self, x, P):
         msg = WorldState()
         msg.data = filter(lambda m: m is not None, [listener.create_msg(x, P) for listener in self.get_listeners()])
+        return msg
 
     def get_listeners(self):
         return self.listeners.values()
