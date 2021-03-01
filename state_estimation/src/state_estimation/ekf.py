@@ -17,6 +17,7 @@ import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
 from aquadrone_math_utils.quaternion import Quaternion
 
+# TODO implement using Quaternion.py to remove dependency on autograd and to enable using scipy Rotations
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
 
 
@@ -63,13 +64,13 @@ class EKF:
         # constants related to ambient conditions and submarine properties
         self.g = 9.81  # m/s^2
         self.rho_water = 997  # kg/m^3
-        self.mass = 10  # TODO: add this to config
-        self.volume = 10  # used for buoyancy calculations, TODO: add this to config
+        self.mass = 10  # kg, TODO: add this to config
+        self.volume = 10  # m^3, used for buoyancy calculations, TODO: add this to config
         self.buoyancy_offset = np.array(
             [0, 0, 0.5])  # location where buoyancy force is applied (center of buoyancy) TODO: add this to config
         inertia = np.array([[2850, 1, -25],
                             [1, 3800, 200],
-                            [-25, 200, 2700]])
+                            [-25, 200, 2700]])  # kg * m^2
         self.inertia_inv = np.linalg.inv(inertia)  # inverse of moment of inertia matrix, TODO: add this to config
 
         self.n = Idx.NUM  # Number of state elements
@@ -127,7 +128,7 @@ class EKF:
         h = np.concatenate(h)  # predicted measurements
         h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
         R = scipy.linalg.block_diag(
-            *R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
+            *R)  # Uncertainty matrix of measurement, note: this doesn't need to be sympy-able
 
         if len(z) == 0:
             # no valid measurements
