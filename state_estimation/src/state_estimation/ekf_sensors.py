@@ -1,72 +1,104 @@
+from abc import ABC, abstractmethod
 import rospy
-import math
+
 import numpy as np
-import scipy.linalg
+import sympy as sp
 
-import autograd.numpy as np  # Thinly-wrapped numpy
-from autograd import grad, jacobian, elementwise_grad
-
-from geometry_msgs.msg import Point, Vector3, Quaternion
 from sensor_msgs.msg import Imu, FluidPressure
 
-from aquadrone_msgs.msg import SubState, MotorControls
+from state_estimation.ekf_indices import Idx
+from aquadrone_math_utils.ros_utils import ros_time, vector_to_np, quaternion_to_np
+from scipy.linalg import block_diag
 
-from state_estimation.ekf_indices import IDx as IDx
 
-class BaseSensorListener(object):
+class BaseSensorListener(ABC):
     # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
-    #
-    # Functions Common for Each Sensor; No need to re-implement
-    #
+    def __init__(self, parent_ekf):
+        self.last_time = ros_time()
+        self.parent_ekf = parent_ekf
 
-    def __init__(self):
-        self.last_time = rospy.Time.now().to_sec()
-        self.calc_H = jacobian(self.state_to_measurement_h)
+        # this must be calculated after self.parent_ekf is assigned
+        self.get_h_jacobian = self.get_h_jacobian_func()
 
     def is_valid(self):
-        return rospy.Time.now().to_sec() - self.last_time < self.get_timeout_sec()
+        return ros_time() - self.last_time < self.get_timeout_sec()
 
-    def get_H(self, x, u):
-        # Jacobian of measurement wrt state (as calculated by get_measurement_z)
-        H = self.calc_H(x, u)
-        H = np.reshape(H, (self.get_p(), x.shape[0]))
-        return H
+    def get_h_jacobian(self, x, u):
+        """
+        Must return a matrix of shape (self.get_p(), n) where x is of shape (n,)
 
-    #
-    # Functions Required for Each Sensor; Implement
-    #
+        :param x: The current state.
+        :param u: The current control inputs.
+        :return: Jacobian of self.state_to_measurement_h(x, u)
+        """
+        # Jacobian of measurement with respect to state (as calculated by get_measurement_z)
+        pass
 
+    def get_h_jacobian_func(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{self.parent_ekf.n}', real=True))
+        u_vars = np.asarray(sp.symbols(f'u_:{self.parent_ekf.m}', real=True))
+
+        h = self.state_to_measurement_h(x_vars, u_vars)
+        jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(h_i, x_i)) for x_i in x_vars] for h_i in h]
+
+        return lambda x, u: np.array([[func(x, u) for func in jacobian_row]
+                                      for jacobian_row in jacobian_matrix])
+
+    @abstractmethod
     def get_timeout_sec(self):
         # Amount of time to use old measurements for
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def get_p(self):
-        # Number of elements in measurement vector
-        raise NotImplementedError
+        """
+        :return: The number of elements in the measurement vector
+                 (the size of the vector returned by self.get_measurement_z()).
+        """
+        pass
 
+    @abstractmethod
     def get_measurement_z(self):
-        # Actual measurement from the sensor
-        raise NotImplementedError
+        """
+        Must be a vector of length self.get_p()
 
+        :return: The most recent reading of the actual measurement of the sensor.
+        """
+        pass
+
+    @abstractmethod
     def get_R(self):
-        # Uncertainty matrix of measurements
-        raise NotImplementedError
+        """
+        Must be a matrix with shape (self.get_p(), self.get_p())
 
+        :return: The uncertainty matrix of measurements.
+        """
+        pass
+
+    @abstractmethod
     def state_to_measurement_h(self, x, u):
-        # Calculate expected sensor readings from current state and inputs
-        # Needs to be autograd-able
-        raise NotImplementedError
+        """
+        Must return an array of length self.get_p()
+        Must be sympy-able
 
+        :param x: The current state.
+        :param u: The current control inputs.
+        :return: The expected sensor readings based on the given state and inputs.
+        """
+        pass
 
 
 class PressureSensorListener(BaseSensorListener):
-    def __init__(self):
-        super(PressureSensorListener, self).__init__()
-        self.depth_sub = rospy.Subscriber("aquadrone/out/pressure", FluidPressure, self.depth_cb)
+    WATER_SPECIFIC_GRAVITY = 1000 * 9.81  # Pa/m
+    ATMOSPHERIC_PRESSURE = 101325  # Pa
+
+    def __init__(self, parent_ekf):
+        super(PressureSensorListener, self).__init__(parent_ekf)
+        rospy.Subscriber("aquadrone/sensors/pressure", FluidPressure, self.depth_cb)
 
         self.z = 0
-        self.var = 1
+        self.variance = 1
 
         self.pressure_offset = 100.0
         self.g = 9.8
@@ -78,35 +110,31 @@ class PressureSensorListener(BaseSensorListener):
         return 1
 
     def get_measurement_z(self):
-        vec = np.zeros((1,1))
-        vec[0] = self.z
-        return vec
+        return np.array([self.z])
 
     def get_R(self):
         # Variance of measurements
-        var = np.zeros((1,1))
-        var[0,0] = self.var
-        return var
+        return np.array([[self.variance]])
 
     def state_to_measurement_h(self, x, u):
-        return x[IDx.Pz]
+        return np.array([x[Idx.z]])
 
     def depth_cb(self, msg):
-        press = msg.fluid_pressure
-        var = msg.variance
+        absolute_pressure = msg.fluid_pressure
+        variance = msg.variance
 
-        self.z = -self.pressure_to_depth(press)
-        self.var = var / self.g
-        self.last_time = rospy.Time.now().to_sec()
+        gauge_pressure = absolute_pressure - self.ATMOSPHERIC_PRESSURE
+        depth = gauge_pressure / self.WATER_SPECIFIC_GRAVITY
 
-    def pressure_to_depth(self, press):
-        return (press - self.pressure_offset) / self.g
+        self.z = -depth
+        self.variance = variance / self.WATER_SPECIFIC_GRAVITY
+        self.last_time = ros_time()
 
 
 class IMUSensorListener(BaseSensorListener):
-    def __init__(self):
-        super(IMUSensorListener, self).__init__()
-        self.imu_sub = rospy.Subscriber("aquadrone/out/imu", Imu, self.imu_cb)
+    def __init__(self, parent_ekf):
+        super(IMUSensorListener, self).__init__(parent_ekf)
+        rospy.Subscriber("aquadrone/out/imu", Imu, self.imu_cb)
 
         self.accel = np.array([0, 0, 0])
         self.accel_var = np.array([1, 1, 1])
@@ -121,82 +149,39 @@ class IMUSensorListener(BaseSensorListener):
         return 0.1
 
     def get_p(self):
+        # 3 linear accelerations
         # 4 orientation elements in quaternion form
         # 3 angular velocities
-        # 3 linear accelerations
         return 10
 
     def get_measurement_z(self):
-        vec = np.zeros((self.get_p(),1))
-
-        for i in range(0, 3):
-            vec[i] = self.accel[i]
-
-        for i in range(0, 4):
-            vec[i+3] = self.orientation[i]
-
-        for i in range(0, 3):
-            vec[i+7] = self.ang_vel[i]
-
-        return vec
+        return np.concatenate((self.accel, self.orientation, self.ang_vel))
 
     def get_R(self):
         # Variance of measurements
-        var = np.zeros((self.get_p(),self.get_p()))
-        for i in range(0, 3):
-            var[i,i] = self.accel_var[i]
-        for i in range(0, 4):
-            var[i+3,i+3] = self.orientation_var[i]
-        for i in range(0, 3):
-            var[i+7, i+7] = self.ang_vel_variance[i]
-        return var
+        return block_diag(self.accel_var, self.orientation_var, self.ang_vel_variance)
 
     def state_to_measurement_h(self, x, u):
-        z =  np.array( [ x[IDx.Accx],
-                         x[IDx.Accy],
-                         x[IDx.Accz] + 9.81,
-                         x[IDx.Ow],
-                         x[IDx.Ox],
-                         x[IDx.Oy],
-                         x[IDx.Oz],
-                         x[IDx.Ax],
-                         x[IDx.Ay],
-                         x[IDx.Az] ])
-        #z.shape = (4,1)
-        return z
+        net_wrench = self.parent_ekf.get_net_wrench(x, u)
+        acceleration = net_wrench[:3] / self.parent_ekf.mass
+        return np.concatenate((acceleration, x[Idx.Ow:Idx.Oz + 1], x[Idx.Wx:Idx.Wz + 1]))
 
     def imu_cb(self, msg):
+        self.accel = vector_to_np(msg.linear_acceleration)
+        self.accel_var = np.array(msg.linear_acceleration_covariance).reshape((3, 3))
 
-        self.accel = np.array([msg.linear_acceleration.x,
-                               msg.linear_acceleration.y,
-                               msg.linear_acceleration.z])[np.newaxis]
-        self.accel.shape = (3, 1)
-
-        self.accel_var = np.array([msg.linear_acceleration_covariance[0],
-                                   msg.linear_acceleration_covariance[0],
-                                   msg.linear_acceleration_covariance[0]])
-
-        self.orientation = np.array([ msg.orientation.w,
-                                      msg.orientation.x,
-                                      msg.orientation.y,
-                                      msg.orientation.z ])[np.newaxis]
-        self.orientation.shape = (4, 1)
+        self.orientation = quaternion_to_np(msg.orientation)
 
         # Need to verify what our onboard sensor reports
         # Keep as this as an initial estimate
-        self.orientation_var = np.array([ msg.orientation_covariance[0],
-                                          msg.orientation_covariance[0],
-                                          msg.orientation_covariance[0],
-                                          msg.orientation_covariance[0] ])
-        
+        # TODO: convert RPY covariances (3x3) to quaternion covariances (4x4)
+        #  page 69 of this paper: https://drive.google.com/file/d/1p1gx4UxiwRlnUXe5bEa_7E2FWrMfDk3y/view?usp=sharing
+        self.orientation_var = np.diag([msg.orientation_covariance[0],
+                                        msg.orientation_covariance[0],
+                                        msg.orientation_covariance[0],
+                                        msg.orientation_covariance[0]])
 
-        self.ang_vel = np.array([ msg.angular_velocity.x,
-                                  msg.angular_velocity.y,
-                                  msg.angular_velocity.z ])[np.newaxis]
-        self.ang_vel.shape = (3,1)
+        self.ang_vel = vector_to_np(msg.angular_velocity)
+        self.ang_vel_variance = np.array(msg.angular_velocity_covariance).reshape((3, 3))
 
-        self.ang_vel_variance = np.array([msg.angular_velocity_covariance[0],
-                                          msg.angular_velocity_covariance[4],
-                                          msg.angular_velocity_covariance[8]])
-
-        self.last_time = rospy.Time.now().to_sec()
+        self.last_time = ros_time()

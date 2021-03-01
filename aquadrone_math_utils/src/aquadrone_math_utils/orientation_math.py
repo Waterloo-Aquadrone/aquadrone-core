@@ -1,28 +1,16 @@
 import autograd.numpy as np  # Thinly-wrapped numpy
 import math
 
-from geometry_msgs.msg import Vector3
+from aquadrone_math_utils.ros_utils import make_vector, quaternion_to_np
 
 
 # TODO: replace with scipy Rotations
 
 
-def quat_msg_to_vec(q):
-    return np.array([q.w, q.x, q.y, q.z])
-
-
-def rpy_vec_to_msg(vec):
-    angles = Vector3()
-    angles.x = vec[0]
-    angles.y = vec[1]
-    angles.z = vec[2]
-    return angles
-
-
 def msg_quaternion_to_euler(quat):
-    q_vec = quat_msg_to_vec(quat)
+    q_vec = quaternion_to_np(quat)
     rpy_vec = quaternion_to_euler(q_vec)
-    return rpy_vec_to_msg(rpy_vec)
+    return make_vector(rpy_vec)
 
 
 def quaternion_to_euler(quat_vec):
