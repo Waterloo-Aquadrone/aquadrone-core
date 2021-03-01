@@ -69,9 +69,9 @@ class ParallelStateMachine(BaseState):
         # return the exit code of the last non-daemon state
         return self.states[-1].exit_code()
 
-    def get_tree(self, depth=0):
+    def get_tree(self, depth=0, verbose=False):
         return Tree(name=str(self),
-                    children=[child.get_tree(depth=depth+1) for child in self.states],
-                    daemon=[child.get_tree(depth=depth+1) for child in self.daemon_states],
+                    children=[child.get_tree(depth + 1, verbose) for child in self.states],
+                    daemon=[child.get_tree(depth + 1, verbose) for child in self.daemon_states],
                     nodeType="ParallelState",
                     depth=depth)

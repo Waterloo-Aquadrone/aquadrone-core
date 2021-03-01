@@ -37,10 +37,15 @@ class Tree:
     """
 
     @staticmethod
-    def create_flowchart(state, file_name='test'):
+    def create_flowchart(state, file_name='test', verbose=False):
+        """
+        :param state: The root state to create the flowchart based off of.
+        :param file_name:
+        :param verbose: If True, then repr will be used for leaf states instead of str.
+        """
         # path to destination of flowchart (PDF)
         path = rospkg.RosPack().get_path('path_planning') + '/node_flowcharts/' + file_name
-        state.get_tree().render_graph(path)
+        state.get_tree(verbose).render_graph(path)
         print('Flowchart generated!')
 
     def __init__(self, name, nodeType, children=None, daemon=None, depth=0, number=1):

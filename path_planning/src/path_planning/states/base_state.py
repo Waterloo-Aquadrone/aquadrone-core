@@ -67,7 +67,11 @@ class BaseState(ABC):
         """
         return 0
 
-    def get_tree(self, depth=0):
-        return Tree(name=str(self),
+    def get_tree(self, depth=0, verbose=False):
+        """
+        :param depth:
+        :param verbose: If True, then repr will be used for leaf states instead of str.
+        """
+        return Tree(name=repr(self) if verbose else str(self),
                     nodeType="State",
                     depth=depth)
