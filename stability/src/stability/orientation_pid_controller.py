@@ -6,6 +6,7 @@ from aquadrone_msgs.msg import SubState
 
 from aquadrone_math_utils.angle_math import normalize_angle
 from scipy.spatial.transform import Rotation
+from aquadrone_math_utils.ros_utils import vector_to_np, quaternion_to_np
 
 
 class OrientationPIDController:
@@ -32,9 +33,8 @@ class OrientationPIDController:
         self.target_rotation = Rotation.from_euler('ZYX', [msg.z, -msg.y, msg.x])
 
     def state_cb(self, msg):
-        self.rotation = Rotation.from_quat([msg.orientation_quat.x, msg.orientation_quat.y,
-                                            msg.orientation_quat.z, msg.orientation_quat.w])
-        self.omega = np.array([msg.ang_vel.x, msg.ang_vel.y, msg.ang_vel.z])
+        self.rotation = Rotation.from_quat(quaternion_to_np(msg.orientation_quat, real_first=False))
+        self.omega = vector_to_np(msg.ang_vel)
 
     def run(self):
         control = Wrench()
@@ -56,5 +56,4 @@ class OrientationPIDController:
         # Assumes omega is in absolute frame but should be in relative frame
         relative_torque = self.k_ps * axis_error - self.k_ds * self.rotation.apply(self.omega)
         absolute_torque = self.rotation.inv().apply(relative_torque)
-        print(f'Target: {self.target_rotation.as_quat()}, current: {self.rotation.as_quat()}, torque: {absolute_torque}')
         return absolute_torque

@@ -1,0 +1,28 @@
+<launch>
+    <arg name="model" default="v28"/>
+    <arg name="enable_computer" default="True"/>
+    <param name="real" value="True"/>
+
+    <include file="$(find aquadrone_sensors)/launch/sensors.launch">
+        <arg name="real" value="True"/>
+    </include>
+
+    <include file="$(find thruster_control)/launch/control.launch">
+        <arg name="real" value="True"/>
+        <arg name="model" value="$(arg model)"/>
+        <arg name="enable_computer" value="$(arg enable_computer)"/>
+        <arg name="faulty_distributor" value="False"/>
+    </include>
+
+    <include file="$(find stability)/launch/stability.launch">
+        <arg name="real" value="True"/>
+    </include>
+
+    <include file="$(find state_estimation)/launch/localization.launch">
+        <arg name="omniscient" value="False"/>
+    </include>
+
+    <include file="$(find vision)/launch/vision.launch">
+        <arg name="real" value="True"/>
+    </include>
+</launch>

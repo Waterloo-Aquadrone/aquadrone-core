@@ -36,6 +36,7 @@ This is required whenever new python packages are created, c++ code is updated, 
 3. Close all terminals and reopen them so that they initialize properly. Alternatively, you can re-source the workspace in each terminal with the following command: ```source devel/setup.bash```
 
 #### Debugging/Notes
+- If you get and error saying ```fsck exited with status code 4``` when the VM is trying to boot, [this link](https://askubuntu.com/questions/697190/fsck-error-on-boot-dev-sda6-unexpected-inconsistency-run-fsck-manually) will probably help.
 - To run any ROS commands from a terminal (rostopic, roslaunch, rosnode etc), the catkin workspace must be sourced from 
 that terminal via the following command: ```source devel/setup.bash```. If the catkin workspace is rebuilt (with the following command: ```catkin build```), this must be redone in each terminal. The VM is configured to do this whenever a new terminal is created (but not when the workspace is rebuilt).
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 

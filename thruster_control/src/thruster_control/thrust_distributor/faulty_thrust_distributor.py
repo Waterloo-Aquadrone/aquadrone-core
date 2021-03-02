@@ -4,6 +4,7 @@ from scipy import stats
 
 from uuv_gazebo_ros_plugins_msgs.msg import FloatStamped
 from aquadrone_msgs.msg import MotorControls
+from aquadrone_math_utils.ros_utils import ros_time
 
 
 class FaultyThrustDistributor:
@@ -11,11 +12,6 @@ class FaultyThrustDistributor:
     Receives commands with a list of thrusts for each thruster, and distributes them in separate topics
     Works for both simulated and real thrusters.
     """
-
-    @staticmethod
-    def get_time():
-        return rospy.Time.now().to_sec()
-
     @staticmethod
     def noise_function(mean=0, std=1, velocity=5, seed=None):
         """
@@ -33,7 +29,7 @@ class FaultyThrustDistributor:
             """
             get time instance and convert to seconds
             """
-            seed = int(FaultyThrustDistributor.get_time() * 1e6)
+            seed = int(ros_time() * 1e6)
 
         noise_generator = OpenSimplex(seed)
 
@@ -63,7 +59,7 @@ class FaultyThrustDistributor:
         thrusts = msg.motorThrusts
         for i, (thrust, noise_func, publisher) in enumerate(zip(thrusts, self.noise_functions, self.publishers)):
             msg = FloatStamped()
-            msg.data = thrust + noise_func(FaultyThrustDistributor.get_time())
+            msg.data = thrust + noise_func(ros_time())
             publisher.publish(msg)
 
     @staticmethod

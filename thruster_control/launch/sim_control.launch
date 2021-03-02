@@ -1,7 +1,0 @@
-<launch>
-    <arg name="model" default="v28"/>
-    <param name="model" value="$(arg model)"/>
-
-    <node name="thrust_computer" pkg="thruster_control" type="thrust_computer_node.py" output="screen"/>
-    <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py" output="screen"/>
-</launch>

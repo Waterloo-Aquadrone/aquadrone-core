@@ -17,6 +17,9 @@ class StabilizeState(BaseState):
         self.velocity_tolerance = np.radians(velocity_tolerance_degrees)
         self.completed = False
 
+    def __repr__(self):
+        return self.state_name()
+
     def state_name(self):
         return "stabilize_state"
 
@@ -33,9 +36,6 @@ class StabilizeState(BaseState):
                 state.angular_velocity.magnitude() < self.velocity_tolerance:
             self.completed = True
             print(self.state_name(), 'stabilized!')
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
 
     def has_completed(self):
         return self.completed

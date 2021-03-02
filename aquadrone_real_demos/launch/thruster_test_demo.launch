@@ -1,11 +1,10 @@
 <launch>
     <arg name="model" default="v28"/>
-    <param name="model" value="$(arg model)"/>
-    
-    <!-- Only run the thrust distributor because we need to bypass the thrust_computer to send motor thrusts directly from path_planning -->
-    <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py" output="screen"/>
-    <node name="real_thruster_pwm_node" pkg="thruster_control" type="real_thruster_pwm_node.py" output="screen"/>
+
+    <include file="$(find aquadrone_real_demos)/launch/empty.launch">
+        <arg name="model" value="$(arg model)"/>
+        <arg name="enable_computer" value="False"/>
+    </include>
 
     <node name="thruster_test" pkg="path_planning" type="thruster_test.py" output="screen"/>
-
 </launch>

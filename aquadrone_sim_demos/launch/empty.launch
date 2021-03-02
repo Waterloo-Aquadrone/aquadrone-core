@@ -1,26 +1,45 @@
 <launch>
-    <arg name="model_name" default="v28"/>
+    <arg name="world" default="empty"/>
+    <arg name="model" default="v28"/>
+    <arg name="omniscient_ekf" default="True"/>
+    <arg name="enable_computer" default="True"/>
+    <arg name="faulty_distributor" default="False"/>
     <arg name="computation_factor" default="1"/>
+    <param name="real" value="False"/>
 
-    <include file="$(find aquadrone_sim_worlds)/launch/empty_world.launch">
+    <include file="$(find aquadrone_sim_worlds)/launch/$(arg world)_world.launch">
         <arg name="paused" value="false"/>
         <arg name="computation_factor" value="$(arg computation_factor)"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/upload_sub.launch">
-        <arg name="model_file" value="$(arg model_name).urdf.xacro"/>
+        <arg name="model_file" value="$(arg model).urdf.xacro"/>
     </include>
     
     <include file="$(find aquadrone_description)/launch/spawn_sub.launch">
         <arg name="model" value="aquadrone"/>
     </include>
-
-    <include file="$(find thruster_control)/launch/sim_control.launch">
-        <arg name="model" value="$(arg model_name)"/>
+    
+    <include file="$(find aquadrone_sensors)/launch/sensors.launch">
+        <arg name="real" value="False"/>
     </include>
-    <include file="$(find stability)/launch/stability.launch" />
 
-    <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py" output="screen" required="True"/>
-    <node name="omniscient_vision_node" pkg="vision" type="faker.py" output="screen" required="True"/>
+    <include file="$(find thruster_control)/launch/control.launch">
+        <arg name="real" value="False"/>
+        <arg name="model" value="$(arg model)"/>
+        <arg name="enable_computer" value="$(arg enable_computer)"/>
+        <arg name="faulty_distributor" value="$(arg faulty_distributor)"/>
+    </include>
 
+    <include file="$(find stability)/launch/stability.launch">
+        <arg name="real" value="False"/>
+    </include>
+
+    <include file="$(find state_estimation)/launch/localization.launch">
+        <arg name="omniscient" value="$(arg omniscient_ekf)"/>
+    </include>
+
+    <include file="$(find vision)/launch/vision.launch">
+        <arg name="real" value="False"/>
+    </include>
 </launch>

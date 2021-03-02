@@ -23,6 +23,9 @@ class ThrusterTestState(BaseState):
         self.start_time = 0
         self.completed = False
 
+    def __repr__(self):
+        return self.state_name() + str(self.period)
+
     def state_name(self):
         return "thruster_test_state"
 
