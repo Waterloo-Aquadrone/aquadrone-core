@@ -21,6 +21,9 @@ class DataLogger(BaseState):
         self.output_dir = rospkg.RosPack().get_path('path_planning')
         self.data_post_processing_funcs = []
 
+    def __repr__(self):
+        return self.state_name()
+
     def add_data_post_processing_func(self, data_post_processing_func):
         """
         :param data_post_processing_func: A function that receives the logged data and processes it as needed.

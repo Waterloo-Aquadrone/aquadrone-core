@@ -14,6 +14,7 @@ from path_planning.states.data_logger import DataLogger
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_executor import StateExecutor
+from path_planning.state_tree import Tree
 
 
 def plot_yaw_data(data):
@@ -28,7 +29,7 @@ def plot_yaw_data(data):
 if __name__ == "__main__":
     rospy.init_node("yaw_test")
 
-    target_depth = 3  # m
+    target_depth = -3  # m
     target_yaw = 90  #
 
     yaw_machine = SequentialStateMachine('yaw', [WaitingState(20), StabilizeState(),
@@ -49,5 +50,6 @@ if __name__ == "__main__":
     yaw_logging_machine = ParallelStateMachine('yaw_logger', states=[yaw_machine],
                                                daemon_states=[data_logger])
 
+    Tree.create_flowchart(yaw_logging_machine, 'yaw-test')
     executor = StateExecutor(yaw_logging_machine, rate=rospy.Rate(5))
     executor.run()

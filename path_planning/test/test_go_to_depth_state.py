@@ -9,10 +9,7 @@ from std_srvs.srv import Trigger
 from aquadrone_msgs.msg import SubState
 from path_planning.states.go_to_depth import GoToDepthState
 from path_planning.ros_modules import ROSControlsModule, ROSStateEstimationModule, ROSSensorDataModule
-
-
-def t():
-        return rospy.Time.now().to_sec()
+from aquadrone_math_utils.ros_utils import ros_time
 
 
 class TestGoToDepth(unittest.TestCase):
@@ -20,26 +17,26 @@ class TestGoToDepth(unittest.TestCase):
         s = GoToDepthState(0)
     
     def test_wait_for_stabilized_at_depth(self):
-        s = GoToDepthState(5)
+        s = GoToDepthState(-5)
         controls = ROSControlsModule()
         sub_state = ROSStateEstimationModule()
         sensors = ROSSensorDataModule()
 
         msg = SubState()
         sub_state.sub_state_callback(msg)
-        s.initialize(t(), controls, sub_state, None, sensors)
-        s.process(t(), controls, sub_state, None, sensors)
+        s.initialize(ros_time(), controls, sub_state, None, sensors)
+        s.process(ros_time(), controls, sub_state, None, sensors)
         assert(not s.has_completed())
 
         msg.position.z = -5
         msg.velocity.z = -10
         sub_state.sub_state_callback(msg)
-        s.process(t(), controls, sub_state, None, sensors)
+        s.process(ros_time(), controls, sub_state, None, sensors)
         assert(not s.has_completed())
 
         msg.velocity.z = 0
         sub_state.sub_state_callback(msg)
-        s.process(t(), controls, sub_state, None, sensors)
+        s.process(ros_time(), controls, sub_state, None, sensors)
         assert(s.has_completed())
 
 

@@ -16,13 +16,16 @@ class RelativeTravelState(BaseState):
         :param relative_yaw: This parameter is the yaw that makes the submarine face the target plus the added relative yaw
         """
         self.target = target
-        self.travel_state_helper = TravelState()
+        self.travel_state_helper = TravelState(verbose=False)
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.z_offset = z_offset
         self.relative_yaw = relative_yaw
-        self.absolute_target_yaw = math.atan2(-y_offset, -x_offset) + relative_yaw
-        
+        self.absolute_target_yaw = math.degrees(math.atan2(-y_offset, -x_offset)) + relative_yaw
+
+    def __repr__(self):
+        return "{}({})".format(self.state_name(), self.target)
+
     def update_target(self, target):
         self.target = target
         
@@ -31,7 +34,7 @@ class RelativeTravelState(BaseState):
         self.y_offset = y_offset
         self.z_offset = z_offset
         self.relative_yaw = relative_yaw
-        self.absolute_target_yaw = math.atan2(-y_offset, -x_offset) + relative_yaw
+        self.absolute_target_yaw = math.degrees(math.atan2(-y_offset, -x_offset)) + relative_yaw
 
     def update_travel_state_helper(self, world_state):
         targetPos = world_state.get_world_state()[self.target].position
@@ -47,6 +50,8 @@ class RelativeTravelState(BaseState):
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.update_travel_state_helper(world_state)
         self.travel_state_helper.initialize(t, controls, sub_state, world_state, sensors)
+        print(f'Moving relative to {self.target} with offset of x = {self.x_offset}, y = {self.y_offset},'
+              f' z = {self.z_offset} relative yaw = {self.relative_yaw}')
 
     def process(self, t, controls, sub_state, world_state, sensors):
 

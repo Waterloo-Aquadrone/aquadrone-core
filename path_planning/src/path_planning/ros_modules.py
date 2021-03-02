@@ -1,5 +1,4 @@
 import rospy
-import rosservice
 import cv2
 import numpy as np
 import time
@@ -14,6 +13,7 @@ from path_planning import data_structures as DS
 from aquadrone_msgs.msg import SubState, MotorControls, WorldState
 import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.angle_math import normalize_angle
+from aquadrone_math_utils.ros_utils import make_vector
 
 
 class ROSControlsModule:
@@ -21,18 +21,14 @@ class ROSControlsModule:
         self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_target", Vector3, queue_size=1)
-        self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=0)
+        self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=1)
         self.controls_halted = False
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
 
     def set_orientation_goal(self, roll=0, pitch=0, yaw=0):
-        target = Vector3()
-        target.x = normalize_angle(roll)
-        target.y = normalize_angle(pitch)
-        target.z = normalize_angle(yaw)
-        self.orientation_pub.publish(target)
+        self.orientation_pub.publish(make_vector([roll, pitch, yaw]))
 
     def set_roll_goal(self, roll):
         """
@@ -42,9 +38,7 @@ class ROSControlsModule:
 
         :param roll:
         """
-        target = Vector3()
-        target.x = normalize_angle(roll)
-        self.orientation_pub.publish(target)
+        self.orientation_pub.publish(make_vector([roll]))
 
     def set_yaw_goal(self, yaw):
         """
@@ -52,17 +46,10 @@ class ROSControlsModule:
 
         :param yaw:
         """
-        target = Vector3()
-        target.x = 0
-        target.y = 0
-        target.z = normalize_angle(yaw)
-        self.orientation_pub.publish(target)
+        self.orientation_pub.publish(make_vector([0, 0, yaw]))
 
     def set_movement_target(self, x=0, y=0):
-        target = Vector3()
-        target.x = x
-        target.y = y
-        self.planar_move_pub.publish(target)
+        self.planar_move_pub.publish(make_vector([x, y]))
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
@@ -89,14 +76,15 @@ class ROSControlsModule:
         if self.controls_halted:
             return
 
-        try:
-            rospy.wait_for_service('halt_and_catch_fire')
-            halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
-            req = TriggerRequest()
-            halt_and_catch_fire_service(req)
-        except rospy.ROSInterruptException:
-            # rospy is shut down
-            print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
+        if rospy.get_param("real", True):
+            try:
+                rospy.wait_for_service('halt_and_catch_fire')
+                halt_and_catch_fire_service = rospy.ServiceProxy('halt_and_catch_fire', Trigger)
+                req = TriggerRequest()
+                halt_and_catch_fire_service(req)
+            except rospy.ROSInterruptException:
+                # rospy is shut down
+                print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
 
         self.controls_halted = True
 
