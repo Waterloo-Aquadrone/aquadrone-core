@@ -38,7 +38,7 @@ if __name__ == "__main__":
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(),
                                                    GoToDepthState(target_depth, tolerance=0.5,
                                                                   velocity_tolerance=0.5),
-                                                   WaitingState(10), TimedStateMachine(SearchingState(target='blue_pole'), 60), WaitingState(10), ExitCodeState(0)])
+                                                   WaitingState(10), TimedStateMachine(SearchingState(target='blue_pole'), 10), WaitingState(10), ExitCodeState(0)])
     data_logger = DataLogger('pole_search_test')
 
     data_logger.add_data_post_processing_func(plot_circling_data)
