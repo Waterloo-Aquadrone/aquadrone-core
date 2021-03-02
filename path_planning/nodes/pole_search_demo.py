@@ -14,6 +14,7 @@ from path_planning.state_machines.sequential_state_machine import SequentialStat
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_executor import StateExecutor
 from path_planning.states.searching_state import SearchingState
+from path_planning.state_machines.timed_state_machine import TimedStateMachine
 
 
 
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     dive_machine = SequentialStateMachine('dive', [WaitingState(20), StabilizeState(),
                                                    GoToDepthState(target_depth, tolerance=0.5,
                                                                   velocity_tolerance=0.5),
-                                                   WaitingState(10), SearchingState(target='blue_pole'), WaitingState(10), ExitCodeState(0)])
+                                                   WaitingState(10), TimedStateMachine(SearchingState(target='blue_pole'), 60), WaitingState(10), ExitCodeState(0)])
     data_logger = DataLogger('dive-test')
 
 

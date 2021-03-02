@@ -13,31 +13,32 @@ class SearchingState(BaseState):
         self.target = target
         self.completed = False
         self.checkpoints = None
+        self.target_x = None
+        self.target_y = None
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.origin_z = origin_z
         self.target_yaw = target_yaw
 
     @staticmethod
-    def spiral_calc(origin_x, origin_y):
+    def spiral_calc(origin_x, origin_y,):
         """
         Calculates the x and y coordinates in a spiral
         plot and updates an origin x and y coordinate by
         accepting the target_x and target_y in its arguments
         """
-        checkpoints = []
-        num_x_y_pts = 200
-        space_btw_lines = 5
-        velo_time_rate = 20
-        for i in range(num_x_y_pts):
+
+        i = 0
+        while True:
+            space_btw_lines = 5
+            velo_time_rate = 20
             t = i / velo_time_rate * math.pi
             x = (1 + space_btw_lines * t) * math.cos(t)
             y = (1 + space_btw_lines * t) * math.sin(t)
             new_target_x = origin_x + x
             new_target_y = origin_y + y
-            checkpoints.append((new_target_x, new_target_y))
-        return checkpoints
-
+            yield new_target_x, new_target_y
+            i += 1
 
     def state_name(self):
         return "searching_state"
@@ -53,19 +54,22 @@ class SearchingState(BaseState):
             self.origin_z = position.z
         self.checkpoints = self.spiral_calc(self.origin_x, self.origin_y)
 
-        target_x, target_y = self.checkpoints[0]
-        controls.set_movement_target(target_x, target_y)
+        self .target_x, self.target_y = next(self.checkpoints)
+        controls.set_movement_target(self.target_x, self.target_y)
+
+        """
+        target_x and target_y are points on the spiral
+        from the list of x and y checkpoints
+        """
 
     def process(self, t, controls, sub_state, world_state, sensors):
-        target_x, target_y = self.checkpoints[0]
         position = sub_state.get_submarine_state().position
         subpos_x = position.x
         subpos_y = position.y
         tolerance = 1
-        if abs(target_x - subpos_x) < tolerance and abs(target_y - subpos_y) < tolerance:
-            self.checkpoints.pop(0)
-            new_target_x, new_target_y = self.checkpoints[0]
-            controls.set_movement_target(new_target_x, new_target_y)
+        if abs(self.target_x - subpos_x) < tolerance and abs(self.target_y - subpos_y) < tolerance:
+            self.target_x, self.target_y = next(self.checkpoints)
+            controls.set_movement_target(self.target_x, self.target_y)
 
         if self.target in world_state.get_world_state().keys():
             self.completed = True
