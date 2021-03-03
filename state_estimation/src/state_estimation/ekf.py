@@ -203,7 +203,6 @@ class EKF:
         :return: The total wrench being applied to the submarine.
         """
         net_wrench = np.dot(self.B, u)
-
         # linear drag forces
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1]
 
@@ -213,7 +212,8 @@ class EKF:
         # buoyancy force
         buoyancy_force = self.rho_water * self.volume * self.g - self.mass * self.g
         net_wrench[2] += buoyancy_force
-        net_wrench[3:6] = np.cross(self.buoyancy_offset, buoyancy_force)
+        torque = np.cross(self.buoyancy_offset, np.array([0,0,buoyancy_force]))
+        net_wrench[3:] = torque
 
         return net_wrench
 
