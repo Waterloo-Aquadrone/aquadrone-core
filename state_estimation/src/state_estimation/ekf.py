@@ -229,11 +229,12 @@ class EKF:
 
     def get_state_msg(self):
         sub_state_msg = SubState()
-
         # copy position
         sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
-        sub_state_msg.pos_variance = make_vector(np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        np_pos_variance = np.minimum(np.array([100,100,100]),np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        sub_state_msg.pos_variance = make_vector(np_pos_variance)
 
+        rospy.logwarn("pos_var"+str(np_pos_variance))
         # copy velocity
         sub_state_msg.velocity = make_vector(self.x[Idx.Vx:Idx.Vz + 1])
         sub_state_msg.vel_variance = make_vector(np.diag(self.P[Idx.Vx:Idx.Vz + 1, Idx.Vx:Idx.Vz + 1]))
