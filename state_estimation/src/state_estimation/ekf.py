@@ -14,7 +14,7 @@ from aquadrone_msgs.msg import SubState, MotorControls
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
 import aquadrone_math_utils.orientation_math as OMath
-from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np
 from aquadrone_math_utils.quaternion import Quaternion
 
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
@@ -210,9 +210,13 @@ class EKF:
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1] * np.abs(x[Idx.Vx:Idx.Vz + 1])
 
         # buoyancy force
-        buoyancy_force = self.rho_water * self.volume * self.g - self.mass * self.g
-        net_wrench[2] += buoyancy_force
-        torque = np.cross(self.buoyancy_offset, np.array([0,0,buoyancy_force]))
+        buoyancy_force = self.rho_water * self.volume * self.g
+        net_wrench[2] += buoyancy_force - self.mass * self.g
+
+        quad_orientation = Quaternion.from_array(x[Idx.Ow:Idx.Oz+1])
+        rotated_offset_quad = quad_orientation.rotate(self.buoyancy_offset)
+        rotated_offset_np = np.array([rotated_offset_quad.q_1, rotated_offset_quad.q_2, rotated_offset_quad.q_3])
+        torque = np.cross(rotated_offset_np, np.array([0,0,buoyancy_force]))
         net_wrench[3:] = torque
 
         return net_wrench
