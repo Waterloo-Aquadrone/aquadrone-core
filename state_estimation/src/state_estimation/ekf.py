@@ -214,9 +214,8 @@ class EKF:
         net_wrench[2] += buoyancy_force - self.mass * self.g
 
         quad_orientation = Quaternion.from_array(x[Idx.Ow:Idx.Oz+1])
-        rotated_offset_quad = quad_orientation.rotate(self.buoyancy_offset)
-        rotated_offset_np = np.array([rotated_offset_quad.q_1, rotated_offset_quad.q_2, rotated_offset_quad.q_3])
-        torque = np.cross(rotated_offset_np, np.array([0,0,buoyancy_force]))
+        rotated_offset = quad_orientation.rotate(self.buoyancy_offset).imag()
+        torque = np.cross(rotated_offset, np.array([0,0,buoyancy_force]))
         net_wrench[3:] = torque
 
         return net_wrench
