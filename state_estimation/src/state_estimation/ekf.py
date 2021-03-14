@@ -14,7 +14,7 @@ from aquadrone_msgs.msg import SubState, WorldState, MotorControls
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener, VisionSensorManager
 import aquadrone_math_utils.orientation_math as OMath
-from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np
 from aquadrone_math_utils.quaternion import Quaternion
 
 # TODO implement using Quaternion.py to remove dependency on autograd and to enable using scipy Rotations
@@ -209,23 +209,35 @@ class EKF:
         :return: The total wrench being applied to the submarine.
         """
         net_wrench = np.dot(self.B, u)
-
         # linear drag forces
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1]
 
         # quadratic drag forces
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1] * np.abs(x[Idx.Vx:Idx.Vz + 1])
 
-        # TODO: add buoyancy force and torque
+        # buoyancy force
+        buoyancy_force = self.rho_water * self.volume * self.g
+        net_wrench[2] += buoyancy_force - self.mass * self.g
+
+        quad_orientation = Quaternion.from_array(x[Idx.Ow:Idx.Oz+1])
+        rotated_offset = quad_orientation.rotate(self.buoyancy_offset).imag()
+        torque = np.cross(rotated_offset, np.array([0,0,buoyancy_force]))
+        net_wrench[3:] = torque
+
+        return net_wrench
+
+    def get_net_wrench_jacobian_func(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
+        u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
 
         return net_wrench
 
     def get_state_msg(self):
         sub_state_msg = SubState()
-
         # copy position
         sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
-        sub_state_msg.pos_variance = make_vector(np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        np_pos_variance = np.minimum(np.array([100,100,100]),np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        sub_state_msg.pos_variance = make_vector(np_pos_variance)
 
         # copy velocity
         sub_state_msg.velocity = make_vector(self.x[Idx.Vx:Idx.Vz + 1])
