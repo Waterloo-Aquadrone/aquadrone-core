@@ -217,7 +217,8 @@ class VisionSensorManager:
 
     def create_msg(self, x, P):
         msg = WorldState()
-        msg.data = filter(lambda m: m is not None, [listener.create_msg(x, P) for listener in self.get_listeners()])
+        msg.data = list(filter(lambda m: m is not None,
+                               [listener.create_msg(x, P) for listener in self.get_listeners()]))
         return msg
 
     def get_listeners(self):
@@ -257,7 +258,7 @@ class PointObjectListener(BaseSensorListener):
         msg.pose_with_covariance.pose.orientation = make_quaternion(Quaternion.identity().as_array())
         covariance = np.zeros((6, 6))
         covariance[:3, :3] = pos_covariance
-        msg.pose_with_covariance.covariance = list(covariance.flatten())
+        msg.pose_with_covariance.covariance = covariance.flatten()
         return msg
 
     def get_timeout_sec(self):
