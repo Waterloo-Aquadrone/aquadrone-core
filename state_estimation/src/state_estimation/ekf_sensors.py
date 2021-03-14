@@ -272,6 +272,5 @@ class PointObjectListener(BaseSensorListener):
         sub_quat = Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1])
         absolute_target_pos = x[self.state_slice]
 
-        # TODO: verify that we need rotate and not unrotate
-        relative_target_pos = sub_quat.rotate(absolute_target_pos - sub_pos)
+        relative_target_pos = sub_quat.unrotate(absolute_target_pos - sub_pos)
         return relative_target_pos
