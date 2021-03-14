@@ -96,6 +96,11 @@ class EKF:
         self.Q = scipy.linalg.block_diag(np.eye(self.n), 0.01 * np.eye(self.p))  # uncertainty in dynamics model
         self.initialize_state()  # must initialize state after defining n and p
 
+        # must initialize ekf_sensors after the parent ekf is initialized
+        self.depth_sub.initialize()
+        self.imu_sub.initialize()
+        self.vision_sensor_manager.initialize()
+
     def initialize_state(self, msg=None):
         self.x = np.zeros(self.n + self.p)
         # set quaternion such that sub is upright

@@ -19,7 +19,9 @@ class BaseSensorListener(ABC):
     def __init__(self, parent_ekf):
         self.last_time = ros_time()
         self.parent_ekf = parent_ekf
+        self.get_h_jacobian = None
 
+    def initialize(self):
         # this must be calculated after self.parent_ekf is assigned
         self.get_h_jacobian = self.get_h_jacobian_func()
 
@@ -203,6 +205,10 @@ class VisionSensorManager:
                                                           slice(Idx.NUM + 3 * index, Idx.NUM + 3 * (index + 1)))
                           for index, identifier in enumerate(world_objects)}
         rospy.Subscriber("aquadrone/vision_data", VisionArray, self.vision_cb)
+
+    def initialize(self):
+        for listener in self.listeners.values():
+            listener.initialize()
 
     def vision_cb(self, vision_data):
         for world_object_state in vision_data:
