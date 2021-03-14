@@ -245,7 +245,8 @@ class EKF:
         sub_state_msg = SubState()
         # copy position
         sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
-        np_pos_variance = np.minimum(np.array([100,100,100]),np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        np_pos_variance = np.minimum(self.MAX_VARIANCE,
+                                     np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
         sub_state_msg.pos_variance = make_vector(np_pos_variance)
 
         # copy velocity
