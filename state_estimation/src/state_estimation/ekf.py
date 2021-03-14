@@ -229,7 +229,7 @@ class EKF:
     def get_net_wrench_jacobian_func(self):
         x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
         u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
-        
+
         net_wrench = self.get_net_wrench(x_vars, u_vars)
         jacobian_matrix = [[sp.lambdify([x_vars, u_vars], sp.diff(wrench_component, x_i)) for x_i in x_vars]
                            for wrench_component in net_wrench]
