@@ -5,7 +5,7 @@ import numpy as np
 import sympy as sp
 
 from sensor_msgs.msg import Imu, FluidPressure
-from aquadrone_msgs.msg import VisionArray, WorldObjectState, WorldState
+from aquadrone_msgs.msg import WorldObjectState, WorldState
 
 from state_estimation.ekf_indices import Idx
 from aquadrone_math_utils.quaternion import Quaternion
@@ -204,14 +204,14 @@ class VisionSensorManager:
         self.listeners = {identifier: PointObjectListener(parent_ekf, identifier,
                                                           slice(Idx.NUM + 3 * index, Idx.NUM + 3 * (index + 1)))
                           for index, identifier in enumerate(world_objects)}
-        rospy.Subscriber("aquadrone/vision_data", VisionArray, self.vision_cb)
+        rospy.Subscriber("aquadrone/vision_data", WorldState, self.vision_cb)
 
     def initialize(self):
         for listener in self.listeners.values():
             listener.initialize()
 
     def vision_cb(self, vision_data):
-        for world_object_state in vision_data:
+        for world_object_state in vision_data.data:
             if world_object_state.identifier in self.listeners.keys():
                 self.listeners[world_object_state.identifier].vision_cb(world_object_state.pose_with_covariance)
 
