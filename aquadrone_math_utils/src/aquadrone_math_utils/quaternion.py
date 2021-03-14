@@ -96,6 +96,12 @@ class Quaternion:
     def __repr__(self):
         return f'Quaternion({self.q_0}, {self.q_1}, {self.q_2}, {self.q_3})'
 
+    def __iter__(self):
+        """
+        Note that iteration will always return the real value first.
+        """
+        return iter([self.q_0, self.q_1, self.q_2, self.q_3])
+
     @staticmethod
     def get_omega(q, q_dot):
         # noinspection PyCallingNonCallable
