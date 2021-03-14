@@ -41,10 +41,10 @@ class Quaternion:
         return Quaternion.from_real_imag(self.real(), -self.imag())
 
     def rotate(self, x_vec):
-        return self.conj() * Quaternion.from_real_imag(0, x_vec) * self
+        return (self.conj() * Quaternion.from_real_imag(0, x_vec) * self).imag()
 
     def unrotate(self, x_vec_prime):
-        return self * Quaternion.from_real_imag(0, x_vec_prime) * self.conj()
+        return (self * Quaternion.from_real_imag(0, x_vec_prime) * self.conj()).imag()
 
     def E(self):
         return np.array([[-self.q_1,  self.q_0, -self.q_3,  self.q_2],
