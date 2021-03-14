@@ -221,7 +221,7 @@ class VisionSensorManager:
         return msg
 
     def get_listeners(self):
-        return self.listeners.values()
+        return list(self.listeners.values())
 
     def get_total_state_variables(self):
         return sum([listener.get_p() for listener in self.listeners.values()])
