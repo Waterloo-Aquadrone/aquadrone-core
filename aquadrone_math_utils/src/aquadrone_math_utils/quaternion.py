@@ -19,8 +19,8 @@ class Quaternion:
         return Quaternion(q_0, q_vec[0], q_vec[1], q_vec[2])
 
     @staticmethod
-    def from_array(arr):
-        return Quaternion(arr[0], arr[1], arr[2], arr[3])
+    def from_array(arr, real_first=True):
+        return Quaternion(arr[0], arr[1], arr[2], arr[3]) if real_first else Quaternion(arr[1], arr[2], arr[3], arr[0])
 
     @staticmethod
     def from_scipy(rotation):
