@@ -41,7 +41,7 @@ class OmniscientVision:
         using the provided sub_pose.
         """
         sub_position = vector_to_np(sub_pose.position)
-        sub_orientation = quaternion_to_np(sub_pose.orientation)
+        sub_orientation = Quaternion.from_array(quaternion_to_np(sub_pose.orientation))
         object_position = vector_to_np(object_pose.position)
 
         relative_object_position = sub_orientation.unrotate(object_position - sub_position)
