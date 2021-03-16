@@ -23,7 +23,7 @@ def msg_quaternion_to_euler(quat):
 
 
 def quaternion_to_euler(quat_vec):
-    # http://bediyap.com/programming/convert-quaternion-to-euler-rotations/ use intrinsic xyz
+    # doi:10.1.1.468.5407 p16
     w, x, y, z = quat_vec / np.sum(quat_vec*quat_vec)**0.5
 
     # roll (x-axis rotation)
