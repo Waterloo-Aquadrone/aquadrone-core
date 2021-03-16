@@ -86,7 +86,8 @@ class Quaternion:
 
         For other calculations, use as_euler instead.
         """
-        # doi:10.1.1.468.5407 p16
+        # Implementation based on page 16 of this paper:
+        # https://drive.google.com/file/d/1u2uIzvj4GLaSEUvjplONdsSUh_swtdne/view?usp=sharing
         w, x, y, z = self.as_array()
 
         # roll (x-axis rotation)
