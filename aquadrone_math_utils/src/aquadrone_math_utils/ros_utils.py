@@ -28,3 +28,9 @@ def make_quaternion(arr, real_first=True):
 def quaternion_to_np(quaternion, real_first=True):
     return np.array([quaternion.w, quaternion.x, quaternion. y, quaternion.z]) if real_first \
         else np.array([quaternion.x, quaternion.y, quaternion.z, quaternion.w])
+
+
+def msg_quaternion_to_euler(quat):
+    q_vec = quaternion_to_np(quat)
+    rpy_vec = Quaternion.from_array(q_vec).as_euler()
+    return make_vector(rpy_vec)

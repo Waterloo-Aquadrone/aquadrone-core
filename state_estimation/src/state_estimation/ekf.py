@@ -3,7 +3,6 @@ import scipy.linalg
 
 import numpy as np
 import sympy as sp
-from autograd import jacobian
 
 from geometry_msgs.msg import Vector3, Quaternion
 
@@ -13,8 +12,7 @@ from aquadrone_msgs.msg import SubState, MotorControls
 
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
-import aquadrone_math_utils.orientation_math as OMath
-from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, msg_quaternion_to_euler
 from aquadrone_math_utils.quaternion import Quaternion
 
 
@@ -246,12 +244,12 @@ class EKF:
         sub_state_msg.orientation_quat_variance = quat_variance
 
         # create roll, pitch, yaw copy of orientation
-        sub_state_msg.orientation_RPY = OMath.msg_quaternion_to_euler(quaternion)
+        sub_state_msg.orientation_RPY = msg_quaternion_to_euler(quaternion)
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
         Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
-        quat = Quaternion(self.x[Idx.Ow], self.x[Idx.Ox], self.x[Idx.Oy], self.x[Idx.Oz])
+        quat = Quaternion.from_array(self.x[Idx.Ow:Idx.Oz + 1])
         G = quat.quat_to_euler_jacobian()
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
         sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
