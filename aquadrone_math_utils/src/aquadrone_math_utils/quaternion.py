@@ -100,17 +100,18 @@ class Quaternion:
         # pitch (y-axis rotation)
         sinp = 2.0 * (-x * z + w * y)
 
+        # return in the order: roll, pitch, yaw
         if np.abs(sinp) == 1:
             return [
-                -2 * sp.sign(sinp) * sp.atan2(x, w).evalf(),
+                0,
                 sp.sign(sinp) * np.pi / 2,
-                0
+                -2 * sp.sign(sinp) * sp.atan2(x, w).evalf()
             ]
         else:
             return [
-                sp.atan2(siny_cosp, cosy_cosp).evalf(),
+                sp.atan2(sinr_cosp, cosr_cosp).evalf(),
                 sp.asin(sinp).evalf(),
-                sp.atan2(sinr_cosp, cosr_cosp).evalf()
+                sp.atan2(siny_cosp, cosy_cosp).evalf()
             ]
 
     @staticmethod
