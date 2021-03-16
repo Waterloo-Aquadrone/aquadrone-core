@@ -5,7 +5,7 @@ import sympy as sp
 # TODO: replace with scipy Rotations
 """
 Throughout the Aquadrone code base, orientations are specified in one of 2 formats:
-1. Extrinsic ZYX Euler angles (yaw, pitch, and roll respectively). 
+1. Intrinsic ZYX Euler angles (yaw, pitch, and roll respectively). 
 This corresponds to the human intuition of yaw, then pitch about new y axis, then roll about new x axis.
 2. Unit quaternion
 
@@ -27,25 +27,25 @@ def quaternion_to_euler(quat_vec):
     w, x, y, z = quat_vec / np.sum(quat_vec*quat_vec)**0.5
 
     # roll (x-axis rotation)
-    sinr_cosp = 2.0 * (y * z - w * x)
-    cosr_cosp = w * w - x * x - y * y + z * z
+    sinr_cosp = 2.0 * (w * x + y * z)
+    cosr_cosp = 1 - 2.0 * (x * x + y * y)
 
     # yaw (z-axis rotation)
-    siny_cosp = -2.0 * (x * y - w * z)
-    cosy_cosp = w * w + x * x - y * y - z * z
+    siny_cosp = 2.0 * ( w * z + x * y )
+    cosy_cosp = 1 - 2.0 * ( y * y + z * z )
 
     # pitch (y-axis rotation)
-    sinp = 2.0 * (x * z + w * y)
+    sinp = 2.0 * (-x * z + w * y)
 
     if np.abs(sinp) == 1:
-        return [sp.atan2(siny_cosp, cosy_cosp).evalf(),
-                 sp.sign(sinp) * math.pi,
-                 -sp.atan2(sinr_cosp, cosr_cosp).evalf()
+        return [-2 * sp.sign(sinp) * sp.atan2(x, w).evalf(),
+                 sp.sign(sinp) * math.pi / 2,
+                 0
                  ]
     else:
         return [sp.atan2(siny_cosp, cosy_cosp).evalf(),
                  sp.asin(sinp).evalf(),
-                 -sp.atan2(sinr_cosp, cosr_cosp).evalf()
+                 sp.atan2(sinr_cosp, cosr_cosp).evalf()
                  ]
 
 
