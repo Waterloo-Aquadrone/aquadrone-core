@@ -17,7 +17,6 @@ class TestEKF(unittest.TestCase):
         ekf = EKF(config)
         ekf.get_state_msg()
 
-
 if __name__ == '__main__':
     rospy.init_node('test_depth_control')
     rostest.rosrun('state_estimation', 'test_ekf', TestEKF)
