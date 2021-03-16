@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 from matplotlib import pyplot as plt
+from aquadrone_math_utils.orientation_math import quaternion_to_euler
+import sympy as sp
 
 """
 This file is a toy example to understand and test using Quaternion for rotations and PID controllers.
@@ -69,6 +71,14 @@ class Quaternion:
         rpy = self.as_scipy().as_euler('ZYX')[::-1]
         rpy[1] *= -1
         return rpy
+
+    def quat_to_euler_jacobian(self):
+        x_vars = np.asarray(sp.symbols(f'x_:{4}', real=True))
+        angle_vars = quaternion_to_euler(x_vars)
+        q_vars = [self.q_0, self.q_1, self.q_2, self.q_3]
+
+        var_dict = {x_vars[i]: q_vars[i] for i in range(len(q_vars))}
+        return sp.Matrix(angle_vars).jacobian(x_vars).subs(var_dict)
 
     def __mul__(self, other):
         if type(other) is Quaternion:

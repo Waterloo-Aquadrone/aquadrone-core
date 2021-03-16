@@ -1,13 +1,11 @@
 import autograd.numpy as np  # Thinly-wrapped numpy
 import math
-
 from aquadrone_math_utils.ros_utils import make_vector, quaternion_to_np
-
-
+import sympy as sp
 # TODO: replace with scipy Rotations
 """
 Throughout the Aquadrone code base, orientations are specified in one of 2 formats:
-1. Extrinsic ZYX Euler angles (yaw, pitch, and roll respectively). 
+1. Intrinsic ZYX Euler angles (yaw, pitch, and roll respectively). 
 This corresponds to the human intuition of yaw, then pitch about new y axis, then roll about new x axis.
 2. Unit quaternion
 
@@ -25,41 +23,30 @@ def msg_quaternion_to_euler(quat):
 
 
 def quaternion_to_euler(quat_vec):
-    # From wikipedia (https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles)
-
-    w = quat_vec[0]
-    x = quat_vec[1]
-    y = quat_vec[2]
-    z = quat_vec[3]
-
-    angles = np.array([0, 0, 0])
+    # doi:10.1.1.468.5407 p16
+    w, x, y, z = quat_vec / np.sum(quat_vec*quat_vec)**0.5
 
     # roll (x-axis rotation)
-    sinr_cosp = +2.0 * (w * x + y * z)
-    cosr_cosp = +1.0 - 2.0 * (x * x + y * y)
-    # angles[0] = np.arctan2(sinr_cosp, cosr_cosp)
+    sinr_cosp = 2.0 * (w * x + y * z)
+    cosr_cosp = 1 - 2.0 * (x * x + y * y)
 
     # yaw (z-axis rotation)
-    siny_cosp = +2.0 * (w * z + x * y)
-    cosy_cosp = +1.0 - 2.0 * (y * y + z * z)
-    # angles[2] = math.atan2(siny_cosp, cosy_cosp)
+    siny_cosp = 2.0 * ( w * z + x * y )
+    cosy_cosp = 1 - 2.0 * ( y * y + z * z )
 
     # pitch (y-axis rotation)
-    sinp = +2.0 * (w * y - z * x)
-    if np.abs(sinp) >= 1:
-        # angles[1] = np.sign(sinp) * math.pi # use 90 degrees if out of range
-        return np.array([np.arctan2(sinr_cosp, cosr_cosp),
-                         np.sign(sinp) * math.pi,
-                         np.arctan2(siny_cosp, cosy_cosp)
-                         ])
-    else:
-        # angles[1] = math.asin(sinp)
-        return np.array([np.arctan2(sinr_cosp, cosr_cosp),
-                         np.arcsin(sinp),
-                         np.arctan2(siny_cosp, cosy_cosp)
-                         ])
+    sinp = 2.0 * (-x * z + w * y)
 
-    return angles
+    if np.abs(sinp) == 1:
+        return [-2 * sp.sign(sinp) * sp.atan2(x, w).evalf(),
+                 sp.sign(sinp) * math.pi / 2,
+                 0
+                 ]
+    else:
+        return [sp.atan2(siny_cosp, cosy_cosp).evalf(),
+                 sp.asin(sinp).evalf(),
+                 sp.atan2(sinr_cosp, cosr_cosp).evalf()
+                 ]
 
 
 def Yaw(y):

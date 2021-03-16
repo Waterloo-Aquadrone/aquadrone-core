@@ -17,8 +17,6 @@ import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np
 from aquadrone_math_utils.quaternion import Quaternion
 
-quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
-
 
 class EKF:
     def __init__(self, config, rate=None):
@@ -253,8 +251,8 @@ class EKF:
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
         Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
-        G = quat_to_euler_jacobian(self.x[Idx.Ow:Idx.Oz + 1]).reshape((3, 4))
-
+        quat = Quaternion(self.x[Idx.Ow], self.x[Idx.Ox], self.x[Idx.Oy], self.x[Idx.Oz])
+        G = quat.quat_to_euler_jacobian()
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
         sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
 
