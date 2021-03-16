@@ -23,6 +23,10 @@ class TestQuaternion(unittest.TestCase):
         # sinp = 1 case
         self.check_quat_to_euler(Quaternion.from_array([0, 0.5 / 0.7, 0, 0.7]).normalize())
 
+        # random tests
+        for _ in range(10):
+            self.check_quat_to_euler(Quaternion.from_array(np.random.random(4) * 2 - 1).normalize())
+
 
 if __name__ == '__main__':
     rospy.init_node('test_quaternion')
