@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import numpy as np
 from path_planning.states.base_state import BaseState
 
@@ -18,6 +16,9 @@ class BarrelRoll(BaseState):
         self.crossed_90 = False  # True once the sub has rotated 90 deg
         self.crossed_270 = False  # True once the sub has rotated 270 deg
         self.completed = False  # True once the sub has stabilized and completed the barrel roll
+
+    def __repr__(self):
+        return self.state_name()
 
     @staticmethod
     def state_name():
@@ -87,9 +88,6 @@ class BarrelRoll(BaseState):
     def is_stable(roll, roll_rate):
         # If within 5 deg of level and |roll_rate| < 2 deg/s
         return (roll < np.radians(5) or roll > np.radians(355)) and np.abs(roll_rate) < np.radians(2)
-
-    def finalize(self, t, controls, sub_state, world_state, sensors):
-        pass
 
     def has_completed(self):
         return self.completed

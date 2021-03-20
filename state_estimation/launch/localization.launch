@@ -1,0 +1,8 @@
+<launch>
+    <arg name="omniscient" default="True"/>
+
+    <node name="omniscient_state_est" pkg="state_estimation" type="omniscient_ekf_node.py" output="screen"
+          required="True" if="$(arg omniscient)"/>
+    <node name="state_est" pkg="state_estimation" type="ekf_node.py" output="screen" required="True"
+          if="$(eval not arg('omniscient'))"/>
+</launch>

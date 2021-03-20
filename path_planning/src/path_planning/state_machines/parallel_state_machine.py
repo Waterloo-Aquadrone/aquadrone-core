@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-
 from path_planning.states.base_state import BaseState
+from path_planning.state_tree import Tree
 
 
 class ParallelStateMachine(BaseState):
     """
-    This state machine will simultaneous run all of the states assigned to it.
+    This state machine will simultaneously run all of the states assigned to it.
     Note that the states must take care not to interfere with each other.
     Ideally, there should be at most one state that interacts with each of
     the depth control, orientation stability, and movement command systems.
@@ -13,7 +12,7 @@ class ParallelStateMachine(BaseState):
     Daemon states (similar to a daemon thread in Java) can optionally be provided.
     Daemon states will not prevent this state machine from terminating.
     If all non-daemon states have completed, then the state machine will be terminated,
-    and any still running daemon states will be finalized. Thus can be useful for logging for example.
+    and any still running daemon states will be finalized. Thus can be useful for logging, for example.
 
     The exit code of this state machine is the exit code of the state machine that is
     last in the list of non-daemons states provided.
@@ -68,3 +67,10 @@ class ParallelStateMachine(BaseState):
     def exit_code(self):
         # return the exit code of the last non-daemon state
         return self.states[-1].exit_code()
+
+    def get_tree(self, depth=0):
+        return Tree(name=self.name,
+                    children=[child.get_tree(depth=depth+1) for child in self.states],
+                    daemon=[child.get_tree(depth=depth+1) for child in self.daemon_states],
+                    nodeType="ParallelState",
+                    depth=depth)

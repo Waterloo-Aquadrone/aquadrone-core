@@ -1,0 +1,16 @@
+<launch>
+    <arg name="model" default="v28"/>
+    <arg name="omniscient_ekf" default="True"/>
+    <arg name="faulty_distributor" default="False"/>
+    <arg name="computation_factor" default="1"/>
+
+    <include file="$(find aquadrone_sim_demos)/launch/empty.launch">
+        <arg name="world" value="empty"/>
+        <arg name="model" value="$(arg model)"/>
+        <arg name="omniscient_ekf" value="$(arg omniscient_ekf)"/>
+        <arg name="faulty_distributor" value="$(arg faulty_distributor)"/>
+        <arg name="computation_factor" value="$(arg computation_factor)"/>
+    </include>
+
+    <node name="square_travel" pkg="path_planning" type="square_travel_test.py" output="screen"/>
+</launch>

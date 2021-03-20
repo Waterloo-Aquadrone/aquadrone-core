@@ -1,8 +1,7 @@
 import numpy as np
 
 from geometry_msgs.msg import Wrench
-
-import aquadrone_math_utils.orientation_math as OH
+from aquadrone_math_utils.quaternion import Quaternion
 
 
 def vector_to_wrench(v):
@@ -23,12 +22,13 @@ def get_thruster_wrench_vector(x, y, z, roll, pitch, yaw):
     # Moment is r x f
     offset = np.array([x, y, z])
     moment = np.cross(offset, force, axis=0)
+    # TODO: add torque based on propeller handedness
 
     return np.concatenate((force, moment))
 
 
 def get_thruster_force(r, p, y):
-    return np.dot(OH.RPY_Matrix(r, p, y), thruster_force_dir_vec())
+    return np.dot(Quaternion.from_euler(r, p, y).as_matrix(), thruster_force_dir_vec())
 
 
 def thruster_force_dir_vec():

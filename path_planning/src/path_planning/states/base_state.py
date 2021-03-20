@@ -1,10 +1,17 @@
-class BaseState:
+from abc import ABC, abstractmethod
+from path_planning.state_tree import Tree
+
+
+class BaseState(ABC):
     """
     Each state should define how it interacts with the depth and orientation control systems, because those are
     persisted across state changes.
     """
     def state_name(self):
         return "base_state"
+
+    def __repr__(self):
+        return self.state_name()
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         """
@@ -32,6 +39,7 @@ class BaseState:
         """
         pass
 
+    @abstractmethod
     def has_completed(self):
         """
         When this function returns True, the state should exit.
@@ -42,9 +50,15 @@ class BaseState:
 
     def exit_code(self):
         """
+        This function should only be called once has_completed returns True.
         Indicates the reason that the state has exited.
         The code 0 signifies that the state completed its objective and exited successfully.
         The code -1 signifies that ros was shutdown.
         Other codes should be numbered 1 and higher, and their explanations should be documented.
         """
         return 0
+
+    def get_tree(self, depth=0):
+        return Tree(name=self.__repr__(),
+                    nodeType="State",
+                    depth=depth)

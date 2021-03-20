@@ -9,7 +9,13 @@ class ThrusterTestState(BaseState):
     """
 
     def __init__(self, thruster_count=8, thrust_amplitude=3, thrust_period=5):
-        print('initd')
+        """
+        Tests each of the thrusters in sequence with a sinusoidal thrust output with the given amplitude and period.
+
+        :param thruster_count: The number of thrusters to test.
+        :param thrust_amplitude: The amplitude of the thrust in newtons.
+        :param thrust_period: The amount of time that each thruster will be tested for.
+        """
         self.thruster_count = thruster_count
         self.thrust_amplitude = thrust_amplitude
         self.period = thrust_period
@@ -17,8 +23,10 @@ class ThrusterTestState(BaseState):
         self.start_time = 0
         self.completed = False
 
-    @staticmethod
-    def state_name():
+    def __repr__(self):
+        return self.state_name() + str(self.period)
+
+    def state_name(self):
         return "thruster_test_state"
 
     def initialize(self, t, controls, sub_state, world_state, sensors):

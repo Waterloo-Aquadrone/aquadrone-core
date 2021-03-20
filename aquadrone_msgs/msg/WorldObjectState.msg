@@ -1,0 +1,2 @@
+string identifier
+geometry_msgs/PoseWithCovariance pose_with_covariance
