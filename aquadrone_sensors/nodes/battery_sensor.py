@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import sys
@@ -68,7 +68,7 @@ class BatteryPack:
     
         msg.voltage = self.voltage()
         msg.cell_voltage = self.cell_voltages()
-        msg.percentage = (msg.voltage - VOLTAGE_0 * NUM_CELLS) / ((VOLTAGE_100 - VOLTAGE_0) * NUM_CELLS) # (MAX - MIN) / RANGE
+        msg.percentage = (msg.voltage - VOLTAGE_0 * NUM_CELLS) / ((VOLTAGE_100 - VOLTAGE_0) * NUM_CELLS) # (CURR - MIN) / RANGE
         msg.percentage = max(min(msg.percentage, 1.5), 0) # Clamp to range [0, 1]
         
         self.pub.publish(msg)
@@ -88,8 +88,8 @@ if __name__ == '__main__':
         rospy.core.logerr("unable to init MCP3424, battery voltage sensor")
         bus = None
 
-    pack1 = BatteryPack(bus, 110, 'pack1')
-    pack2 = BatteryPack(bus, 101, 'pack2')
+    pack1 = BatteryPack(bus, 110, 'battery_1_state')
+    pack2 = BatteryPack(bus, 101, 'battery_2_state')
 
     if isinstance(pack1.volt_sensors[0], MCP342x_Test) or isinstance(pack2.volt_sensors[0], MCP342x_Test):
         rospy.core.logwarn("MCP3424, battery voltage sensors in test mode")
