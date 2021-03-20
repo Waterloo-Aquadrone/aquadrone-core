@@ -9,8 +9,12 @@ from MCP342x import MCP342x
 
 
 RESOLUTION = 18
+NUM_CELLS = 4
 R1 = [10.0e3, 47.0e3, 86.6e3, 127.0e3]
 R2 = 28.7e3
+
+VOLTAGE_100 = 4.0
+VOLTAGE_0 = 3.2
 
 
 class MCP342x_Test:
@@ -30,7 +34,7 @@ class MCP342x_Test:
 class BatteryPack:
     def __init__(self, bus, addr, topic):
         self.pub = rospy.Publisher(topic, BatteryState, queue_size=10)
-        self.volts_raw = [0.0] * 8
+        self.volts_raw = [0.0] * NUM_CELLS
         self.volt_sensors = []
         for j in range(4):
             if bus is None:
@@ -64,6 +68,8 @@ class BatteryPack:
     
         msg.voltage = self.voltage()
         msg.cell_voltage = self.cell_voltages()
+        msg.percentage = (msg.voltage - VOLTAGE_0 * NUM_CELLS) / ((VOLTAGE_100 - VOLTAGE_0) * NUM_CELLS) # (MAX - MIN) / RANGE
+        msg.percentage = max(min(msg.percentage, 1.5), 0) # Clamp to range [0, 1]
         
         self.pub.publish(msg)
     
