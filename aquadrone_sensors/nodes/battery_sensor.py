@@ -69,7 +69,7 @@ class BatteryPack:
         msg.voltage = self.voltage()
         msg.cell_voltage = self.cell_voltages()
         msg.percentage = (msg.voltage - VOLTAGE_0 * NUM_CELLS) / ((VOLTAGE_100 - VOLTAGE_0) * NUM_CELLS) # (CURR - MIN) / RANGE
-        msg.percentage = max(min(msg.percentage, 1.5), 0) # Clamp to range [0, 1]
+        msg.percentage = max(min(msg.percentage, 1.0), 0.0) # Clamp to range [0, 1]
         
         self.pub.publish(msg)
     
