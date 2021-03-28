@@ -3,7 +3,6 @@ import scipy.linalg
 
 import numpy as np
 import sympy as sp
-from autograd import jacobian
 
 from geometry_msgs.msg import Vector3, Quaternion, PoseWithCovariance
 
@@ -19,7 +18,6 @@ from aquadrone_math_utils.quaternion import Quaternion
 
 # TODO implement using Quaternion.py to remove dependency on autograd and to enable using scipy Rotations
 quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
-
 
 class EKF:
     MAX_VARIANCE = 10_000  # m^2
@@ -260,13 +258,13 @@ class EKF:
         sub_state_msg.orientation_quat_variance = quat_variance
 
         # create roll, pitch, yaw copy of orientation
-        sub_state_msg.orientation_RPY = OMath.msg_quaternion_to_euler(quaternion)
+        sub_state_msg.orientation_RPY = msg_quaternion_to_euler(quaternion)
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
         Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
-        G = quat_to_euler_jacobian(self.x[Idx.Ow:Idx.Oz + 1]).reshape((3, 4))
-
+        quat = Quaternion.from_array(self.x[Idx.Ow:Idx.Oz + 1])
+        G = quat.quat_to_euler_jacobian()
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
         sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
 

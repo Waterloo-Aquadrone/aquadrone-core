@@ -1,5 +1,6 @@
 simple-pid
 mock
+MCP342x
 numpy
 sympy
 autograd
