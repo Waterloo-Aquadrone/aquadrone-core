@@ -57,7 +57,7 @@ command: ```chmod +x \<file name>.py```. This can also be done outside the VM (i
 - /orientation_target specify the desired orientation of the submarine
 - /depth_control/depth_goal specify the desired depth of the submarine
 - /state_estimation receive information about the submarine's state
-- /Vision_Data receive information about all the objects that are in view of the cameras
+- /aquadrone/vision_data receive information about all the objects that are in view of the cameras
 - /aquadrone/out/pressure receive information from the pressure (depth) sensor
 - /aquadrone/out/imu receive information from the gyro/accelerometer sensor
 - /aquadrone/out/front_cam/image_raw receive images from the sub's Gazebo camera
@@ -73,7 +73,7 @@ command: ```chmod +x \<file name>.py```. This can also be done outside the VM (i
 - thrust_distributor listens to /motor_command separates the thrusts for each motor and publishes them individually to /aquadrone/thrusters/0/input (same for thrusters 1-7)
 - depth_pid listens to /state_estimation and /depth_control/goal_depth and computes the required Wrench based on a PID, and publishes it to /depth_command
 - stability listens to /state_estimation and /orientation_target and computes the required Wrench based on a PID, and publishes it to /stability_command
-- omniscient_vision_node listens to /gazebo/model_states and computes the exact relative position of objects in the world and publishes them to /Vision_Data
+- omniscient_vision_node listens to /gazebo/model_states and computes the exact relative position of objects in the world and publishes them to /aquadrone/vision_data
 
 #### Image of a Graph of Nodes and Topics
 

@@ -17,18 +17,18 @@ class Quaternion:
        coordinate system and has a magnitude equal to the rotation rate in rad/s (following the right hand rule).
     """
     def __init__(self, q_0=0, q_1=0, q_2=0, q_3=1):
-        self.q_0 = q_0
-        self.q_1 = q_1
-        self.q_2 = q_2
-        self.q_3 = q_3
+        self.q_0 = q_0  # real
+        self.q_1 = q_1  # x
+        self.q_2 = q_2  # y
+        self.q_3 = q_3  # z
 
     @staticmethod
     def from_real_imag(q_0, q_vec):
         return Quaternion(q_0, q_vec[0], q_vec[1], q_vec[2])
 
     @staticmethod
-    def from_array(arr):
-        return Quaternion(arr[0], arr[1], arr[2], arr[3])
+    def from_array(arr, real_first=True):
+        return Quaternion(arr[0], arr[1], arr[2], arr[3]) if real_first else Quaternion(arr[1], arr[2], arr[3], arr[0])
 
     @staticmethod
     def from_scipy(rotation):
@@ -36,6 +36,9 @@ class Quaternion:
         return Quaternion.from_array([w, x, y, z])
 
     @staticmethod
+    def identity():
+        return Quaternion.from_scipy(Rotation.identity())
+
     def from_euler(roll=0, pitch=0, yaw=0):
         return Quaternion.from_scipy(Rotation.from_euler('ZYX', [yaw, pitch, roll]))
 
@@ -49,10 +52,10 @@ class Quaternion:
         return Quaternion.from_real_imag(self.real(), -self.imag())
 
     def rotate(self, x_vec):
-        return self.conj() * Quaternion.from_real_imag(0, x_vec) * self
+        return (self.conj() * Quaternion.from_real_imag(0, x_vec) * self).imag()
 
     def unrotate(self, x_vec_prime):
-        return self * Quaternion.from_real_imag(0, x_vec_prime) * self.conj()
+        return (self * Quaternion.from_real_imag(0, x_vec_prime) * self.conj()).imag()
 
     def E(self):
         return np.array([[-self.q_1,  self.q_0, -self.q_3,  self.q_2],
@@ -67,8 +70,9 @@ class Quaternion:
     def as_scipy(self):
         return Rotation.from_quat(np.array([self.q_1, self.q_2, self.q_3, self.q_0]))
 
-    def as_array(self):
-        return np.array([self.q_0, self.q_1, self.q_2, self.q_3])
+    def as_array(self, real_first=True):
+        return np.array([self.q_0, self.q_1, self.q_2, self.q_3]) if real_first \
+            else np.array([self.q_1, self.q_2, self.q_3, self.q_0])
 
     def as_matrix(self):
         return self.as_scipy().as_matrix()
@@ -159,6 +163,12 @@ class Quaternion:
 
     def __repr__(self):
         return f'Quaternion({self.q_0}, {self.q_1}, {self.q_2}, {self.q_3})'
+
+    def __iter__(self):
+        """
+        Note that iteration will always return the real value first.
+        """
+        return iter([self.q_0, self.q_1, self.q_2, self.q_3])
 
     @staticmethod
     def get_omega(q, q_dot):

@@ -39,7 +39,7 @@ class Tree:
     @staticmethod
     def create_flowchart(state, file_name='test'):
         # path to destination of flowchart (PDF)
-        path = rospkg.RosPack().get_path('path_planning') + '/node_flowcharts/' + file_name
+        path = rospkg.RosPack().get_path('path_planning') + f'/node_flowcharts/{file_name}.gv'
         state.get_tree().render_graph(path)
         print('Flowchart generated!')
 

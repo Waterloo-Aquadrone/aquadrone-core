@@ -2,6 +2,7 @@ import rospy
 import numpy as np
 
 from geometry_msgs.msg import Wrench
+from aquadrone_math_utils.ros_utils import wrench_to_np
 
 
 class CommandSubscriber:
@@ -40,7 +41,7 @@ class MovementCommandCollector:
         Returns the desired Wrench based on the sum of the Wrenches from the sources.
         Sources may be ignored if the cmd_timeout has expired.
         """
-        wrench_sum = self.get_empty_wrench()
+        wrench_sum = np.zeros(6)
 
         # Add commands from each source
         # Drop is for prioritization; Not currently used
@@ -53,17 +54,7 @@ class MovementCommandCollector:
         # Return the latest command from the source
         # Set to 0 if not received for some time
         cmd, dt = source.get_cmd()
-        cmd = self.wrench_to_np_array(cmd)
+        cmd = wrench_to_np(cmd)
         if dt > self.cmd_timeout:
             cmd = cmd * 0.0
         return cmd
-
-    @staticmethod
-    def get_empty_wrench():
-        return MovementCommandCollector.wrench_to_np_array(Wrench())
-    
-    @staticmethod
-    def wrench_to_np_array(wrench):
-        # TODO: add to shared geometry utility; not well suited for the configurations folder
-        return np.array([wrench.force.x, wrench.force.y, wrench.force.z, 
-                         wrench.torque.x, wrench.torque.y, wrench.torque.z])
