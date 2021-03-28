@@ -16,9 +16,6 @@ import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np
 from aquadrone_math_utils.quaternion import Quaternion
 
-# TODO implement using Quaternion.py to remove dependency on autograd and to enable using scipy Rotations
-quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
-
 class EKF:
     MAX_VARIANCE = 10_000  # m^2
 
