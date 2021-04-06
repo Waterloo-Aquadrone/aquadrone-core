@@ -4,7 +4,7 @@ import rospy
 import rostest
 import unittest
 import numpy as np
-# from mock import MagicMock
+from mock import MagicMock
 
 from thruster_control.thrust_computer.thrust_computer import ThrustComputer
 
