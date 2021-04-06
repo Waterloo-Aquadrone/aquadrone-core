@@ -14,12 +14,12 @@ class TestThrustComputer(unittest.TestCase):
         c = ThrustComputer(None, None)
 
     def test_thrusts_optimization(self):
-        thrust_one = [15, 15, 15, 15, 15, 15, 15, 15]
-        thrust_two = [20, 1, 1, 1, 1, 1, 1, 1]
-        thrust_three = [1.9, 1, 1, 1, 1, 1, 1, 1]
+        thrust_one = np.array([15, 15, 15, 15, 15, 15, 15, 15])
+        thrust_two = np.array([20, 1, 1, 1, 1, 1, 1, 1])
+        thrust_three = np.array([1.9, 1, 1, 1, 1, 1, 1, 1])
 
         thrusts = [thrust_one, thrust_two, thrust_three]
-        final_thrusts = ThrustComputer.optimize_thursts(thrusts)
+        final_thrusts = ThrustComputer.optimize_thrusts(thrusts)
         self.assertTrue(np.all(np.isclose(final_thrusts,
                                           [23.13074398, 16.31153721, 16.31153721, 16.31153721,
                                            16.31153721, 16.31153721, 16.31153721, 16.31153721])))
