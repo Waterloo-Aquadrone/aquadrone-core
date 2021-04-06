@@ -40,6 +40,7 @@ class ThrustComputer:
 
     @staticmethod
     def optimize_thrusts(thrusts_list):
+        # for now use sequential powers of 10 for the weights
         objective_weights = [-10 ** i for i in range(len(thrusts_list) - 1, -1, -1)]
 
         A_top = np.column_stack(thrusts_list)
