@@ -39,40 +39,26 @@ class ThrustComputer:
         self.publish_command(final_thrusts)
 
     @staticmethod
-    def optimize_thrusts(thrusts):
-        # TODO: generalize to arbitrary number of thrusters and wrenches
-        C = [-100, -10, -1]
+    def optimize_thrusts(thrusts_list):
+        objective_weights = [-10 ** i for i in range(len(thrusts_list) - 1, -1, -1)]
 
-        t_one = np.array(thrusts[0])
-        t_two = np.array(thrusts[1])
-        t_three = np.array(thrusts[2])
-
-        A_top = np.column_stack((t_one, t_two, t_three))
+        A_top = np.column_stack(thrusts_list)
         A_bottom = np.negative(A_top)
-
         A = np.vstack((A_top, A_bottom))
 
-        fwd_max = 5.2 * 4.44822
-        rev_max = 4.1 * 4.44822
+        max_forward_thrust = 5.2 * 4.44822  # Newtons
+        max_reverse_thrust = 4.1 * 4.44822  # Newtons
 
-        b_fwd = np.ones(8) * fwd_max
-        b_rev = np.ones(8) * rev_max
+        b_top = np.ones(A_top.shape[0]) * max_forward_thrust
+        b_bottom = np.ones(A_bottom.shape[0]) * max_reverse_thrust
+        b = np.hstack((b_top, b_bottom))
 
-        b = np.hstack((b_fwd, b_rev))
+        result = linprog(objective_weights, A_ub=A, b_ub=b, bounds=[(0, 1)] * len(thrusts_list))
 
-        x_bounds = (0, 1)
-
-        res = linprog(C, A_ub=A, b_ub=b, bounds=[x_bounds, x_bounds, x_bounds])
-
-        scale_list = res.x
-
-        thrust_one = t_one * scale_list[0]
-        thrust_two = t_two * scale_list[1]
-        thrust_three = t_three * scale_list[2]
-
-        final_thrusts = thrust_one + thrust_two + thrust_three
-
-        return final_thrusts
+        scaling_coefficients = result.x
+        overall_thrusts = sum([coefficient * thrusts
+                               for coefficient, thrusts in zip(scaling_coefficients, thrusts_list)])
+        return overall_thrusts
 
     def publish_command(self, thrusts):
         msg = MotorControls()
