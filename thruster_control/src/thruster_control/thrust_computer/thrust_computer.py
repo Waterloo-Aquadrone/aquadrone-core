@@ -33,13 +33,13 @@ class ThrustComputer:
     def control_loop(self):
         wrench_list = self.mcc.get_recent_wrenches()
         thrusts_list = [self.config.wrench_to_thrusts(wrench) for wrench in wrench_list]
-        final_thrusts = self.optimize_thursts(thrusts_list)
+        final_thrusts = self.optimize_thrusts(thrusts_list)
 
         # Publish commands for new thrust
         self.publish_command(final_thrusts)
 
     @staticmethod
-    def optimize_thursts(thrusts):
+    def optimize_thrusts(thrusts):
         # TODO: generalize to arbitrary number of thrusters and wrenches
         C = [-100, -10, -1]
 
