@@ -26,15 +26,6 @@ class TestThrustComputer(unittest.TestCase):
         endtime = time()
         print(endtime - starttime)
 
-    # create a seperate function here
-
-    # three vectors of 8 thrusts
-    # sends this
-
-    #send back one vector of thrusts
-
-    # also make seperate function in control loop
-
 if __name__ == '__main__':
     # rospy.init_node('test_thrust_computer')
     # rostest.rosrun('thruster_control', 'test_thrust_computer', TestThrustComputer)

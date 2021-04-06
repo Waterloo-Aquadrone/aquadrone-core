@@ -40,14 +40,6 @@ class MovementCommandCollector:
         Returns the desired Wrench based on the sum of the Wrenches from the sources.
         Sources may be ignored if the cmd_timeout has expired.
         """
-        # wrench_list = []
-
-        # # Add commands from each source into a list to isolate each command
-        # for i in range(len(self.sources)):
-        #     wrench_list.append(self.get_source_command(self.sources[i]))
-
-        # return wrench_list
-
         return [self.get_source_command(source) for source in self.sources]
 
     def get_source_command(self, source):
