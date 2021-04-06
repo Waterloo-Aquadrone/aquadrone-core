@@ -1,8 +1,9 @@
-# import rospy
-# from aquadrone_msgs.msg import MotorControls
-# from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
+import rospy
+from aquadrone_msgs.msg import MotorControls
+from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
 import numpy as np
 from scipy.optimize import linprog
+
 
 class ThrustComputer:
     """
@@ -19,7 +20,7 @@ class ThrustComputer:
         self.rate = rate if rate is not None else rospy.Rate(10)
 
         # Will need motor commands published for state estimation
-        self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=0)
+        self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=1)
 
     def run(self):
         while not rospy.is_shutdown():
@@ -30,12 +31,8 @@ class ThrustComputer:
                 break
 
     def control_loop(self):
-        wrench_list = self.mcc.get_recent_thrusts()
-        thrusts_list = []
-
-        for i in range(len(wrench_list)):
-            thrusts_list.append(self.config.wrench_to_thrusts(wrench_list[i]))
-
+        wrench_list = self.mcc.get_recent_wrenches()
+        thrusts_list = [self.config.wrench_to_thrusts(wrench) for wrench in wrench_list]
         final_thrusts = self.optimize_thursts(thrusts_list)
 
         # Publish commands for new thrust
@@ -43,8 +40,9 @@ class ThrustComputer:
 
     @staticmethod
     def optimize_thursts(thrusts):
+        # TODO: generalize to arbitrary number of thrusters and wrenches
         C = [-100, -10, -1]
-        
+
         t_one = np.array(thrusts[0])
         t_two = np.array(thrusts[1])
         t_three = np.array(thrusts[2])
@@ -52,13 +50,13 @@ class ThrustComputer:
         A_top = np.column_stack((t_one, t_two, t_three))
         A_bottom = np.negative(A_top)
 
-        A = np.vstack((A_top,A_bottom))
+        A = np.vstack((A_top, A_bottom))
 
         fwd_max = 5.2 * 4.44822
         rev_max = 4.1 * 4.44822
 
-        b_fwd=np.ones(8)*fwd_max
-        b_rev=np.ones(8)*rev_max
+        b_fwd = np.ones(8) * fwd_max
+        b_rev = np.ones(8) * rev_max
 
         b = np.hstack((b_fwd, b_rev))
 

@@ -33,7 +33,7 @@ class MovementCommandCollector:
                         ['/stability_command', '/depth_command', '/movement_command']]
         self.cmd_timeout = cmd_timeout
 
-    def get_recent_thrusts(self):
+    def get_recent_wrenches(self):
         """
         Returns the desired Wrench based on the sum of the Wrenches from the sources.
         Sources may be ignored if the cmd_timeout has expired.
