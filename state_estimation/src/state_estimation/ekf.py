@@ -12,7 +12,7 @@ from aquadrone_msgs.msg import SubState, WorldState, MotorControls
 
 from state_estimation.ekf_indices import Idx
 from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener, VisionSensorManager
-from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np, msg_quaternion_to_euler
 from aquadrone_math_utils.quaternion import Quaternion
 
 class EKF:
