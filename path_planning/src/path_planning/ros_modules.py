@@ -11,9 +11,8 @@ from sensor_msgs.msg import Image
 from path_planning import data_structures as DS
 
 from aquadrone_msgs.msg import SubState, MotorControls, WorldState
-import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.angle_math import normalize_angle
-from aquadrone_math_utils.ros_utils import make_vector
+from aquadrone_math_utils.ros_utils import make_vector, msg_quaternion_to_euler
 
 
 class ROSControlsModule:
@@ -183,7 +182,7 @@ class ROSWorldEstimationModule:
             pose_with_covariance = object_state.pose_with_covariance
             pose = pose_with_covariance.pose
             orientation_quat = pose.orientation
-            orientation_RPY = OMath.msg_quaternion_to_euler(orientation_quat)
+            orientation_RPY = msg_quaternion_to_euler(orientation_quat)
 
             variances = np.array(pose_with_covariance.covariance).reshape((6, 6)).diagonal()
 

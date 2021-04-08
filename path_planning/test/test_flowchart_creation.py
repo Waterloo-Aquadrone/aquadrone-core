@@ -35,7 +35,7 @@ class TestFlowchartCreation(unittest.TestCase):
                                                     daemon_states=[data_logger])
 
         # now, call the following functions on the top level state/state machine
-        Tree.create_flowchart(dive_logging_machine, 'test-flowchart')
+        Tree.create_flowchart(dive_logging_machine, 'test-flowchart', popup=False)
 
 
 if __name__ == '__main__':

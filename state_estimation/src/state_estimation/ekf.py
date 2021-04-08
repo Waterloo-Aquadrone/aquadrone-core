@@ -3,24 +3,22 @@ import scipy.linalg
 
 import numpy as np
 import sympy as sp
-from autograd import jacobian
 
-from geometry_msgs.msg import Vector3, Quaternion
+from geometry_msgs.msg import Vector3, Quaternion, PoseWithCovariance
 
 from std_srvs.srv import Trigger, TriggerResponse
 
-from aquadrone_msgs.msg import SubState, MotorControls
+from aquadrone_msgs.msg import SubState, WorldState, MotorControls
 
 from state_estimation.ekf_indices import Idx
-from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener
-import aquadrone_math_utils.orientation_math as OMath
-from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion
+from state_estimation.ekf_sensors import IMUSensorListener, PressureSensorListener, VisionSensorManager
+from aquadrone_math_utils.ros_utils import ros_time, make_vector, make_quaternion, quaternion_to_np, msg_quaternion_to_euler
 from aquadrone_math_utils.quaternion import Quaternion
-
-quat_to_euler_jacobian = jacobian(OMath.quaternion_to_euler)
 
 
 class EKF:
+    MAX_VARIANCE = 10_000  # m^2
+
     def __init__(self, config, rate=None):
         # https://en.wikipedia.org/wiki/Kalman_filter
         # https://en.wikipedia.org/wiki/Extended_Kalman_filter
@@ -56,49 +54,57 @@ class EKF:
         self.rate = rate if rate is not None else rospy.Rate(20)  # Hz
 
         rospy.Subscriber("motor_command", MotorControls, self.motor_callback)
-        self.state_publisher = rospy.Publisher("state_estimation", SubState, queue_size=1)
+        self.sub_state_publisher = rospy.Publisher("/state_estimation", SubState, queue_size=1)
+        self.world_state_publisher = rospy.Publisher("/world_state_estimation", WorldState, queue_size=1)
         rospy.Service('reset_sub_state_estimation', Trigger, self.initialize_state)
         self.last_t = ros_time()
 
         # constants related to ambient conditions and submarine properties
         self.g = 9.81  # m/s^2
         self.rho_water = 997  # kg/m^3
-        self.mass = 10  # TODO: add this to config
-        self.volume = 10  # used for buoyancy calculations, TODO: add this to config
+        self.mass = 10  # kg, TODO: add this to config
+        self.volume = 10  # m^3, used for buoyancy calculations, TODO: add this to config
         self.buoyancy_offset = np.array(
             [0, 0, 0.5])  # location where buoyancy force is applied (center of buoyancy) TODO: add this to config
         inertia = np.array([[2850, 1, -25],
                             [1, 3800, 200],
-                            [-25, 200, 2700]])
+                            [-25, 200, 2700]])  # kg * m^2
         self.inertia_inv = np.linalg.inv(inertia)  # inverse of moment of inertia matrix, TODO: add this to config
 
-        self.n = Idx.NUM  # Number of state elements
-        self.x = None  # state
-        self.P = None  # uncertainty in state
-        self.initialize_state()
+        self.n = Idx.NUM  # Number of state elements for the submarine
+        self.x = None  # state (initialized at the end of this function)
+        self.P = None  # uncertainty in state (initialized at the end of this function)
 
         self.m = config.get_num_thrusters()  # number of control inputs
         self.u = np.zeros(self.m)  # most recent motor thrust received
         self.B = config.get_thrusts_to_wrench_matrix()
 
-        self.f_jacobian = self.get_f_jacobian_func()
-        self.net_wrench_jacobian = self.get_net_wrench_jacobian_func()
-        self.Q = np.eye(self.n)  # uncertainty in dynamics model
-
         self.depth_sub = PressureSensorListener(self)
         self.imu_sub = IMUSensorListener(self)
+        self.vision_sensor_manager = VisionSensorManager(self)
+        self.p = self.vision_sensor_manager.get_total_state_variables()  # number of state elements for tracked objects
         # Potential Future Sensors:
         # - ZED mini localization
         # - ZED mini IMU
-        # - Position info from detecting objects
+
+        self.f_jacobian = self.get_f_jacobian_func()
+        self.Q = scipy.linalg.block_diag(np.eye(self.n), 0.01 * np.eye(self.p))  # uncertainty in dynamics model
+        self.initialize_state()  # must initialize state after defining n and p
+
+        # must initialize ekf_sensors after the parent ekf is initialized
+        self.depth_sub.initialize()
+        self.imu_sub.initialize()
+        self.vision_sensor_manager.initialize()
 
     def initialize_state(self, msg=None):
-        self.x = np.zeros(self.n)
+        self.x = np.zeros(self.n + self.p)
         # set quaternion such that sub is upright
-        self.x[Idx.Ow] = 1  # TODO: verify that this corresponds to being upright
+        self.x[Idx.Ow:Idx.Oz + 1] = Quaternion.identity().as_array()
 
         # x and y variance are initialized to 0 since the sub is by definition starting at (0, 0)
-        self.P = np.diag([0, 0] + [1] * (self.n - 2))
+        # all other submarine variances are initialized to 1
+        # all tracked object variances are initialized to the MAX_VARIANCE
+        self.P = np.diag([0, 0] + [1] * (self.n - 2) + [self.MAX_VARIANCE] * self.p)
         return TriggerResponse(success=True, message="reset")
 
     def motor_callback(self, msg):
@@ -116,7 +122,7 @@ class EKF:
         Updates the state and uncertainty based on sensor measurements.
         """
         # extract data from sensors into lists
-        listeners = [self.depth_sub, self.imu_sub]
+        listeners = [self.depth_sub, self.imu_sub] + self.vision_sensor_manager.get_listeners()
         z, h, h_jacobian, R = zip(*[(listener.get_measurement_z(),
                                      listener.state_to_measurement_h(self.x, self.u),
                                      listener.get_h_jacobian(self.x, self.u),
@@ -126,8 +132,7 @@ class EKF:
         z = np.concatenate(z)  # measurements
         h = np.concatenate(h)  # predicted measurements
         h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
-        R = scipy.linalg.block_diag(
-            *R)  # Uncertainty matrix of measurement, note: this doesn't need to be autograd-able
+        R = scipy.linalg.block_diag(*R)  # Uncertainty matrix of measurement, note: this doesn't need to be sympy-able
 
         if len(z) == 0:
             # no valid measurements
@@ -179,10 +184,11 @@ class EKF:
         # update angular velocity
         new_x[Idx.Wx:Idx.Wz + 1] += np.dot(self.inertia_inv, total_wrench[3:]) * dt
 
+        # since the world object data is in absolute coordinates, there is nothing to update for them
         return new_x
 
     def get_f_jacobian_func(self):
-        x_vars = np.asarray(sp.symbols(f'x_:{self.n}', real=True))
+        x_vars = np.asarray(sp.symbols(f'x_:{self.n + self.p}', real=True))
         u_vars = np.asarray(sp.symbols(f'u_:{self.m}', real=True))
         dt_var = sp.symbols('dt', real=True)
 
@@ -196,19 +202,27 @@ class EKF:
     def get_net_wrench(self, x, u):
         """
         Calculates the net wrench (forces and torques) on the submarine.
-        Must be sympy-able
+        Must be sympy-able.
 
         :param x: The current state of the submarine.
         :param u: The motor thrusts.
         :return: The total wrench being applied to the submarine.
         """
         net_wrench = np.dot(self.B, u)
-
         # linear drag forces
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1]
 
         # quadratic drag forces
         net_wrench[:3] += -0.01 * x[Idx.Vx:Idx.Vz + 1] * np.abs(x[Idx.Vx:Idx.Vz + 1])
+
+        # buoyancy force
+        buoyancy_force = self.rho_water * self.volume * self.g
+        net_wrench[2] += buoyancy_force - self.mass * self.g
+
+        quad_orientation = Quaternion.from_array(x[Idx.Ow:Idx.Oz+1])
+        rotated_offset = quad_orientation.rotate(self.buoyancy_offset)
+        torque = np.cross(rotated_offset, np.array([0, 0, buoyancy_force]))
+        net_wrench[3:] = torque
 
         return net_wrench
 
@@ -224,10 +238,11 @@ class EKF:
 
     def get_state_msg(self):
         sub_state_msg = SubState()
-
         # copy position
         sub_state_msg.position = make_vector(self.x[Idx.x:Idx.z + 1])
-        sub_state_msg.pos_variance = make_vector(np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        np_pos_variance = np.minimum(self.MAX_VARIANCE,
+                                     np.diag(self.P[Idx.x:Idx.z + 1, Idx.x:Idx.z + 1]))
+        sub_state_msg.pos_variance = make_vector(np_pos_variance)
 
         # copy velocity
         sub_state_msg.velocity = make_vector(self.x[Idx.Vx:Idx.Vz + 1])
@@ -240,13 +255,13 @@ class EKF:
         sub_state_msg.orientation_quat_variance = quat_variance
 
         # create roll, pitch, yaw copy of orientation
-        sub_state_msg.orientation_RPY = OMath.msg_quaternion_to_euler(quaternion)
+        sub_state_msg.orientation_RPY = msg_quaternion_to_euler(quaternion)
 
         # Get RPY Variance from quaternion variance
         # https://stats.stackexchange.com/questions/119780/what-does-the-covariance-of-a-quaternion-mean
         Cq = self.P[Idx.Ow:Idx.Oz + 1, Idx.Ow:Idx.Oz + 1]
-        G = quat_to_euler_jacobian(self.x[Idx.Ow:Idx.Oz + 1]).reshape((3, 4))
-
+        quat = Quaternion.from_array(self.x[Idx.Ow:Idx.Oz + 1])
+        G = quat.quat_to_euler_jacobian()
         rpy_var_mat = np.linalg.multi_dot([G, Cq, G.T])
         sub_state_msg.orientation_RPY_variance = make_vector(np.diag(rpy_var_mat))
 
@@ -270,4 +285,5 @@ class EKF:
             self.prediction(dt)
             self.update()
 
-            self.state_publisher.publish(self.get_state_msg())
+            self.sub_state_publisher.publish(self.get_state_msg())
+            self.world_state_publisher.publish(self.vision_sensor_manager.create_msg(self.x, self.P))

@@ -37,15 +37,15 @@ class Tree:
     """
 
     @staticmethod
-    def create_flowchart(state, file_name='test', verbose=False):
+    def create_flowchart(state, file_name='test', verbose=False, popup=True):
         """
-        :param state: The root state to create the flowchart based off of.
-        :param file_name:
+        :param state: The root state to use to generate the flowchart.
+        :param file_name: The file name (without the extension) to save the flowchart PDF with.
         :param verbose: If True, then repr will be used for leaf states instead of str.
+        :param popup: If True, then the flowchart will popup so that it can be seen immediately.
         """
-        # path to destination of flowchart (PDF)
-        path = rospkg.RosPack().get_path('path_planning') + '/node_flowcharts/' + file_name
-        state.get_tree(verbose).render_graph(path)
+        path = rospkg.RosPack().get_path('path_planning') + f'/node_flowcharts/{file_name}.gv'
+        state.get_tree(verbose).render_graph(path, popup)
         print('Flowchart generated!')
 
     def __init__(self, name, nodeType, children=None, daemon=None, depth=0, number=1):
@@ -189,8 +189,8 @@ class Tree:
         Source(dot.source).render(path, view=True)
 
     # render graph
-    def render_graph(self, path: str):
+    def render_graph(self, path: str, popup=True):
         dot = Digraph(name=self.name, comment='Flowchart', engine='dot')
         self.__create_graph(dot)
         dot.attr('graph', compound='True', nodesep='1')
-        Source(dot.source).render(path, view=True)
+        Source(dot.source).render(path, view=popup)
