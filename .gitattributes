@@ -18,8 +18,8 @@
 *.yaml text
 *.csv text
 *.json text
-*.gitignore
-*.gitattributes
+*.gitignore text
+*.gitattributes text
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
