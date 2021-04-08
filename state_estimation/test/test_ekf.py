@@ -10,12 +10,13 @@ from thruster_control.thrust_computer.thruster_configurations import ThrusterCon
 
 
 class TestEKF(unittest.TestCase):
-
+        
     def test_contruction(self):
         config = ThrusterConfiguration('v28')
         config.initialize()
         ekf = EKF(config)
         ekf.get_state_msg()
+        ekf.update()
 
 if __name__ == '__main__':
     rospy.init_node('test_depth_control')
