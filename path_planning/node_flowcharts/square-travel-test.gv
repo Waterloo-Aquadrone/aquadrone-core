@@ -1,0 +1,84 @@
+// Flowchart
+digraph dive_logger {
+	subgraph cluster_01 {
+		node [fillcolor=white style=filled]
+		label=dive_logger
+		subgraph cluster_12 {
+			node [fillcolor=white style=filled]
+			label=main
+			subgraph cluster_23 {
+				node [fillcolor=white style=filled]
+				label=dive
+				dive34 [label="waiting_state(20)"]
+				dive35 [label=stabilize_state]
+				dive36 [label="go_to_depth_state(-4)"]
+				dive37 [label="waiting_state(10)"]
+				dive34 -> dive35
+				dive35 -> dive36
+				dive36 -> dive37
+			}
+			subgraph cluster_28 {
+				node [fillcolor=white style=filled]
+				label=square
+				square39 [label="travel_state(3, 0, -4)"]
+				square310 [label="travel_state(3, 3, -4)"]
+				square311 [label="travel_state(0, 3, -4)"]
+				square312 [label="travel_state(0, 0, -4)"]
+				square39 -> square310
+				square310 -> square311
+				square311 -> square312
+			}
+			subgraph cluster_213 {
+				node [fillcolor=white style=filled]
+				label=square
+				square314 [label="travel_state(3, 0, -4)"]
+				square315 [label="travel_state(3, 3, -4)"]
+				square316 [label="travel_state(0, 3, -4)"]
+				square317 [label="travel_state(0, 0, -4)"]
+				square314 -> square315
+				square315 -> square316
+				square316 -> square317
+			}
+			subgraph cluster_218 {
+				node [fillcolor=white style=filled]
+				label=square
+				square319 [label="travel_state(3, 0, -4)"]
+				square320 [label="travel_state(3, 3, -4)"]
+				square321 [label="travel_state(0, 3, -4)"]
+				square322 [label="travel_state(0, 0, -4)"]
+				square319 -> square320
+				square320 -> square321
+				square321 -> square322
+			}
+			subgraph cluster_223 {
+				node [fillcolor=white style=filled]
+				label=square
+				square324 [label="travel_state(3, 0, -4)"]
+				square325 [label="travel_state(3, 3, -4)"]
+				square326 [label="travel_state(0, 3, -4)"]
+				square327 [label="travel_state(0, 0, -4)"]
+				square324 -> square325
+				square325 -> square326
+				square326 -> square327
+			}
+			subgraph cluster_228 {
+				node [fillcolor=white style=filled]
+				label=surface
+				surface329 [label="go_to_depth_state(0)"]
+				surface330 [label="waiting_state(10)"]
+				surface331 [label=exit_code]
+				surface329 -> surface330
+				surface330 -> surface331
+			}
+			dive34 -> square39 [lhead=cluster_28 ltail=cluster_23]
+			square39 -> square314 [lhead=cluster_213 ltail=cluster_28]
+			square314 -> square319 [lhead=cluster_218 ltail=cluster_213]
+			square319 -> square324 [lhead=cluster_223 ltail=cluster_218]
+			square324 -> surface329 [lhead=cluster_228 ltail=cluster_223]
+		}
+		node [fillcolor="#d67272" style=filled]
+		dive_logger132 [label=data_logger]
+		node [fillcolor=white style=filled]
+	}
+	graph [compound=True nodesep=1]
+}
