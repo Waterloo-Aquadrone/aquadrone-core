@@ -15,7 +15,7 @@ class TestEKF(unittest.TestCase):
         config = ThrusterConfiguration('v28')
         config.initialize()
         ekf = EKF(config)
-
+        ekf.get_state_msg()
 
 if __name__ == '__main__':
     rospy.init_node('test_depth_control')

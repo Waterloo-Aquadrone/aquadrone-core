@@ -1,6 +1,8 @@
 import rospy
 from aquadrone_msgs.msg import MotorControls
 from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
+import numpy as np
+from scipy.optimize import linprog
 
 
 class ThrustComputer:
@@ -29,9 +31,35 @@ class ThrustComputer:
                 break
 
     def control_loop(self):
-        wrench = self.mcc.get_recent_thrusts()
-        thrusts = self.config.wrench_to_thrusts(wrench)
-        self.publish_command(thrusts)
+        wrench_list = self.mcc.get_recent_wrenches()
+        thrusts_list = [self.config.wrench_to_thrusts(wrench) for wrench in wrench_list]
+        final_thrusts = self.optimize_thrusts(thrusts_list)
+
+        # Publish commands for new thrust
+        self.publish_command(final_thrusts)
+
+    @staticmethod
+    def optimize_thrusts(thrusts_list):
+        # for now use sequential powers of 10 for the weights
+        objective_weights = [-10 ** i for i in range(len(thrusts_list) - 1, -1, -1)]
+
+        A_top = np.column_stack(thrusts_list)
+        A_bottom = np.negative(A_top)
+        A = np.vstack((A_top, A_bottom))
+
+        max_forward_thrust = 5.2 * 4.44822  # Newtons
+        max_reverse_thrust = 4.1 * 4.44822  # Newtons
+
+        b_top = np.ones(A_top.shape[0]) * max_forward_thrust
+        b_bottom = np.ones(A_bottom.shape[0]) * max_reverse_thrust
+        b = np.hstack((b_top, b_bottom))
+
+        result = linprog(objective_weights, A_ub=A, b_ub=b, bounds=[(0, 1)] * len(thrusts_list))
+
+        scaling_coefficients = result.x
+        overall_thrusts = sum([coefficient * thrusts
+                               for coefficient, thrusts in zip(scaling_coefficients, thrusts_list)])
+        return overall_thrusts
 
     def publish_command(self, thrusts):
         msg = MotorControls()

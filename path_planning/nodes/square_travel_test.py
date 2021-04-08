@@ -14,6 +14,7 @@ from path_planning.states.data_logger import DataLogger
 from path_planning.state_machines.sequential_state_machine import SequentialStateMachine
 from path_planning.state_machines.parallel_state_machine import ParallelStateMachine
 from path_planning.state_executor import StateExecutor
+from path_planning.state_tree import Tree
 
 
 def plot_travel_data(data):
@@ -49,5 +50,6 @@ if __name__ == "__main__":
 
     dive_logging_machine = ParallelStateMachine('dive_logger', states=[mission_machine], daemon_states=[data_logger])
 
+    Tree.create_flowchart(dive_logging_machine, 'square-travel-test')
     executor = StateExecutor(dive_logging_machine, rate=rospy.Rate(5))
     executor.run()

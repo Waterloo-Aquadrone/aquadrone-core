@@ -1,5 +1,4 @@
 import rospy
-import rosservice
 import cv2
 import numpy as np
 import time
@@ -12,8 +11,8 @@ from sensor_msgs.msg import Image
 from path_planning import data_structures as DS
 
 from aquadrone_msgs.msg import SubState, MotorControls, WorldState
-import aquadrone_math_utils.orientation_math as OMath
 from aquadrone_math_utils.angle_math import normalize_angle
+from aquadrone_math_utils.ros_utils import make_vector, msg_quaternion_to_euler
 
 
 class ROSControlsModule:
@@ -28,11 +27,7 @@ class ROSControlsModule:
         self.depth_pub.publish(d)
 
     def set_orientation_goal(self, roll=0, pitch=0, yaw=0):
-        target = Vector3()
-        target.x = normalize_angle(roll)
-        target.y = normalize_angle(pitch)
-        target.z = normalize_angle(yaw)
-        self.orientation_pub.publish(target)
+        self.orientation_pub.publish(make_vector([roll, pitch, yaw]))
 
     def set_roll_goal(self, roll):
         """
@@ -42,9 +37,7 @@ class ROSControlsModule:
 
         :param roll:
         """
-        target = Vector3()
-        target.x = normalize_angle(roll)
-        self.orientation_pub.publish(target)
+        self.orientation_pub.publish(make_vector([roll]))
 
     def set_yaw_goal(self, yaw):
         """
@@ -52,17 +45,10 @@ class ROSControlsModule:
 
         :param yaw:
         """
-        target = Vector3()
-        target.x = 0
-        target.y = 0
-        target.z = normalize_angle(yaw)
-        self.orientation_pub.publish(target)
+        self.orientation_pub.publish(make_vector([0, 0, yaw]))
 
     def set_movement_target(self, x=0, y=0):
-        target = Vector3()
-        target.x = x
-        target.y = y
-        self.planar_move_pub.publish(target)
+        self.planar_move_pub.publish(make_vector([x, y]))
 
     def planar_move_command(self, Fx=0, Fy=0, Tz=0):
         """
@@ -196,7 +182,7 @@ class ROSWorldEstimationModule:
             pose_with_covariance = object_state.pose_with_covariance
             pose = pose_with_covariance.pose
             orientation_quat = pose.orientation
-            orientation_RPY = OMath.msg_quaternion_to_euler(orientation_quat)
+            orientation_RPY = msg_quaternion_to_euler(orientation_quat)
 
             variances = np.array(pose_with_covariance.covariance).reshape((6, 6)).diagonal()
 

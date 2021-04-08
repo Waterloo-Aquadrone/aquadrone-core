@@ -1,79 +1,60 @@
 import rospy
 
-from geometry_msgs.msg import Point, Pose, Vector3
+import numpy as np
 from gazebo_msgs.msg import ModelStates
-from aquadrone_msgs.msg import Vision_Array, Vision
+from aquadrone_msgs.msg import WorldObjectState, WorldState
+from aquadrone_math_utils.quaternion import Quaternion
+from aquadrone_math_utils.ros_utils import make_vector, vector_to_np, make_quaternion, quaternion_to_np
 
 
 class OmniscientVision:
     def __init__(self):
-        self.relative_pos_pub = rospy.Publisher("Vision_Data", Vision_Array, queue_size=1)
-        self.object_pos_sub = rospy.Subscriber("gazebo/model_states", ModelStates, self.get_obj_pos)
-        self.object_pos = []
-        self.object_ident = []
-        self.sub_pos = [0, 0, 0]
-        self.relative_pos = []
-        self.rate = rospy.Rate(20)
-        self.pub_msg = Vision_Array()
-        self.testing = False
+        rospy.Subscriber("gazebo/model_states", ModelStates, self.get_gazebo_data)
+        self.publisher = rospy.Publisher("aquadrone/vision_data", WorldState, queue_size=1)
 
-    def get_obj_pos(self, data):
-        names = data.name
-        model_pos = [pose.position for pose in data.pose]
-        temp_obj = []
-        temp_sub = []
-        temp_ident = []
-        if not self.testing:
-            if len(names) != 0:
-                for i in range(len(names)):
-                    if names[i] != "aquadrone":
-                        temp_obj.append([model_pos[i].x, model_pos[i].y, model_pos[i].z])
-                        temp_ident.append(names[i])
-                    else:
-                        temp_sub = [model_pos[i].x, model_pos[i].y, model_pos[i].z]
-        else:
-            temp_obj = [[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]
-            temp_sub = [0, 0, 0]
-            temp_ident = ["a", "a", "a", "a"]
-        self.object_pos = temp_obj
-        self.sub_pos = temp_sub
-        self.object_ident = temp_ident
+    def get_gazebo_data(self, data):
+        sub_pose = None
+        world_object_names = []
+        world_object_poses = []
 
-    def calc_rel_pos(self):
-        self.relative_pos = []
-        if len(self.object_pos) != 0 and len(self.sub_pos) != 0:
-            for i in range(len(self.object_pos)):
-                self.relative_pos.append([self.object_pos[i][0] - self.sub_pos[0],
-                                          self.object_pos[i][1] - self.sub_pos[1],
-                                          self.object_pos[i][2] - self.sub_pos[2]])
-        else:
-            self.relative_pos = [[0, 0, 0]]
+        for name, pose in zip(data.name, data.pose):
+            if name == "aquadrone":
+                sub_pose = pose
+            else:
+                world_object_names.append(name)
+                world_object_poses.append(pose)
 
-    def get_pub_msg(
-            self):  # currently outputting the absolute vectors between objects, not in the perspective of the sub
-        # print(self.object_pos)
-        message = Vision_Array()
-        # initializing message
-        if len(self.relative_pos) != 0 and len(self.object_ident) != 0:
-            message.data = []
-            for i in range(len(self.relative_pos)):
-                message.data.append(Vision())
-                new_data = Vector3()
-                new_data.x = self.relative_pos[i][0]
-                new_data.y = self.relative_pos[i][1]
-                new_data.z = self.relative_pos[i][2]
-                message.data[i].obj_data = new_data
-                message.data[i].identifier = self.object_ident[i]
+        if sub_pose is None:
+            print('Warning: cannot publish omniscient data because submarine was not found!')
+            return
 
-        self.pub_msg = message
+        msg = WorldState()
+        msg.data = [self.get_world_object_state(sub_pose, object_name, object_pose)
+                    for object_name, object_pose in zip(world_object_names, world_object_poses)]
+        self.publisher.publish(msg)
 
-    def run(self):
-        while not rospy.is_shutdown():
-            # self.set_rate()
-            self.calc_rel_pos()
-            self.get_pub_msg()
-            self.relative_pos_pub.publish(self.pub_msg)
-            try:
-                self.rate.sleep()
-            except rospy.ROSInterruptException:
-                break
+    @staticmethod
+    def get_world_object_state(sub_pose, object_name, object_pose):
+        """
+        Create a WorldObjectState message for the provided object.
+        The pose of the object will be transformed to the submarine-relative reference frame
+        using the provided sub_pose.
+        """
+        sub_position = vector_to_np(sub_pose.position)
+        sub_orientation = Quaternion.from_array(quaternion_to_np(sub_pose.orientation))
+        object_position = vector_to_np(object_pose.position)
+
+        relative_object_position = sub_orientation.unrotate(object_position - sub_position)
+
+        msg = WorldObjectState()
+        msg.identifier = object_name
+        msg.pose_with_covariance.pose.position = make_vector(relative_object_position)
+        # TODO: add computation of object's orientation quaternion (instead of just using the identity)
+        msg.pose_with_covariance.pose.orientation = make_quaternion(Quaternion.identity())
+        # gazebo does not report covariances, so just provide reasonable values
+        msg.pose_with_covariance.covariance = 0.01 * np.eye(6).flatten()
+        return msg
+
+    @staticmethod
+    def run():
+        rospy.spin()
