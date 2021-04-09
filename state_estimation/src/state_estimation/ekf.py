@@ -1,5 +1,7 @@
 import rospy
 import scipy.linalg
+import rospkg
+import json
 
 import numpy as np
 import sympy as sp
@@ -96,6 +98,7 @@ class EKF:
         self.imu_sub.initialize()
         self.vision_sensor_manager.initialize()
         self.isMapLoaded = False
+        self.mapRotationMatrix = []
 
     def initialize_state(self, msg=None):
         self.x = np.zeros(self.n + self.p)
@@ -124,30 +127,21 @@ class EKF:
         """
         # extract data from sensors into lists
         listeners = [self.depth_sub, self.imu_sub] + self.vision_sensor_manager.get_listeners()
-        rospy.logwarn("self.n: {}".format(self.n))
+
         if np.sum([listener.is_valid() for listener in listeners]) == 0:
             return # no valid measurements
 
-        rospy.logwarn(len(listeners))
         z, h, h_jacobian, R = zip(*[(listener.get_measurement_z(),
                                      listener.state_to_measurement_h(self.x, self.u),
                                      listener.get_h_jacobian(self.x, self.u),
                                      listener.get_R())
                                     for listener in listeners if listener.is_valid()])
         # package lists into arrays/matrices as appropriate
-        rospy.logwarn(z)
-        rospy.logwarn(np.shape(z)) #(15,3)
-        rospy.logwarn(h)
-        rospy.logwarn(np.shape(h)) #(15,3)
-        rospy.logwarn(np.shape(R)) #(15,3,3)
 
         z = np.concatenate(z)  # measurements
-        rospy.logwarn("z.shape: {}".format(z.shape)) # (45,)
-        rospy.logwarn("z:{}".format(z))
         h = np.concatenate(h)  # predicted measurements
         h_jacobian = np.vstack(h_jacobian)  # Jacobian of function h
         R = scipy.linalg.block_diag(*R)  # Uncertainty matrix of measurement, note: this doesn't need to be sympy-able
-        rospy.logwarn("R.shape: {}".format(R.shape)) #(45,45)
 
         # Error in measurements vs predicted
         y = z - h
@@ -165,16 +159,32 @@ class EKF:
 
         # Update state x and uncertainty P
         self.x += np.dot(K, y)  # increase by error in measurement vs predicted, scaled by Kalman gain
-        rospy.logwarn("P.shape: " + str(self.P.shape)) #(58,58)
-        # P here is diag max variance for vision sensors
         self.P = self.P - np.linalg.multi_dot([K, h_jacobian, self.P]).astype('float64')  # decrease, scaled by Kalman gain
-        # if < max variance && map is not loaded, create a transformation vector to be applied for the whole map, the coordinates from h will be adjusted as such
+
+        rospack = rospkg.RosPack()
         if not self.isMapLoaded:
             for listener_index in range(len(listeners)):
                 if self.P[listener_index][listener_index] < self.MAX_VARIANCE:
-                    actual_location = z[self.n+listener_index]
-                    expected_location= [listener_index]
-                    self.vision_sensor_manager.set_transform_matrix()
+                    with open(rospack.get_path('state_estimation') + "/src/state_estimation/landmarks.json") as lm_file:
+                        landmarks = json.load(lm_file)
+                        actual_location = z[self.n+listener_index][:2]
+                        exp_location = landmarks["landmarks_A"][listener_index][:2]
+                        actual_location_unit = actual_location / np.linalg.norm(actual_location)
+                        exp_location_unit = exp_location / np.linalg.norm(exp_location)
+                        x_a, y_a = exp_location_unit
+                        x_b, y_b = actual_location_unit
+                        self.mapRotationMatrix = np.array([[x_a*x_b+y_a*y_b, x_b*y_a-x_a*y_b], [x_a*y_b-x_b*y_a, x_a*x_b+y_a*y_b]])
+                        self.isMapLoaded = True
+        if self.isMapLoaded:
+            with open(rospack.get_path('state_estimation') + "/src/state_estimation/landmarks.json") as lm_file:
+                landmarks = json.load(lm_file)
+                landmarksA = landmarks["landmarks_A"]
+                for landmark_index in range(len(landmarksA)):
+                    start_index = self.n+landmark_index
+                    exp_location = landmarksA[landmark_index]
+                    rotated_location = np.concatenate((np.dot(self.mapRotationMatrix, exp_location[:2]), exp_location[2:3]))
+                    self.x[start_index: start_index+3] = rotated_location
+                    self.P[start_index][start_index] = 3
 
     def f(self, x, u, dt):
         """

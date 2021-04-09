@@ -226,11 +226,6 @@ class VisionSensorManager:
                                [listener.create_msg(x, P) for listener in self.get_listeners()]))
         return msg
 
-    def set_transform_matrix(self, matrix):
-        for listener in self.listeners:
-            listener.set_transform_matrix(matrix)
-        return
-
     def get_listeners(self):
         return list(self.listeners.values())
 
@@ -272,9 +267,6 @@ class PointObjectListener(BaseSensorListener):
         msg.pose_with_covariance.covariance = covariance.flatten()
         return msg
 
-    def set_transform_matrix(self, matrix):
-        return
-
     def get_timeout_sec(self):
         return 0.1
 
@@ -294,8 +286,7 @@ class PointObjectListener(BaseSensorListener):
         # combine submarine's state and absolute position of the target to compute the relative position of the target
         sub_pos = x[Idx.x:Idx.z + 1]
         sub_quat = Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1])
-        # transform here
-        absolute_target_pos = x[self.state_slice]
 
+        absolute_target_pos = x[self.state_slice]
         relative_target_pos = sub_quat.unrotate(absolute_target_pos - sub_pos)
         return relative_target_pos
