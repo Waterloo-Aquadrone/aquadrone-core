@@ -163,28 +163,27 @@ class EKF:
 
         rospack = rospkg.RosPack()
         if not self.isMapLoaded:
-            for listener_index in range(len(listeners)):
+            for listener_index in range(len(listeners)-2):
                 if self.P[listener_index][listener_index] < self.MAX_VARIANCE:
                     with open(rospack.get_path('state_estimation') + "/src/state_estimation/landmarks.json") as lm_file:
                         landmarks = json.load(lm_file)
-                        actual_location = z[self.n+listener_index][:2]
-                        exp_location = landmarks["landmarks_A"][listener_index][:2]
+                        landmarksA = landmarks["landmarks_A"]
+                        actual_location = z[self.n+listener_index: self.n+listener_index+2]
+                        expected_location = landmarksA[listener_index]["location"][:2]
                         actual_location_unit = actual_location / np.linalg.norm(actual_location)
-                        exp_location_unit = exp_location / np.linalg.norm(exp_location)
-                        x_a, y_a = exp_location_unit
+                        expected_location_unit = expected_location / np.linalg.norm(expected_location)
+                        x_a, y_a = expected_location_unit
                         x_b, y_b = actual_location_unit
                         self.mapRotationMatrix = np.array([[x_a*x_b+y_a*y_b, x_b*y_a-x_a*y_b], [x_a*y_b-x_b*y_a, x_a*x_b+y_a*y_b]])
+
+                        for landmark_index in range(len(landmarksA)):
+                            start_index = self.n + landmark_index
+                            exp_location = landmarksA[landmark_index]["location"]
+                            rotated_location = np.concatenate((np.dot(self.mapRotationMatrix, exp_location[:2]), exp_location[2:3]))
+                            self.x[start_index: start_index + 3] = rotated_location
+                            self.P[start_index][start_index] = 3
                         self.isMapLoaded = True
-        if self.isMapLoaded:
-            with open(rospack.get_path('state_estimation') + "/src/state_estimation/landmarks.json") as lm_file:
-                landmarks = json.load(lm_file)
-                landmarksA = landmarks["landmarks_A"]
-                for landmark_index in range(len(landmarksA)):
-                    start_index = self.n+landmark_index
-                    exp_location = landmarksA[landmark_index]
-                    rotated_location = np.concatenate((np.dot(self.mapRotationMatrix, exp_location[:2]), exp_location[2:3]))
-                    self.x[start_index: start_index+3] = rotated_location
-                    self.P[start_index][start_index] = 3
+
 
     def f(self, x, u, dt):
         """
