@@ -6,6 +6,7 @@ class BaseState(ABC):
     """
     Each state should define how it interacts with the depth and orientation control systems, because those are
     persisted across state changes.
+    states are the best
     """
     def state_name(self):
         return "base_state"
