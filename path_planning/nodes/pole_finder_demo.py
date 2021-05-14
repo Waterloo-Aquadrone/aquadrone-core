@@ -12,7 +12,7 @@ from path_planning.state_executor import StateExecutor
 if __name__ == "__main__":
     rospy.init_node("pole_finder_demo")
 
-    goal_depth = -3
+    depth_target = -3
 
     # BGR
     red_low = (0, 0, 40)
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     blue_low = (60, 0, 0)
     blue_high = (255, 10, 10)
 
-    states, mappings = zip((GoToDepthState(goal_depth),                        {0: 1}),        # 0
+    states, mappings = zip((GoToDepthState(depth_target),                      {0: 1}),        # 0
                            (ColoredPoleFinderState(red_low, red_high),         {0: 2}),        # 1
                            (ColoredPoleApproacherState(red_low, red_high),     {0: 3, 1: 1}),  # 2
                            (ColoredPoleFinderState(green_low, green_high),     {0: 4}),        # 3
