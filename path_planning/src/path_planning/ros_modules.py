@@ -17,7 +17,7 @@ from aquadrone_math_utils.ros_utils import make_vector, msg_quaternion_to_euler
 
 class ROSControlsModule:
     def __init__(self):
-        self.depth_pub = rospy.Publisher("/depth_control/goal_depth", Float64, queue_size=1)
+        self.depth_pub = rospy.Publisher("/depth_target", Float64, queue_size=1)
         self.orientation_pub = rospy.Publisher("orientation_target", Vector3, queue_size=1)
         self.planar_move_pub = rospy.Publisher("/movement_target", Vector3, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=1)
