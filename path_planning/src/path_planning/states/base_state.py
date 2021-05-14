@@ -4,8 +4,8 @@ from path_planning.state_tree import Tree
 
 class BaseState(ABC):
     """
-    Each state should define how it interacts with the depth and orientation control systems, because those are
-    persisted across state changes.
+    Each state should define how it interacts with the depth, orientation, and movement control systems,
+    because those are persisted across state changes.
     """
     def state_name(self):
         return "base_state"
