@@ -12,12 +12,16 @@ command_to_pin = {
 }
 
 class Pneumatics():
-    def __init__(self):
+    def __init__(self, real):
         rospy.init_node('pneumatics_server', log_level=rospy.DEBUG)
-        s = rospy.Service('pneumatics_commands', PneumaticsCommands, self.handle_pneumatics_commands)
+        if real:
+            rospy.Service('pneumatics_commands', PneumaticsCommands, self.handle_real_pneumatics_commands)
+        else:
+            rospy.Service('pneumatics_commands', PneumaticsCommands, self.handle_simulated_pneumatics_commands)
         self.claw_open = False
         self.l_torpedo_fired = False
         self.r_torpedo_fired = False
+        self.real = real
 
     def run(self):
         rospy.spin()
@@ -34,7 +38,7 @@ class Pneumatics():
         rospy.sleep(command_to_pin[msg][1])
         GPIO.output(command_to_pin[msg][0], GPIO.LOW)
 
-    def handle_pneumatics_command(self, req):
+    def handle_real_pneumatics_command(self, req):
         msg = req.command
         if msg == "claw_open":
             GPIO.output(command_to_pin[msg][0], GPIO.HIGH)
@@ -43,10 +47,23 @@ class Pneumatics():
             GPIO.output(command_to_pin[msg][0], GPIO.LOW)
             self.claw_open = False
         elif msg == "l_torpedo" and not self.l_torpedo_fired:
+            self.l_torpedo_fired = True
             self.fire_torpedo(msg)
+        elif msg == "r_torpedo" and not self.r_torpedo_fired:
+            self.r_torpedo_fired = True
+            self.fire_torpedo(msg)
+
+        return self.handle_pneumatics_status()
+
+    def handle_simulated_pneumatics_command(self, req):
+        msg = req.command
+        if msg == "claw_open":
+            self.claw_open = True
+        elif msg == "claw_close":
+            self.claw_open = False
+        elif msg == "l_torpedo" and not self.l_torpedo_fired:
             self.l_torpedo_fired = True
         elif msg == "r_torpedo" and not self.r_torpedo_fired:
-            self.fire_torpedo(msg)
             self.r_torpedo_fired = True
 
         return self.handle_pneumatics_status()

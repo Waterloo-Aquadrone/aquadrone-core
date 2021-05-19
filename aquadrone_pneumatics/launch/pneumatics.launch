@@ -1,3 +1,5 @@
 <launch>
-    <node name="pneumatics" pkg="aquadrone_pneumatics" type="pneumatics_node.py" output="screen"/>
+    <arg name="real" default="False"/>
+    <node name="pneumatics" pkg="aquadrone_pneumatics" type="real_pneumatics_node.py" output="screen" if="$(arg real)"/>
+    <node name="pneumatics" pkg="aquadrone_pneumatics" type="simulated_pneumatics_node.py" output="screen" unless="$(arg real)"/>
 </launch>
