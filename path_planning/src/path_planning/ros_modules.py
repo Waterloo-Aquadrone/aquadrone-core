@@ -99,19 +99,19 @@ class ROSControlsModule:
         return response
 
     def fire_l_torpedo(self):
-        response = self.initialize_pneumatics_service("l_torpedo")
+        return self.initialize_pneumatics_service("l_torpedo")
 
     def fire_r_torpedo(self):
-        response = self.initialize_pneumatics_service("r_torpedo")
+        return self.initialize_pneumatics_service("r_torpedo")
 
     def open_claw(self):
-        response = self.initialize_pneumatics_service("claw_open")
+        return self.initialize_pneumatics_service("claw_open")
 
     def open_claw(self):
-        response = self.initialize_pneumatics_service("claw_close")
+        return self.initialize_pneumatics_service("claw_close")
 
     def get_pneumatics_status(self):
-        response = self.initialize_pneumatics_service("status")
+        return self.initialize_pneumatics_service("status")
 
 
 class ROSStateEstimationModule:
