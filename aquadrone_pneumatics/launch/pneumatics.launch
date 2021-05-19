@@ -1,0 +1,3 @@
+<launch>
+    <node name="thrust_computer" pkg="aquadrone_pneumatics" type="aquadrone_pneumatics.py" output="screen" if="$(arg enable_computer)"/>
+</launch>

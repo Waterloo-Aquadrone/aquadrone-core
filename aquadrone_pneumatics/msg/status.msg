@@ -1,0 +1,3 @@
+bool claw_open
+bool l_torpedo_open
+bool r_torpedo_open
