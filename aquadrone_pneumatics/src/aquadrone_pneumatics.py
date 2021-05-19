@@ -19,6 +19,9 @@ class Pneumatics():
         self.l_torpedo_fired = False
         self.r_torpedo_fired = False
 
+    def run(self):
+        rospy.spin()
+
     def handle_pneumatics_status(self):
         msg = PneumaticsCommandsResponse()
         msg.claw_open = self.claw_open
