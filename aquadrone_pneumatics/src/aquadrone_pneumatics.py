@@ -1,53 +1,49 @@
 import rospy
 from aquadrone_pneumatics.msg import command, status
-from aquadrone_pneumatics.srv import PneumaticsStatus
-from threading import Timer
-import sys, select, termios, tty
+from aquadrone_pneumatics.srv import PneumaticsCommands, PneumaticsCommandsResponse
 import RPi.GPIO as GPIO
 
-# { key: [pin, time before closing] }
-key_to_pin = {
-    "j": [5, 5.0],
-    "k": [6, 0.05],
-    "l": [7, 0.05],
+
+command_to_pin = {
+    "l_torpedo": [6, 0.05],
+    "r_torpedo": [7, 0.05],
+    "claw_open": [5, 5.0],
+    "claw_close": [5, 5.0],
 }
 
 class Pneumatics():
     def __init__(self):
         rospy.init_node('pneumatics_server', log_level=rospy.DEBUG)
-        s = rospy.Service('pneumatics_status', PneumaticsStatus, self.handle_pneumatics_status)
+        s = rospy.Service('pneumatics_commands', PneumaticsCommands, self.handle_pneumatics_commands)
         self.claw_open = False
-        self.l_torpedo_open = False
-        self.r_torpedo_open = False
+        self.l_torpedo_fired = False
+        self.r_torpedo_fired = False
 
-    def handle_pneumatics_status(self, req):
-        msg = PneumaticsStatus()
+    def handle_pneumatics_status(self):
+        msg = PneumaticsCommandsResponse()
         msg.claw_open = self.claw_open
-        msg.l_torpedo_open = self.l_torpedo_open
-        msg.r_torpedo_open = self.r_torpedo_open
+        msg.l_torpedo_open = self.l_torpedo_fired
+        msg.r_torpedo_open = self.r_torpedo_fired
         return msg
 
-    # https://github.com/ros-teleop/teleop_twist_keyboard/blob/master/teleop_twist_keyboard.py
-    def getKey(self):
-        settings = termios.tcgetattr(sys.stdin)
-        tty.setraw(sys.stdin.fileno())
-        rlist, _, _ = select.select([sys.stdin], [], [], 0)
-        if rlist:
-            key = sys.stdin.read(1)
-        else:
-            key = ''
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-        return key
+    def fire_torpedo(self, msg):
+        GPIO.output(command_to_pin[msg][0], GPIO.HIGH)
+        rospy.sleep(command_to_pin[msg][1])
+        GPIO.output(command_to_pin[msg][0], GPIO.LOW)
 
-    def useKeyAction(self, key):
-        if key in key_to_pin.keys():
-            rospy.sleep(5)
-            GPIO.output(key_to_pin[key][0], GPIO.HIGH)
-            rospy.sleep(key_to_pin[key][1])
-            GPIO.output(key_to_pin[key][0], GPIO.LOW)
+    def handle_pneumatics_command(self, req):
+        msg = req.command
+        if msg == "claw_open":
+            GPIO.output(command_to_pin[msg][0], GPIO.HIGH)
+            self.claw_open = True
+        elif msg == "claw_close":
+            GPIO.output(command_to_pin[msg][0], GPIO.LOW)
+            self.claw_open = False
+        elif msg == "l_torpedo" and not self.l_torpedo_fired:
+            self.fire_torpedo(msg)
+            self.l_torpedo_fired = True
+        elif msg == "r_torpedo" and not self.r_torpedo_fired:
+            self.fire_torpedo(msg)
+            self.r_torpedo_fired = True
 
-if __name__ == "main":
-    pneumatics_contoller = Pneumatics()
-    while (1):
-        key = pneumatics_contoller.getKey()
-        pneumatics_contoller.useKeyAction(key)
+        return self.handle_pneumatics_status()
