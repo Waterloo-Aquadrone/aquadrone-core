@@ -1,5 +1,5 @@
 string command
-# "l_torpedo", "r_torpedo", "claw_open", "claw_close", "status"
+# Must be one of "l_torpedo", "r_torpedo", "claw_open", "claw_close", "status"
 ---
 bool claw_open
 bool l_torpedo_open
