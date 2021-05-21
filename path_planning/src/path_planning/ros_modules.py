@@ -5,7 +5,7 @@ import time
 
 from std_msgs.msg import Float64
 from std_srvs.srv import Trigger, TriggerRequest
-from aquadrone_pneumatics.srv import PneumaticsCommands, PneumaticsCommandsRequest
+from aquadrone_pneumatics.srv import PneumaticsCommand, PneumaticsCommandRequest
 from geometry_msgs.msg import Vector3, Wrench
 from sensor_msgs.msg import Image
 
@@ -89,29 +89,29 @@ class ROSControlsModule:
 
         self.controls_halted = True
 
-    def initialize_pneumatics_service(self, command):
+    def query_pneumatics_controller(self, command):
         if self.pneumatics_service is None:
             rospy.wait_for_service('pneumatics_commands')
-            self.pneumatics_service = rospy.ServiceProxy('pneumatics_commands', PneumaticsCommands)
-        req = PneumaticsCommandsRequest()
+            self.pneumatics_service = rospy.ServiceProxy('pneumatics_commands', PneumaticsCommand)
+        req = PneumaticsCommandRequest()
         req.command = command
         response = self.pneumatics_service(req)
         return response
 
-    def fire_l_torpedo(self):
-        return self.initialize_pneumatics_service("l_torpedo")
+    def fire_left_torpedo(self):
+        return self.query_pneumatics_controller("fire_left_torpedo")
 
-    def fire_r_torpedo(self):
-        return self.initialize_pneumatics_service("r_torpedo")
-
-    def open_claw(self):
-        return self.initialize_pneumatics_service("claw_open")
+    def fire_right_torpedo(self):
+        return self.query_pneumatics_controller("fire_right_torpedo")
 
     def open_claw(self):
-        return self.initialize_pneumatics_service("claw_close")
+        return self.query_pneumatics_controller("open_claw")
+
+    def close_claw(self):
+        return self.query_pneumatics_controller("close_claw")
 
     def get_pneumatics_status(self):
-        return self.initialize_pneumatics_service("status")
+        return self.query_pneumatics_controller("status")
 
 
 class ROSStateEstimationModule:
