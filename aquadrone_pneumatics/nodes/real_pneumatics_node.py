@@ -1,5 +1,9 @@
-from aquadrone_pneumatics import Pneumatics
+import rospy
+from aquadrone_pneumatics.pneumatics_controller import PneumaticsController
+
 
 if __name__ == "main":
-    pneumatics_contoller = Pneumatics(real=True)
-    pneumatics_contoller.run()
+    rospy.init_node('pneumatics_controller', log_level=rospy.DEBUG)
+
+    pneumatics_controller = PneumaticsController(real=True)
+    pneumatics_controller.run()

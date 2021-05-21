@@ -1,0 +1,4 @@
+GPIO_pins:
+    claw: 5
+    left_torpedo: 6
+    right_torpedo: 7

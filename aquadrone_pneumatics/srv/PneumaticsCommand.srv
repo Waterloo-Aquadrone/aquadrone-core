@@ -1,0 +1,6 @@
+string command
+# Must be one of "fire_left_torpedo", "fire_right_torpedo", "open_claw", "close_claw", "status"
+---
+bool claw_open
+bool left_torpedo_fired
+bool right_torpedo_fired

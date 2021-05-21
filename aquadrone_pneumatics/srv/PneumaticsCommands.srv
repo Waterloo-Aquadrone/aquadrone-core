@@ -1,6 +1,0 @@
-string command
-# Must be one of "l_torpedo", "r_torpedo", "claw_open", "claw_close", "status"
----
-bool claw_open
-bool l_torpedo_open
-bool r_torpedo_open
