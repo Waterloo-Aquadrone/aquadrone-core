@@ -8,7 +8,7 @@
     <node name="thrust_computer" pkg="thruster_control" type="thrust_computer_node.py" output="screen" if="$(arg enable_computer)"/>
 
     <node name="thrust_distributor" pkg="thruster_control" type="thrust_distributor_node.py"
-          output="screen" if="$(eval not arg('faulty_distributor'))"/>
+          output="screen" unless="$(arg faulty_distributor)"/>
     <node name="faulty_thrust_distributor" pkg="thruster_control" type="faulty_thrust_distributor_node.py"
           output="screen" if="$(arg faulty_distributor)"/>
 
