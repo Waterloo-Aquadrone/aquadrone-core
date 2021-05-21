@@ -1,7 +1,7 @@
 <launch>
     <arg name="real" default="False"/>
 
-    <rosparam command="load" file="$(find aquadrone_pneumatics)/config/GPIO_config.yaml" if="$(arg real)"/>
+    <rosparam command="load" file="$(find aquadrone_pneumatics)/config/GPIO_config.yaml"/>
 
     <node name="pneumatics_controller" pkg="aquadrone_pneumatics" type="real_pneumatics_node.py" output="screen" if="$(arg real)"/>
     <node name="simulated_pneumatics_controller" pkg="aquadrone_pneumatics" type="simulated_pneumatics_node.py" output="screen" unless="$(arg real)"/>
