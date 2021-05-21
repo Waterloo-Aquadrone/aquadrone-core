@@ -45,12 +45,12 @@ class PneumaticsController:
             if self.real:
                 self.GPIO.output(self.claw_pin, self.GPIO.LOW)
             self.claw_open = False
-        elif command == "fire_left_torpedo" and not self.left_torpedo_fired:
-            if self.real:
+        elif command == "fire_left_torpedo":
+            if self.real and not self.left_torpedo_fired:
                 self.fire_torpedo(self.left_torpedo_pin)
             self.left_torpedo_fired = True
-        elif command == "fire_right_torpedo" and not self.right_torpedo_fired:
-            if self.real:
+        elif command == "fire_right_torpedo":
+            if self.real and not self.right_torpedo_fired:
                 self.fire_torpedo(self.right_torpedo_pin)
             self.right_torpedo_fired = True
 
