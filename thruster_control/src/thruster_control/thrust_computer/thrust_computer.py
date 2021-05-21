@@ -1,4 +1,5 @@
 import rospy
+import rospkg
 from aquadrone_msgs.msg import MotorControls
 from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
 import numpy as np
@@ -6,6 +7,8 @@ from scipy.optimize import linprog
 
 
 class ThrustComputer:
+    POUNDS_TO_NEWTONS = 4.44822
+
     """
     Creates a MovementCommandCollector to listen to the relevant topics for thrust commands.
     Calculates the required individual motor thrusts to achieve the desired Wrench (using the ThrusterConfiguration
@@ -21,6 +24,13 @@ class ThrustComputer:
 
         # Will need motor commands published for state estimation
         self.publisher = rospy.Publisher("motor_command", MotorControls, queue_size=1)
+
+        # TODO: generalize this in a way so that it works better with simulated and real thrusters.
+        rospack = rospkg.RosPack()
+        config_path = rospack.get_path('thruster_control') + "/config/"
+        data = np.genfromtxt(config_path + "pwm_thrust_conversion.csv", delimiter=",", names=True)
+        self.motor_thrusts_newtons = data['thrust_lbs'] * ThrustComputer.POUNDS_TO_NEWTONS
+        self.motor_efficiency = data['efficiency_out_of_100'] / 100
 
     def run(self):
         while not rospy.is_shutdown():
@@ -60,6 +70,14 @@ class ThrustComputer:
         overall_thrusts = sum([coefficient * thrusts
                                for coefficient, thrusts in zip(scaling_coefficients, thrusts_list)])
         return overall_thrusts
+
+    def calculate_motor_efficiency(self, motor_thrust):
+        """
+        Calculates the efficiency that the BlueRobotics Thruster would operate at when producing the specified thrust.
+
+        :param motor_thrust: Can be an individual motor thrust, or an array of motor thrusts.
+        """
+        return np.interp(motor_thrust, self.motor_thrusts_newtons, self.motor_efficiency)
 
     def publish_command(self, thrusts):
         msg = MotorControls()
