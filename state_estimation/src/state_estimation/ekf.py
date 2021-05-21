@@ -62,14 +62,22 @@ class EKF:
         # constants related to ambient conditions and submarine properties
         self.g = 9.81  # m/s^2
         self.rho_water = 997  # kg/m^3
-        self.mass = 10  # kg, TODO: add this to config
-        self.volume = 10  # m^3, used for buoyancy calculations, TODO: add this to config
-        self.buoyancy_offset = np.array(
-            [0, 0, 0.5])  # location where buoyancy force is applied (center of buoyancy) TODO: add this to config
-        inertia = np.array([[2850, 1, -25],
-                            [1, 3800, 200],
-                            [-25, 200, 2700]])  # kg * m^2
-        self.inertia_inv = np.linalg.inv(inertia)  # inverse of moment of inertia matrix, TODO: add this to config
+        self.mass = rospy.get_param('/submarine/mass')  # kg
+        self.volume = rospy.get_param('/submarine/volume')  # m^3, used for buoyancy calculations
+
+        # location where buoyancy force is applied (center of buoyancy)
+        self.buoyancy_offset = np.array([rospy.get_param(f'/submarine/buoyancy_offset/{dim}') for dim in 'xyz'])
+
+        I_xx = rospy.get_param('/submarine/moments_of_inertia/I_xx')
+        I_yy = rospy.get_param('/submarine/moments_of_inertia/I_yy')
+        I_zz = rospy.get_param('/submarine/moments_of_inertia/I_zz')
+        I_xy = I_yx = rospy.get_param('/submarine/moments_of_inertia/I_xy')
+        I_xz = I_zx = rospy.get_param('/submarine/moments_of_inertia/I_xz')
+        I_yz = I_zy = rospy.get_param('/submarine/moments_of_inertia/I_yz')
+        inertia = np.array([[I_xx, I_xy, I_xz],
+                            [I_yx, I_yy, I_yz],
+                            [I_zx, I_zy, I_zz]])  # kg * m^2
+        self.inertia_inv = np.linalg.inv(inertia)  # inverse of moment of inertia matrix
 
         self.n = Idx.NUM  # Number of state elements for the submarine
         self.x = None  # state (initialized at the end of this function)
