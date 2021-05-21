@@ -5,6 +5,7 @@ import time
 
 from std_msgs.msg import Float64
 from std_srvs.srv import Trigger, TriggerRequest
+from aquadrone_pneumatics.srv import PneumaticsCommands, PneumaticsCommandsRequest
 from geometry_msgs.msg import Vector3, Wrench
 from sensor_msgs.msg import Image
 
@@ -22,6 +23,7 @@ class ROSControlsModule:
         self.planar_move_pub = rospy.Publisher("/movement_target", Vector3, queue_size=1)
         self.motor_command_pub = rospy.Publisher("/motor_command", MotorControls, queue_size=1)
         self.controls_halted = False
+        self.pneumatics_service = None
 
     def set_depth_goal(self, d):
         self.depth_pub.publish(d)
@@ -86,6 +88,30 @@ class ROSControlsModule:
                 print('WARNING! Unable to manually shut down thrusters. Thrusters likely shut down automatically first.')
 
         self.controls_halted = True
+
+    def initialize_pneumatics_service(self, command):
+        if self.pneumatics_service is None:
+            rospy.wait_for_service('pneumatics_commands')
+            self.pneumatics_service = rospy.ServiceProxy('pneumatics_commands', PneumaticsCommands)
+        req = PneumaticsCommandsRequest()
+        req.command = command
+        response = self.pneumatics_service(req)
+        return response
+
+    def fire_l_torpedo(self):
+        return self.initialize_pneumatics_service("l_torpedo")
+
+    def fire_r_torpedo(self):
+        return self.initialize_pneumatics_service("r_torpedo")
+
+    def open_claw(self):
+        return self.initialize_pneumatics_service("claw_open")
+
+    def open_claw(self):
+        return self.initialize_pneumatics_service("claw_close")
+
+    def get_pneumatics_status(self):
+        return self.initialize_pneumatics_service("status")
 
 
 class ROSStateEstimationModule:
