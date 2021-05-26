@@ -106,9 +106,8 @@ class PressureSensorListener(BaseSensorListener):
 
         self.z = 0
         self.variance = 1
-
-        self.pressure_offset = 100.0
         self.g = 9.8
+        self.pressure_sensor_offset = rospy.get_param("/submarine/pressure_sensor_offset")
 
     def get_timeout_sec(self):
         return 0.1
@@ -124,7 +123,7 @@ class PressureSensorListener(BaseSensorListener):
         return np.array([[self.variance]])
 
     def state_to_measurement_h(self, x, u):
-        return np.array([x[Idx.z]])
+        return np.array([x[Idx.z]-self.pressure_sensor_offset])
 
     def depth_cb(self, msg):
         absolute_pressure = msg.fluid_pressure
