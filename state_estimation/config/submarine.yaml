@@ -1,7 +1,10 @@
 submarine:
     mass: 10  # kg
     volume: 10  # m^3
-    pressure_sensor_offset: 0
+    pressure_sensor_offset:
+        x: 0
+        y: 0
+        z: 0
     buoyancy_offset:
         x: 0  # m
         y: 0  # m
