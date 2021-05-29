@@ -108,7 +108,7 @@ class PressureSensorListener(BaseSensorListener):
         self.variance = 1
         self.g = 9.8
         pressure_offset_dict = rospy.get_param("/submarine/pressure_sensor_offset")
-        self.pressure_offset = pressure_offset_dict["x"], pressure_offset_dict["y"], pressure_offset_dict["z"]
+        self.pressure_offset = [pressure_offset_dict["x"], pressure_offset_dict["y"], pressure_offset_dict["z"]]
 
     def get_timeout_sec(self):
         return 0.1
