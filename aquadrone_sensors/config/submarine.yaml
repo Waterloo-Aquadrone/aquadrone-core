@@ -1,0 +1,18 @@
+submarine:
+    mass: 10  # kg
+    volume: 10  # m^3
+    pressure_sensor_offset:
+        x: 0
+        y: 0
+        z: 0
+    buoyancy_offset:
+        x: 0  # m
+        y: 0  # m
+        z: 0.5  # m
+    moments_of_inertia:
+        I_xx: 2850  # kg * m^2
+        I_yy: 3800  # kg * m^2
+        I_zz: 2700  # kg * m^2
+        I_xy: 1  # kg * m^2
+        I_xz: -25  # kg * m^2
+        I_yz: 200  # kg * m^2

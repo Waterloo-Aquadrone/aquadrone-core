@@ -1,6 +1,8 @@
 <launch>
     <arg name="real" default="False"/>
 
+    <rosparam command="load" file="$(find aquadrone_sensors)/config/submarine.yaml"/>
+
     <group if="$(arg real)">
         <node name="real_imu_sensor" pkg="aquadrone_sensors" type="ms5837_node.py" output="screen"/>
     </group>
