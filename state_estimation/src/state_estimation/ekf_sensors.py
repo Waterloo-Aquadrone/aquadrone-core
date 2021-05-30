@@ -126,7 +126,7 @@ class PressureSensorListener(BaseSensorListener):
     def state_to_measurement_h(self, x, u):
         quad_orientation = Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1])
         rotated_offset = quad_orientation.rotate(self.pressure_offset)
-        return np.array([x[Idx.z]-rotated_offset[2]])
+        return np.array([x[Idx.z]+rotated_offset[2]])
 
     def depth_cb(self, msg):
         absolute_pressure = msg.fluid_pressure
