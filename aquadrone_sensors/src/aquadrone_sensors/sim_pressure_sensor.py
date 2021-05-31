@@ -20,7 +20,7 @@ class SimPressureSensor:
     def get_obj_pos(self, data):
         for name, pose in zip(data.name, data.pose):
             if name == self.sub_name:
-                quat = [pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w]
+                quat = [pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z]
                 quad_orientation = Quaternion.from_array(quat)
                 rotated_offset = quad_orientation.rotate(self.pressure_offset)
                 self.measurement_z = pose.position.z + rotated_offset[2]
