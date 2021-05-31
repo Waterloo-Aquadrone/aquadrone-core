@@ -106,9 +106,9 @@ class PressureSensorListener(BaseSensorListener):
 
         self.z = 0
         self.variance = 1
-
-        self.pressure_offset = 100.0
         self.g = 9.8
+        pressure_offset_dict = rospy.get_param("/submarine/pressure_sensor_offset")
+        self.pressure_offset = [pressure_offset_dict["x"], pressure_offset_dict["y"], pressure_offset_dict["z"]]
 
     def get_timeout_sec(self):
         return 0.1
@@ -124,7 +124,9 @@ class PressureSensorListener(BaseSensorListener):
         return np.array([[self.variance]])
 
     def state_to_measurement_h(self, x, u):
-        return np.array([x[Idx.z]])
+        quad_orientation = Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1])
+        rotated_offset = quad_orientation.rotate(self.pressure_offset)
+        return np.array([x[Idx.z]+rotated_offset[2]])
 
     def depth_cb(self, msg):
         absolute_pressure = msg.fluid_pressure
