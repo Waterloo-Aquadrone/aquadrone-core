@@ -3,7 +3,7 @@ import rospkg
 from aquadrone_msgs.msg import MotorControls
 from thruster_control.thrust_computer.movement_command_collector import MovementCommandCollector
 import numpy as np
-from scipy.optimize import linprog
+from scipy.optimize import linprog, minimize
 
 
 class ThrustComputer:
@@ -31,6 +31,7 @@ class ThrustComputer:
         data = np.genfromtxt(config_path + "pwm_thrust_conversion.csv", delimiter=",", names=True)
         self.motor_thrusts_newtons = data['thrust_lbs'] * ThrustComputer.POUNDS_TO_NEWTONS
         self.motor_efficiency = data['efficiency_out_of_100'] / 100
+        self.k = 5
 
     def run(self):
         while not rospy.is_shutdown():
@@ -78,6 +79,43 @@ class ThrustComputer:
         :param motor_thrust: Can be an individual motor thrust, or an array of motor thrusts.
         """
         return np.interp(motor_thrust, self.motor_thrusts_newtons, self.motor_efficiency)
+    
+    def get_efficiency_error(self, T, A, W_1, W_2, W_3):
+        W_total = np.dot(A,T)
+
+        # y * np.dot(x, y) / np.dot(y, y)
+
+        a = np.dot(W_total, W_1) / np.dot(W_1, W_1)
+        a = min(a,1)
+        a = max(a,0)
+
+        W_leftover = W_total - np.multiply(W_1,a)
+
+        b = np.dot(W_leftover, W_2) / np.dot(W_2, W_2)
+        b = min(b,1)
+        b = max(b,0)
+
+        W_leftover = W_leftover - np.multiply(W_2,b)
+
+        c = np.dot(W_leftover, W_3) / np.dot(W_3, W_3)
+        c = min(c,1)
+        c = max(c,0)
+
+        ke = sum(0.5 * T**2 * self.calculate_motor_efficiency(T))
+        
+        error = -(100*a + 10*b + c) + self.k * ke
+
+        return error
+    
+    def optimize_thursts_two(self, W_1, W_2, W_3):
+        max_forward_thrust = 5.2 * 4.44822  # Newtons
+        max_reverse_thrust = 4.1 * 4.44822  # Newtons
+
+        result = minimize(self.get_efficiency_error, np.zeros(8), bounds=8*[(-max_reverse_thrust, max_forward_thrust)], args=(self.config.thurst_to_wrench_matrix, W_1, W_2, W_3))
+
+        thrusts = result.x
+
+        return thrusts
 
     def publish_command(self, thrusts):
         msg = MotorControls()

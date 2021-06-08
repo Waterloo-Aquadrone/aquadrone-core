@@ -7,7 +7,7 @@ import numpy as np
 from mock import MagicMock
 
 from thruster_control.thrust_computer.thrust_computer import ThrustComputer
-
+from thruster_control.thrust_computer.thruster_configurations import ThrusterConfiguration
 
 class TestThrustComputer(unittest.TestCase):
     def test_construction(self):
@@ -23,6 +23,18 @@ class TestThrustComputer(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(final_thrusts,
                                           [23.13074398, 16.31153721, 16.31153721, 16.31153721,
                                            16.31153721, 16.31153721, 16.31153721, 16.31153721])))
+    def test_thursts_optimization_two(self):
+        W_1 = [87,43,15,57,47,58]
+        W_2 = [87,43,15,57,47,58]
+        W_3 = [87,43,15,57,47,58]
+
+        obj = ThrustComputer(ThrusterConfiguration())
+
+        answer = obj.optimize_thrusts_two(W_1, W_2, W_3)
+
+        
+
+        
 
 
 if __name__ == '__main__':
