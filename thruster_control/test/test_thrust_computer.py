@@ -28,9 +28,12 @@ class TestThrustComputer(unittest.TestCase):
         W_2 = [87,43,15,57,47,58]
         W_3 = [87,43,15,57,47,58]
 
-        obj = ThrustComputer(ThrusterConfiguration())
+        config = ThrusterConfiguration()
+        config.initialize()
+        obj = ThrustComputer(config)
 
         answer = obj.optimize_thrusts_two(W_1, W_2, W_3)
+        print(answer)
 
         
 

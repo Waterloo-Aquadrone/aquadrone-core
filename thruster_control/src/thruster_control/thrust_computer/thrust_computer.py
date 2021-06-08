@@ -107,11 +107,11 @@ class ThrustComputer:
 
         return error
     
-    def optimize_thursts_two(self, W_1, W_2, W_3):
+    def optimize_thrusts_two(self, W_1, W_2, W_3):
         max_forward_thrust = 5.2 * 4.44822  # Newtons
         max_reverse_thrust = 4.1 * 4.44822  # Newtons
-
-        result = minimize(self.get_efficiency_error, np.zeros(8), bounds=8*[(-max_reverse_thrust, max_forward_thrust)], args=(self.config.thurst_to_wrench_matrix, W_1, W_2, W_3))
+        
+        result = minimize(self.get_efficiency_error, np.zeros(8), bounds=8*[(-max_reverse_thrust, max_forward_thrust)], args=(self.config.thrust_to_wrench_matrix, W_1, W_2, W_3))
 
         thrusts = result.x
 
