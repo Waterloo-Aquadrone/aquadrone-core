@@ -37,9 +37,6 @@ class TestThrustComputer(unittest.TestCase):
 
         
 
-        
-
-
 if __name__ == '__main__':
     rospy.init_node('test_thrust_computer')
     rostest.rosrun('thruster_control', 'test_thrust_computer', TestThrustComputer)
