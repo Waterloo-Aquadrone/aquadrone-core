@@ -22,7 +22,11 @@ class TravelState(BaseState):
         self.completed = False
 
     def __repr__(self):
-        return "{}({}, {}, {})".format(self.state_name(), self.target_x, self.target_y, self.target_z)
+        return f'TravelState({self.target_x}, {self.target_y}, {self.target_z}, target_yaw={self.target_yaw}, ' \
+               f'verbose={self.verbose})'
+
+    def __str__(self):
+        return f'TravelState({self.target_x}, {self.target_y}, {self.target_z}, target_yaw={self.target_yaw})'
 
     def update_target(self, target_x=None, target_y=None, target_z=None, target_yaw=None):
         """
@@ -41,9 +45,6 @@ class TravelState(BaseState):
         if target_yaw is not None:
             self.target_yaw = np.radians(target_yaw)
             self.invalidated = True
-
-    def state_name(self):
-        return "travel_state"
 
     def update_targets(self, controls):
         if self.invalidated:

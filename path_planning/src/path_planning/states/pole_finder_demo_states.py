@@ -15,8 +15,8 @@ class ColoredPoleFinderState(BaseState):
 
         self.num_matching_pixels = 0
 
-    def state_name(self):
-        return "colored_pole_finder_state"
+    def __repr__(self):
+        return f'ColoredPoleFinderState(color_low={self.color_low}, color_high={self.color_high})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.last_t = t
@@ -66,8 +66,8 @@ class ColoredPoleApproacherState(BaseState):
         self.fx_pid.output_limits = (-0.5, 0.5)
         self.fx_pid.setpoint = 0
 
-    def state_name(self):
-        return "colored_pole_approacher_state"
+    def __repr__(self):
+        return f'ColoredPoleApproacherState(color_low={self.color_low}, color_high={self.color_high})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.last_t = t
@@ -110,7 +110,6 @@ class ColoredPoleApproacherState(BaseState):
             self.time_close = self.time_close + dt
         else:
             self.time_close = 0
-
         
         cv2.imshow('image', image)
         cv2.imshow('mask', mask)
@@ -119,7 +118,7 @@ class ColoredPoleApproacherState(BaseState):
     def finalize(self, t, controls, sub_state, world_state, sensors):
         controls.planar_move_command(Fx=0)
 
-    def completed(self):
+    def has_completed(self):
         return self.has_lost_pole() or self.at_pole()
 
     def exit_code(self):

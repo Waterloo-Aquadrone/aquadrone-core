@@ -37,14 +37,15 @@ class Tree:
     """
 
     @staticmethod
-    def create_flowchart(state, file_name='test', popup=True):
+    def create_flowchart(state, file_name='test', verbose=False, popup=True):
         """
-        :@param state: The root state to use to generate the flowchart.
-        :@param file_name: The file name (without the extension) to save the flowchart PDF with.
-        :@param popup: If True, then the flowchart will popup so that can be seen immediately.
+        :param state: The root state to use to generate the flowchart.
+        :param file_name: The file name (without the extension) to save the flowchart PDF with.
+        :param verbose: If True, then repr will be used for leaf states instead of str.
+        :param popup: If True, then the flowchart will popup so that it can be seen immediately.
         """
         path = rospkg.RosPack().get_path('path_planning') + f'/node_flowcharts/{file_name}.gv'
-        state.get_tree().render_graph(path, popup)
+        state.get_tree(verbose).render_graph(path, popup)
         print('Flowchart generated!')
 
     def __init__(self, name, nodeType, children=None, daemon=None, depth=0, number=1):

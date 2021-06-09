@@ -7,11 +7,20 @@ class BaseState(ABC):
     Each state should define how it interacts with the depth and orientation control systems, because those are
     persisted across state changes.
     """
-    def state_name(self):
-        return "base_state"
-
     def __repr__(self):
-        return self.state_name()
+        """
+        All subclasses should override this function if they accept arguments in __init__.
+        All of those arguments should be included in the string representation for repr,
+        such that eval(repr(state)) == state.
+        That way, repr will provide an unambiguous representation of the state.
+        State machines should recursively call __repr__ for any child states.
+
+        If the representation is too verbose, you can optionally also implement __str__ and provide a more human
+        readable representation.
+        As a rule of thumb, exclude any tolerance values or verbose flags from the __str__ representation.
+        State machines should also exclude recursive calls to child states in __str__.
+        """
+        return f'{self.__class__.__name__}()'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         """
@@ -58,7 +67,11 @@ class BaseState(ABC):
         """
         return 0
 
-    def get_tree(self, depth=0):
-        return Tree(name=self.__repr__(),
+    def get_tree(self, depth=0, verbose=False):
+        """
+        :param depth:
+        :param verbose: If True, then repr will be used for leaf states instead of str.
+        """
+        return Tree(name=repr(self) if verbose else str(self),
                     nodeType="State",
                     depth=depth)

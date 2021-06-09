@@ -25,18 +25,19 @@ class ParallelStateMachine(BaseState):
         self.completed = False
         self.finalized_states = [False] * (len(self.states) + len(self.daemon_states))
 
-    def state_name(self):
-        return self.name + \
-               '/[' + \
-               ', '.join(state.state_name() for state in self.states if not state.has_completed()) + \
-               ', '.join(state.state_name() + ' (daemon)' for state in self.daemon_states if not state.has_completed()) + \
-               ']'
+    def __repr__(self):
+        states_str = ', '.join([repr(state) for state in self.states])
+        daemon_states_str = ', '.join([repr(state) for state in self.daemon_states])
+        return f'ParallelStateMachine({self.name}, [{states_str}], [{daemon_states_str}])'
+
+    def __str__(self):
+        return f'ParallelStateMachine({self.name})'
 
     def initialize(self, t, controls, sub_state, world_state, sensors):
         self.completed = False
         self.finalized_states = [False] * (len(self.states) + len(self.daemon_states))
 
-        print(self.state_name(), 'starting to execute', len(self.states), 'states and',
+        print(self, 'starting to execute', len(self.states), 'states and',
               len(self.daemon_states), 'daemon states in parallel')
         for state in self.states + self.daemon_states:
             state.initialize(t, controls, sub_state, world_state, sensors)
@@ -61,16 +62,16 @@ class ParallelStateMachine(BaseState):
         for state in self.states:
             if not state.has_completed():
                 return False
-        print(self.state_name(), 'completed!')
+        print(self, 'completed!')
         return True
 
     def exit_code(self):
         # return the exit code of the last non-daemon state
         return self.states[-1].exit_code()
 
-    def get_tree(self, depth=0):
-        return Tree(name=self.name,
-                    children=[child.get_tree(depth=depth+1) for child in self.states],
-                    daemon=[child.get_tree(depth=depth+1) for child in self.daemon_states],
+    def get_tree(self, depth=0, verbose=False):
+        return Tree(name=str(self),
+                    children=[child.get_tree(depth + 1, verbose) for child in self.states],
+                    daemon=[child.get_tree(depth + 1, verbose) for child in self.daemon_states],
                     nodeType="ParallelState",
                     depth=depth)

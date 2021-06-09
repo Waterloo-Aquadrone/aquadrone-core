@@ -26,6 +26,7 @@ class StateExecutor:
         """
         This function will execute the state and block until it terminates.
         """
+        print(f'StateExecutor starting to execute top level state: {repr(self.state)}')
         self.state.initialize(ros_time(), self.controls, self.sub_state, self.world_state, self.sensors)
 
         while not rospy.is_shutdown():
