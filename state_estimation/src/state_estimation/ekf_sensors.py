@@ -14,6 +14,7 @@ from scipy.linalg import block_diag
 import rospkg
 import json
 
+
 class BaseSensorListener(ABC):
     # https://en.wikipedia.org/wiki/Extended_Kalman_filter
 
@@ -197,9 +198,8 @@ class IMUSensorListener(BaseSensorListener):
 
 class VisionSensorManager:
     # TODO: expand to support non-point objects
-    WORLD_OBJECTS = []
     rospack = rospkg.RosPack()
-    with open(rospack.get_path('state_estimation')+"/src/state_estimation/landmarks.json") as lm_file:
+    with open(rospack.get_path('state_estimation') + "/config/landmarks.json") as lm_file:
         landmarks = json.load(lm_file)
         WORLD_OBJECTS = [lm["name"] for lm in landmarks["landmarks_A"]]
 
