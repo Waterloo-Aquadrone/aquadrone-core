@@ -161,10 +161,10 @@ class EKF:
         self.x += np.dot(K, y)  # increase by error in measurement vs predicted, scaled by Kalman gain
         self.P = self.P - np.linalg.multi_dot([K, h_jacobian, self.P]).astype('float64')  # decrease, scaled by Kalman gain
 
-        rospack = rospkg.RosPack()
         if not self.isMapLoaded:
             for listener_index in range(len(listeners)-2):
-                if self.P[listener_index][listener_index] < self.MAX_VARIANCE:
+                if self.P[listener_index, listener_index] < self.MAX_VARIANCE:
+                    rospack = rospkg.RosPack()
                     with open(rospack.get_path('state_estimation') + "/src/state_estimation/landmarks.json") as lm_file:
                         landmarks = json.load(lm_file)
                         landmarksA = landmarks["landmarks_A"]
