@@ -94,6 +94,9 @@ class ThrusterConfiguration:
         """
         return np.dot(self.wrench_to_thrusts_matrix, wrench_vec)
 
+    def thrusts_to_wrench(self, thrusts):
+        return np.dot(self.thrust_to_wrench_matrix, thrusts)
+
     def get_num_thrusters(self):
         """
         :return: The number of thrusters in this thruster configuration.
