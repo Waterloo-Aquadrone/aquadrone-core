@@ -85,7 +85,7 @@ class ThrustComputer:
         coefficients = []
         for W_i in wrench_list:
             c = np.clip(np.dot(W_total, W_i) / np.dot(W_i, W_i), 0, 1)
-            if np.isnan(c):
+            if np.isnan(c):  # this will only occur if W_i is zero
                 c = 1
             coefficients.append(c)
             W_total -= c * W_i
