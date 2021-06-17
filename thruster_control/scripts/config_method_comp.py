@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 import numpy as np
 
 from thrust_computer.thruster_configurations import V28Configuration

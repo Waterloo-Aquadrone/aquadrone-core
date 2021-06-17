@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 import rospy
 from vision.omniscient_vision import OmniscientVision
 
