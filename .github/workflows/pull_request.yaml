@@ -24,13 +24,13 @@ jobs:
         with:
           repository: 'Waterloo-Aquadrone/aquadrone-dev-workspace'
           ref: 'master'
-          path: '$GITHUB_WORKSPACE'
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Relative path
       - name: Checkout Aquadrone2020
         uses: actions/checkout@v2
         with:
-          path: '$GITHUB_WORKSPACE/catkin_ws/src/aquadrone2020'
+          path: 'catkin_ws/src/aquadrone2020'
 
       - name: List Directories
         run: |
