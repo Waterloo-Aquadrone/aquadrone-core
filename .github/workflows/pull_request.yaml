@@ -25,9 +25,6 @@ jobs:
           repository: 'Waterloo-Aquadrone/aquadrone-dev-workspace'
           ref: 'master'
 
-      - name: List Directories
-        run: ls
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Aquadrone2020
         uses: actions/checkout@v2
@@ -49,6 +46,20 @@ jobs:
         run: |
             cd docker
             docker build -t aquadrone_ci -f Dockerfile.CI ..
+
+      - name: List Directories
+        run: |
+            echo "Here"
+            echo $(pwd)
+            ls
+            echo "GITHUB_WORKSPACE"
+            echo $GITHUB_WORKSPACE
+            echo "ws/src"
+            ls catkin_ws/src
+            echo "dev"
+            ls aquadrone_dev_ws
+            echo "dev/ws/src"
+            ls aquadrone_dev_ws/catkin_ws/src
 
       - name: Run CI Tests
         run: |
