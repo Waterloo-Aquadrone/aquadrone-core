@@ -24,6 +24,7 @@ jobs:
         with:
           repository: 'Waterloo-Aquadrone/aquadrone-dev-workspace'
           ref: 'master'
+          path: '$GITHUB_WORKSPACE'
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Aquadrone2020
