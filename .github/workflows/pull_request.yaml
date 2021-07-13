@@ -30,7 +30,7 @@ jobs:
       - name: Checkout Aquadrone2020
         uses: actions/checkout@v2
         with:
-          path: '$GITHUB_WORKSPACE/catkin_ws/src'
+          path: '$GITHUB_WORKSPACE/catkin_ws/src/aquadrone2020'
 
 
       - name: Pull Image
