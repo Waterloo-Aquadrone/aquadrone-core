@@ -29,7 +29,7 @@ jobs:
       - name: Checkout Aquadrone2020
         uses: actions/checkout@v2
         with:
-          path: '$GITHUB_WORKSPACE/aquadrone_dev_ws/catkin_ws/src'
+          path: '$GITHUB_WORKSPACE/catkin_ws/src'
 
 
       - name: Pull Image
@@ -54,12 +54,13 @@ jobs:
             ls
             echo "GITHUB_WORKSPACE"
             echo $GITHUB_WORKSPACE
+            ls $GITHUB_WORKSPACE
             echo "ws/src"
-            ls catkin_ws/src
+            ls $GITHUB_WORKSPACE/catkin_ws/src
             echo "dev"
-            ls aquadrone_dev_ws
+            ls $GITHUB_WORKSPACE/aquadrone_dev_ws
             echo "dev/ws/src"
-            ls aquadrone_dev_ws/catkin_ws/src
+            ls $GITHUB_WORKSPACE/aquadrone_dev_ws/catkin_ws/src
 
       - name: Run CI Tests
         run: |
