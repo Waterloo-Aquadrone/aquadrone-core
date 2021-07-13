@@ -42,7 +42,7 @@ jobs:
       - name: Build Image
         run: |
             cd docker
-            docker build -t ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }} --cache-from ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }} -f Dockerfile.Base ..
+            docker build -t aquadrone_latest:latest -t ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }} --cache-from ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }} -f Dockerfile.Base ..
       
 
       - name: Build CI Image
