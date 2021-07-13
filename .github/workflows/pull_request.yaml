@@ -32,6 +32,21 @@ jobs:
         with:
           path: '$GITHUB_WORKSPACE/catkin_ws/src/aquadrone2020'
 
+      - name: List Directories
+        run: |
+            echo "Here"
+            echo $(pwd)
+            ls
+            echo "GITHUB_WORKSPACE"
+            echo $GITHUB_WORKSPACE
+            ls $GITHUB_WORKSPACE
+            echo "ws/src"
+            ls $GITHUB_WORKSPACE/catkin_ws/src
+            echo "dev"
+            ls $GITHUB_WORKSPACE/aquadrone_dev_ws
+            echo "dev/ws/src"
+            ls $GITHUB_WORKSPACE/aquadrone_dev_ws/catkin_ws/src
+
 
       - name: Pull Image
         run: docker pull ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }}
@@ -47,21 +62,6 @@ jobs:
         run: |
             cd docker
             docker build -t aquadrone_ci -f Dockerfile.CI ..
-
-      - name: List Directories
-        run: |
-            echo "Here"
-            echo $(pwd)
-            ls
-            echo "GITHUB_WORKSPACE"
-            echo $GITHUB_WORKSPACE
-            ls $GITHUB_WORKSPACE
-            echo "ws/src"
-            ls $GITHUB_WORKSPACE/catkin_ws/src
-            echo "dev"
-            ls $GITHUB_WORKSPACE/aquadrone_dev_ws
-            echo "dev/ws/src"
-            ls $GITHUB_WORKSPACE/aquadrone_dev_ws/catkin_ws/src
 
       - name: Run CI Tests
         run: |
