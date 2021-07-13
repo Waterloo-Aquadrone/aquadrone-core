@@ -64,6 +64,11 @@ jobs:
             cd docker
             docker build -t aquadrone_ci -f Dockerfile.CI ..
 
+      - name: Run CI Build
+        run: |
+            chmod a+rwx docker/docker_ci_build.sh
+            docker run --entrypoint='' --volume $(pwd)/catkin_ws:/catkin_ws/ --volume $(pwd)/docker:/docker/ aquadrone_ci  /docker/docker_ci_build.sh
+
       - name: Run CI Tests
         run: |
             chmod a+rwx docker/docker_ci_test.sh
