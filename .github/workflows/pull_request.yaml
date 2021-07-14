@@ -69,7 +69,7 @@ jobs:
             chmod a+rwx docker/docker_ci_build.sh
             docker run --entrypoint='' --volume $(pwd)/catkin_ws:/catkin_ws/ --volume $(pwd)/docker:/docker/ aquadrone_ci  /docker/docker_ci_build.sh
 
-      - name: Run CI Tests
+      - name: Run CI Tests (Search for 'RESULT:' or '[ROSTEST]')
         run: |
             chmod a+rwx docker/docker_ci_test.sh
             docker run --entrypoint='' --volume $(pwd)/catkin_ws:/catkin_ws/ --volume $(pwd)/docker:/docker/ aquadrone_ci  /docker/docker_ci_test.sh
