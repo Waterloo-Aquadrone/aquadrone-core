@@ -1,0 +1,76 @@
+# This is a basic workflow to help you get started with Actions
+name: PullRequestCI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches: [ dev ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  ci-testing:
+    runs-on: ubuntu-latest
+    env:
+      image_name: aquadrone_dev_ws
+      image_tag: latest
+    steps:
+
+      - name: Checkout Dev WS
+        uses: actions/checkout@v2
+        with:
+          repository: 'Waterloo-Aquadrone/aquadrone-dev-workspace'
+          ref: 'master'
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Relative path
+      - name: Checkout Aquadrone2020
+        uses: actions/checkout@v2
+        with:
+          path: 'catkin_ws/src/aquadrone-core'
+
+      - name: List Directories
+        run: |
+            echo "ENV"
+            env
+            echo "Here"
+            echo $(pwd)
+            ls
+            echo "GITHUB_WORKSPACE"
+            echo $GITHUB_WORKSPACE
+            ls $GITHUB_WORKSPACE
+            echo "ws/src"
+            ls $GITHUB_WORKSPACE/catkin_ws/src
+            echo "ws/src/AD"
+            ls $GITHUB_WORKSPACE/catkin_ws/src/aquadrone-core
+
+
+
+      - name: Pull Image
+        run: docker pull ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }}
+
+
+      - name: Build Image
+        run: |
+            cd docker
+            docker build -t aquadrone_latest:latest -t ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }} --cache-from ${{ secrets.DOCKERHUB_REPO }}/${{ env.image_name }}:${{ env.image_tag }} -f Dockerfile.Base ..
+      
+
+      - name: Build CI Image
+        run: |
+            cd docker
+            docker build -t aquadrone_ci -f Dockerfile.CI ..
+
+      - name: Run CI Build
+        run: |
+            chmod a+rwx docker/docker_ci_build.sh
+            docker run --entrypoint='' --volume $(pwd)/catkin_ws:/catkin_ws/ --volume $(pwd)/docker:/docker/ aquadrone_ci  /docker/docker_ci_build.sh
+
+      - name: Run CI Tests (Search for 'RESULT:' or '[ROSTEST]')
+        run: |
+            chmod a+rwx docker/docker_ci_test.sh
+            docker run --entrypoint='' --volume $(pwd)/catkin_ws:/catkin_ws/ --volume $(pwd)/docker:/docker/ aquadrone_ci  /docker/docker_ci_test.sh
+
