@@ -15,8 +15,8 @@ class ImagePreprocessingNode():
         self.blur_threshold = 100
         rospy.init_node(self.name)
         self.bridge = CvBridge()
+        self.pub = rospy.Publisher('vision/preprocess', Image, queue_size=1)
         rospy.Subscriber('/zed/zed_node/rgb/image_rect_color', Image, self.process_image, queue_size=1)
-        self.pub = rospy.Publisher('image/preprocess', Image, queue_size=1)
 
 
     def process_image(self, image):
