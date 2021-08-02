@@ -4,7 +4,6 @@ import aquadrone_msgs.BoundingBox as BoundingBox
 import aquadrone_msgs.BoundingBoxes as BoundingBoxes
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
-import numpy as np
 
 # TODO:
 # Add path to classes, config, and weights file once training is done
