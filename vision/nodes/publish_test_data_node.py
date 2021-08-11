@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 import rospy
 import cv2
+import os
 from cv_bridge import CvBridge, CvBridgeError
-import sensor_msgs.Image as Image
+from sensor_msgs.msg import Image
 
 class PublishTestDataNode():
     def __init__(self):
@@ -16,17 +18,18 @@ class PublishTestDataNode():
 
 
     def read_and_publish_images(self):
-        for img in image_names:
+        for img in self.image_names:
+            if rospy.is_shutdown(): break
             full_path = self.image_path + img + self.image_ext
             image = cv2.imread(full_path)
-            if image.size == 0:
+            if image is None:
                 warning_msg = 'Could not read image {}'.format(img)
                 rospy.logdebug(warning_msg)
             else:
-                ros_image = self.bridge.cv2_to_imgmsg(image, encoding='passthrough')
+                ros_image = self.bridge.cv2_to_imgmsg(image, encoding='bgr8')
                 self.pub.publish(ros_image)
                 rospy.logdebug('Sucessfully published {}'.format(img))
-            rospy.sleep(1)
+            rospy.sleep(5)
 
 
 if __name__ == '__main__':
