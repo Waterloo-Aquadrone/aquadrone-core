@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 import rospy
-import sensor_msgs.Image as Image
-import aquadrone_msgs.BoundingBox as BoundingBox
-import aquadrone_msgs.BoundingBoxes as BoundingBoxes
-from cv_bridge import CvBridge, CvBridgeError
 import cv2
+import numpy as np
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+from aquadrone_msgs.msg import BoundingBox, BoundingBoxes
 
 # TODO:
 # Add path to classes, config, and weights file once training is done
@@ -14,30 +15,29 @@ import cv2
 
 class ObjectDetectionNode():
     def __init__(self):
-        self.name = 'Object Detection'
-        self.classes_file_path = ''
-        self.config_file_path = ''
-        self.weights_file_path = ''
+        self.name = 'object_detection_node'
+        self.config_file_path = './testdata/yolov3.cfg'
+        self.weights_file_path = './testdata/yolov3.weights'
         self.classes = None
         self.class_ids = []
         self.confidences = []
         self.bounding_boxes = []
         self.select_bounding_boxes = []
-        self.confidence_threshold = 0.5
+        self.confidence_threshold = 0.7
         self.nms_threshold = 0.4 # non-maximum suppression
-        rospy.init_node(self.name)
+        self.scale = 1.00
+        rospy.init_node(self.name, log_level=rospy.DEBUG)
         self.bridge = CvBridge()
         self.bbox_msg = BoundingBoxes()
-        self.pub = rospy.Publisher('vision/bounding_boxes', Image, queue_size=1)
+        self.pub = rospy.Publisher('vision/bounding_boxes', BoundingBoxes, queue_size=1)
         rospy.Subscriber('vision/preprocess', Image, self.detect_objects, queue_size=1)
 
 
     def detect_objects(self, image):
         try:
             self.bbox_msg.frame = image
-            frame = self.bridge.imgmsg_to_cv2(image, desired_encoding='passthrough') # should I imread?
-            self.frame_dim = (lambda w, h : (w, h))(frame.shape[0], frame.shape[1])
-            self.scale = 1.00
+            frame = self.bridge.imgmsg_to_cv2(image, desired_encoding='bgr8')
+            self.frame_dim = (frame.shape[0], frame.shape[1])
             self.setup_yolo_net(frame)
             self.run_yolo_net()
             self.pub.publish(self.bbox_msg)
@@ -47,9 +47,6 @@ class ObjectDetectionNode():
 
 
     def setup_yolo_net(self, frame):
-        with open(self.classes_file_path, 'r') as classes_file:
-            self.classes = [class.strip() for class in classes_file.readlines()]
-
         self.net = cv2.dnn.readNetFromDarknet(self.config_file_path, self.weights_file_path)
 
         self.frame_blob = cv2.dnn.blobFromImage(frame, self.scale, (416,416), (0,0,0), True, crop=False)
@@ -57,7 +54,9 @@ class ObjectDetectionNode():
 
 
     def run_yolo_net(self):
-        outputs = self.net.forward(self.get_output_layers())
+        outputs = self.net.forward(self.get_out_layers())
+        w = self.frame_dim[0]
+        h = self.frame_dim[1]
 
         for output in outputs:
             for detection in output:

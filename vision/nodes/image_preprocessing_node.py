@@ -12,9 +12,9 @@ from cv_bridge import CvBridge, CvBridgeError
 
 class ImagePreprocessingNode():
     def __init__(self):
-        self.name = 'Image Preprocessing Node'
+        self.name = 'image_preprocessing_node'
         self.blur_threshold = 100
-        rospy.init_node(self.name)
+        rospy.init_node(self.name, log_level=rospy.DEBUG)
         self.bridge = CvBridge()
         self.pub = rospy.Publisher('vision/preprocess', Image, queue_size=1)
         rospy.Subscriber('vision/test', Image, self.process_image, queue_size=1) # for test
