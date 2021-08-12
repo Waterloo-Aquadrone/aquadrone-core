@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import center_strategy_base as csb
 import cv2
 
