@@ -5,6 +5,7 @@ import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from aquadrone_msgs.msg import BoundingBox, BoundingBoxes
+from aquadrone_msgs.msg import Frame # remove when object detection node simulator is no longer needed
 
 # TODO:
 # Add path to classes, config, and weights file once training is done
@@ -30,13 +31,24 @@ class ObjectDetectionNode():
         self.bridge = CvBridge()
         self.bbox_msg = BoundingBoxes()
         self.pub = rospy.Publisher('vision/bounding_boxes', BoundingBoxes, queue_size=1)
-        rospy.Subscriber('vision/preprocess', Image, self.detect_objects, queue_size=1)
+
+        # uncomment next line when object detection simulator node is no longer needed
+        # rospy.Subscriber('vision/preprocess', Image, self.detect_objects, queue_size=1)
+
+        # delete next line when object detection simulator node is no longer needed
+        rospy.Subscriber('vision/preprocess', Frame, self.detect_objects, queue_size=1)
 
 
     def detect_objects(self, image):
         try:
-            self.bbox_msg.frame = image
-            frame = self.bridge.imgmsg_to_cv2(image, desired_encoding='bgr8')
+            # uncomment next 2 lines when object detection simulator node is no longer needed
+            # self.bbox_msg.frame = image
+            # frame = self.bridge.imgmsg_to_cv2(image, desired_encoding='bgr8')
+
+            # delete next 2 lines when object detection simulator node is no longer needed
+            self.bbox_msg.frame = image.frame
+            frame = self.bridge.imgmsg_to_cv2(image.frame, desired_encoding='bgr8')
+
             self.frame_dim = (frame.shape[0], frame.shape[1])
             self.setup_yolo_net(frame)
             self.run_yolo_net()

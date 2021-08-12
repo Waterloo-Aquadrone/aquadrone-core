@@ -5,6 +5,7 @@ import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from aquadrone_msgs.msg import BoundingBox, BoundingBoxes
+from aquadrone_msgs.msg import Center, Centers
 
 class TestOutputNode():
     def __init__(self):
@@ -18,11 +19,14 @@ class TestOutputNode():
         # uncomment to test publish_test_data_node (comment other topics)
         # rospy.Subscriber('vision/test', Image, self.show_image)
 
-        # uncomment o test image_preprocessing_node (comment other topics)
+        # uncomment to test image_preprocessing_node (comment other topics)
         # rospy.Subscriber('vision/preprocess', Image, self.show_image)
 
-        # uncomment to test object detection code (comment other topics)
+        # uncomment to test object detection node (comment other topics)
         rospy.Subscriber('vision/bounding_boxes', BoundingBoxes, self.show_bboxes)
+
+        # uncomment to test image_postprocessing_node (comment other topics)
+        # rospy.Subscriber('vision/centers', Centers, self.show_centers)
 
 
     def show_image(self, image):
@@ -50,6 +54,10 @@ class TestOutputNode():
         cv2.imshow('image', frame)
         cv2.waitKey(5000)
         cv2.destroyAllWindows()
+
+
+    def show_centers(self, centers):
+        pass
 
 
 if __name__ == '__main__':
