@@ -7,6 +7,9 @@ from sensor_msgs.msg import Image
 from aquadrone_msgs.msg import BoundingBox, BoundingBoxes
 from aquadrone_msgs.msg import Center, Centers
 
+# TODO:
+# Test actual object detection node once training weights and cfg file are ready
+
 class TestOutputNode():
     def __init__(self):
         self.name = 'test_output_node'
@@ -23,10 +26,10 @@ class TestOutputNode():
         # rospy.Subscriber('vision/preprocess', Image, self.show_image)
 
         # uncomment to test object detection node (comment other topics)
-        rospy.Subscriber('vision/bounding_boxes', BoundingBoxes, self.show_bboxes)
+        # rospy.Subscriber('vision/bounding_boxes', BoundingBoxes, self.show_bboxes)
 
         # uncomment to test image_postprocessing_node (comment other topics)
-        # rospy.Subscriber('vision/centers', Centers, self.show_centers)
+        rospy.Subscriber('vision/centers', Centers, self.show_centers)
 
 
     def show_image(self, image):
@@ -63,7 +66,16 @@ class TestOutputNode():
 
 
     def show_centers(self, centers):
-        pass
+        frame = self.bridge.imgmsg_to_cv2(centers.frame, desired_encoding='bgr8')
+        for center in centers.centers:
+            color = list(np.random.random(size=3) * 256)
+            cv2.circle(frame, (int(center.x_center), int(center.y_center)), 0, color, thickness=-1)
+            text = "{}".format(self.classes[center.class_id])
+            cv2.putText(frame, text, (int(center.x_center), int(center.y_center - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+
+        cv2.imshow('image', frame)
+        cv2.waitKey(5000)
+        cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
