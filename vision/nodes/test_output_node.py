@@ -39,17 +39,23 @@ class TestOutputNode():
 
     def show_bboxes(self, bboxes):
         frame = self.bridge.imgmsg_to_cv2(bboxes.frame, desired_encoding='bgr8')
-
+        frame_width = frame.shape[1]
+        frame_height = frame.shape[0]
         for bbox in bboxes.boxes:
             id = bbox.class_id
-            x = bbox.x_center
-            y = bbox.y_center
-            w = bbox.width
-            h = bbox.height
+            x = int(bbox.x_center*frame_width)
+            y = int(bbox.y_center*frame_height)
+            w = int(bbox.width*frame_width)
+            h = int(bbox.height*frame_height)
+            rospy.logdebug('Id is {} with type {}'.format(id, type(id)))
+            rospy.logdebug('X is {} with type {}'.format(x, type(x)))
+            rospy.logdebug('Y is {} with type {}'.format(y, type(y)))
+            rospy.logdebug('W is {} with type {}'.format(w, type(w)))
+            rospy.logdebug('H is {} with type {}'.format(h, type(h)))
             color = list(np.random.random(size=3) * 256)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+            cv2.rectangle(frame, (int(x - w/2), int(y - h/2)), (int(x + w/2), int(y + h/2)), color, 2)
             text = "{}".format(self.classes[id])
-            cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+            cv2.putText(frame, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
         cv2.imshow('image', frame)
         cv2.waitKey(5000)
