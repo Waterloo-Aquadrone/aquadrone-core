@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-import center_strategy_base as csb
+from vision.center_strategy_base import CenterStrategyBase
 import cv2
+import numpy as np
 
-class ColourCenterStrategyClass(csb.CenterStrategyBase):
+class ColourCenterStrategyClass(CenterStrategyBase):
     def __init__(self, lower=np.array([60, 35, 140]), upper=np.array([180, 255, 255])):
         super().__init__()
         self.lower_threshold = lower
         self.upper_threshold = upper
 
 
+    def setLowerThreshhold(self, lower):
+        self.lower_threshold = lower
+
+
+    def setUpperThreshold(self, upper):
+        self.upper_threshold = upper
+
+        
     def findCenter(self, image):
         img_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         img_mask = cv2.inRange(img_hsv, self.lower_threshold, self.upper_threshold)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import center_strategy_base as csb
+from vision.center_strategy_base import CenterStrategyBase
 import cv2
 
-class ContourCenterStrategyClass(csb.CenterStrategyBase):
+class ContourCenterStrategyClass(CenterStrategyBase):
     def __init__(self):
         super().__init__()
 
@@ -21,7 +21,7 @@ class ContourCenterStrategyClass(csb.CenterStrategyBase):
 
         max_contour = max(contours, key = cv2.contourArea)
 
-        if max_contour != None:
+        if max_contour is not None:
             mu = cv2.moments(max_contour)
             # add 1e-5 to avoid division by zero -> opencv tutorial method
             mass_center = (mu['m10'] / (mu['m00'] + 1e-5), mu['m01'] / (mu['m00'] + 1e-5))
