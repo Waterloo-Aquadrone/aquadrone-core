@@ -9,7 +9,7 @@ from aquadrone_msgs.msg import Frame # remove when object detection node simulat
 class TestInputNode():
     def __init__(self):
         self.name = 'test_input_node'
-        self.image_path = './testdata/'
+        self.image_path = rospy.get_param("/test_data_path")
         self.image_ext = '.jpg'
         self.image_names = ['dog', 'eagle', 'giraffe', 'horses', 'kite', 'person']
         self.bridge = CvBridge()
@@ -21,6 +21,8 @@ class TestInputNode():
         self.pub = rospy.Publisher('vision/test', Frame, queue_size=1)
 
         rospy.init_node(self.name, log_level=rospy.DEBUG)
+        rospy.logdebug('Wait for  the other nodes to start')
+        rospy.sleep(5)
         self.read_and_publish_images()
 
 
@@ -34,6 +36,7 @@ class TestInputNode():
                 rospy.logdebug(warning_msg)
             else:
                 ros_image = self.bridge.cv2_to_imgmsg(image, encoding='bgr8')
+
                 # uncomment next line when object detection simulator node is no longer needed
                 # self.pub.publish(ros_image)
 
