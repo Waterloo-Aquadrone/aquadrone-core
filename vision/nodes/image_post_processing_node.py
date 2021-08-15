@@ -16,7 +16,6 @@ class ImagePostprocessingNode():
     def __init__(self):
         self.name = 'image_post_processing_node'
         rospy.init_node(self.name, log_level=rospy.DEBUG)
-        self.centers_msg = Centers()
         self.bridge = CvBridge()
         self.contour_strategy = ContourCenterStrategyClass()
         self.colour_strategy = ColourCenterStrategyClass()
@@ -25,14 +24,15 @@ class ImagePostprocessingNode():
 
 
     def process_bounding_boxes(self, bbox_msg):
+        self.centers_msg = Centers()
         bboxes = bbox_msg.boxes
         if len(bboxes) == 0: self.handle_no_objects()
         else:
             self.frame = self.bridge.imgmsg_to_cv2(bbox_msg.frame, desired_encoding='bgr8')
             self.frame_height = self.frame.shape[0]
             self.frame_width = self.frame.shape[1]
-            rospy.logdebug('##################### Next Image ########################')
-            rospy.logdebug('Frame dimensions are {} by {}'.format(self.frame_width, self.frame_height))
+            # rospy.logdebug('##################### Next Image ########################')
+            # rospy.logdebug('Frame dimensions are {} by {}'.format(self.frame_width, self.frame_height))
             for bbox in bboxes: self.centers_msg.centers.append(self.get_center_of_object(bbox))
             self.centers_msg.frame = bbox_msg.frame
             self.pub.publish(self.centers_msg)
@@ -47,13 +47,11 @@ class ImagePostprocessingNode():
         h = int(bbox.height*self.frame_height)
 
         bottom_left = (int(x - w/2), int(y - h/2))
-        rospy.logdebug('x: {}, y: {}, w: {}, h: {}, id: {}'.format(x, y, w, h, id))
-        rospy.logdebug('Bottom left corner would be {}'.format(bottom_left))
-        rospy.logdebug('Leftmost point: {} and topmost point: {} '.format(bottom_left[0] + w, bottom_left[1] + h))
-        rospy.logdebug('------------------------------')
+        # rospy.logdebug('x: {}, y: {}, w: {}, h: {}, id: {}'.format(x, y, w, h, id))
+        # rospy.logdebug('Bottom left corner would be {}'.format(bottom_left))
+        # rospy.logdebug('Leftmost point: {} and topmost point: {} '.format(bottom_left[0] + w, bottom_left[1] + h))
+        # rospy.logdebug('------------------------------')
         cropped_frame = self.frame[bottom_left[1]:bottom_left[1] + h, bottom_left[0]:bottom_left[0] + w]
-        # cv2.imwrite('{}.jpg'.format(self.count), cropped_frame)
-        # self.count += 1
 
         # replace with actual classes once training is complete
 

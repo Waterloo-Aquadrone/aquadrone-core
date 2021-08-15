@@ -16,12 +16,12 @@ class ObjectDetectionSimulatorNode():
     def publish_bounding_boxes(self, frame_msg):
         self.bbox_msg.frame = frame_msg.frame
         self.bbox_msg.boxes = []
-        bbox_file_path = './testdata/{}.txt'.format(frame_msg.name)
+        bbox_file_path = '{}{}.txt'.format(rospy.get_param("/test_data_path"), frame_msg.name)
         with open(bbox_file_path, 'r') as bbox_files:
             bbox_line = [box.strip() for box in bbox_files.readlines()]
             for bbox in bbox_line:
                 features = bbox.split(' ')
-                rospy.logdebug(features)
+                # rospy.logdebug(features)
                 temp_bbox_msg = BoundingBox()
                 temp_bbox_msg.x_center = float(features[1])
                 temp_bbox_msg.y_center = float(features[2])

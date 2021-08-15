@@ -17,14 +17,13 @@ from aquadrone_msgs.msg import Frame # remove when object detection node simulat
 class ObjectDetectionNode():
     def __init__(self):
         self.name = 'object_detection_node'
-        self.config_file_path = './testdata/yolov3.cfg'
-        self.weights_file_path = './testdata/yolov3.weights'
-        self.classes = None
+        self.config_file_path = '{}yolov3.cfg'.format(rospy.get_param("/test_data_path"))
+        self.weights_file_path = '{}yolov3.weights'.format(rospy.get_param("/test_data_path"))
         self.class_ids = []
         self.confidences = []
         self.bounding_boxes = []
         self.select_bounding_boxes = []
-        self.confidence_threshold = 0.7
+        self.confidence_threshold = 0.5
         self.nms_threshold = 0.4 # non-maximum suppression
         self.scale = 1.00
         rospy.init_node(self.name, log_level=rospy.DEBUG)
@@ -91,6 +90,7 @@ class ObjectDetectionNode():
                                    self.confidence_threshold, self.nms_threshold)
 
         for i in indices.flatten():
+            rospy.logdebug('added new bounding box')
             temp_bbox_msg = BoundingBox()
             temp_bbox_msg.x_center = self.bounding_boxes[i][0]
             temp_bbox_msg.y_center = self.bounding_boxes[i][1]
