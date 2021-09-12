@@ -1,0 +1,8 @@
+<launch>
+  <param name='test_data_path' type='str' value='$(find vision)/nodes/testdata/'/>
+  <param name='is_test_centers' type='bool' value='False'/>
+  <node name='test_input_node' pkg='vision' type='test_input_node.py' output='screen' />
+  <node name='image_preprocessing_node' pkg='vision' type='image_preprocessing_node.py' output='screen' />
+  <node name='object_detection_node' pkg='vision' type='object_detection_node.py' output='screen' />
+  <node name='test_output_node' pkg='vision' type='test_output_node.py' output='screen' />
+</launch>

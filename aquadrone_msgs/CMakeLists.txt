@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
+  sensor_msgs
   message_generation
 )
 
@@ -57,6 +58,11 @@ find_package(catkin REQUIRED COMPONENTS
    WorldState.msg
    Vision.msg
    VisionArray.msg
+   BoundingBox.msg
+   BoundingBoxes.msg
+   Center.msg
+   Centers.msg
+   Frame.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -78,6 +84,7 @@ find_package(catkin REQUIRED COMPONENTS
    DEPENDENCIES
    geometry_msgs
    std_msgs
+   sensor_msgs
  )
 
 ################################################
@@ -112,7 +119,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES aquadrone_msgs
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 

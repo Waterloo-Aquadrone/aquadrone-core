@@ -2,14 +2,14 @@
 
 ## First Time Setup and Usage instructions
 1. Download and install VirtualBox from this link: https://www.virtualbox.org/wiki/Downloads. The host OS is the operating system that you are running on your computer.
-2. Download the Virtual Machine (VM) files from [this link](https://drive.google.com/file/d/1xM4aIALtoE3ixZoi0Vh-BiYUIwNcSH-c/view?usp=sharing) (8.41 GB): 
+2. Download the Virtual Machine (VM) files from [this link](https://drive.google.com/file/d/1xM4aIALtoE3ixZoi0Vh-BiYUIwNcSH-c/view?usp=sharing) (8.41 GB):
 3. Unzip the downloaded files to your desired location.
 4. Open VirtualBox. Click Tools. Click Add. Choose **Aquadrone VM.vbox** in the file chooser dialog.
-5. Click the **Aquadrone VM** tab that just appeared. 
-6. (optional) Click settings (gear icon). Click system. Change base memory and number of processors to reasonable values for your computer. Half of your system's resources are a good starting point. 
+5. Click the **Aquadrone VM** tab that just appeared.
+6. (optional) Click settings (gear icon). Click system. Change base memory and number of processors to reasonable values for your computer. Half of your system's resources are a good starting point.
 7. Click Start (green arrow icon). The VM's password is **aquadrone**.
-8. (recommended) Open a terminal and type ```sudo apt update && sudo apt upgrade -y && git pull && pip3 install -r pip_requirements.txt --upgrade && cd ../../ && catkin clean -y && catkin build```
-9. (optional) On the VM home screen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen. 
+8. (recommended) Open a terminal and type ```sudo apt update && sudo apt upgrade -y && git pull && pip3 install -r pip_requirements.txt --upgrade && sudo apt-get install ros-noetic-cv-bridge && cd ../../ && catkin clean -y && catkin build```
+9. (optional) On the VM home screen click "Search Your Computer", search and select "Screen Display", and change the resolution to whatever best fits your screen.
 10. (optional) Run the following command to see the submarine do a barrel roll: ```roslaunch aquadrone_sim_demos barrel_roll_demo.launch```
 11. (optional) If you are having issues pushing to our git repos with your personal account from the VM, use this account: https://github.com/waterloo-aquadrone-vm-account. Message Amaar for the password.
 
@@ -37,10 +37,10 @@ This is required whenever new python packages are created, c++ code is updated, 
 
 #### Debugging/Notes
 - If you get and error saying ```fsck exited with status code 4``` when the VM is trying to boot, [this link](https://askubuntu.com/questions/697190/fsck-error-on-boot-dev-sda6-unexpected-inconsistency-run-fsck-manually) will probably help.
-- To run any ROS commands from a terminal (rostopic, roslaunch, rosnode etc), the catkin workspace must be sourced from 
+- To run any ROS commands from a terminal (rostopic, roslaunch, rosnode etc), the catkin workspace must be sourced from
 that terminal via the following command: ```source devel/setup.bash```. If the catkin workspace is rebuilt (with the following command: ```catkin build```), this must be redone in each terminal. The VM is configured to do this whenever a new terminal is created (but not when the workspace is rebuilt).
-- If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure 
-that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following 
+- If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure
+that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following
 command: ```chmod +x \<file name>.py```. This can also be done outside the VM (i.e. on a windows computer) via git with the command: ```git update-index --chmod=+x \<file name>.py```
 - If you are getting weird ROS errors (eg. Gazebo crashing on startup), try updating everything by running the following command in a terminal: ```sudo atp update && sudo apt upgrade -y```
 
