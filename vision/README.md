@@ -37,6 +37,9 @@ Message type published by this node: <a target='_blank' href='https://github.com
 ## Depth Sensing
 The depth sensing node is yet to be implemented (must use physical Zed camera to test). It is responsible for using the calculated center coordinates to calculate the distance of the detected centers from the submarine (camera).
 
+Learn more about depth sensing [here](https://www.stereolabs.com/docs/depth-sensing/using-depth/).
+See example depth sensing code [here](https://github.com/stereolabs/zed-examples/tree/master/depth%20sensing/python).
+
 Message type published by this node: <a target='_blank' href='#'>Depths (to be implemented)</a>, <a target='_blank' href='#'>Depth (to be implemented)</a>
 ## Testing
 There are two launch file that can be used to test the overall pipeline: `test_object_detection_node.launch` and `test_pipeline_with_sim.launch`.
