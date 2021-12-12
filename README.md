@@ -25,7 +25,7 @@ Use tab autocompletion to help find what you’re looking for! Double tap tab to
 - rostopic echo \<topic name>
 - rostopic pub \<topic name> \<object>
 - rosrun \<package name> \<node file>
-- catkin build (must be done from the catkin_ws directory)
+- catkin build (must be done from within the catkin_ws directory)
 - source catkin_ws/devel/setup.bash
 
 #### Building the Catkin Workspace
@@ -41,7 +41,7 @@ This is required whenever new python packages are created, c++ code is updated, 
 that terminal via the following command: ```source devel/setup.bash```. If the catkin workspace is rebuilt (with the following command: ```catkin build```), this must be redone in each terminal. The VM is configured to do this whenever a new terminal is created (but not when the workspace is rebuilt).
 - If you get an error saying that a Python file cannot be found (and you are sure its in the correct location), ensure
 that it is given permission to run as an executable. Open a terminal in the Python file's folder and run the following
-command: ```chmod +x \<file name>.py```. This can also be done outside the VM (i.e. on a windows computer) via git with the command: ```git update-index --chmod=+x \<file name>.py```
+command: ```chmod +x <file name>.py```. This can also be done outside the VM (i.e. on a windows computer) via git with the command: ```git update-index --chmod=+x \<file name>.py```
 - If you are getting weird ROS errors (eg. Gazebo crashing on startup), try updating everything by running the following command in a terminal: ```sudo atp update && sudo apt upgrade -y```
 
 ## Aquadrone Specific Specifications
