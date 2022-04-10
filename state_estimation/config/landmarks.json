@@ -1,0 +1,126 @@
+{
+  "landmarks_A":[
+    {
+      "name":"start",
+      "location": [0,0,0]
+    },
+    {
+      "name":"gate",
+      "location": [-20, 30, 0]
+    },
+    {
+      "name":"garlic_1",
+      "location": [-10, 35, -12]
+    },
+    {
+      "name":"path_1",
+      "location": [-15, 35, -20]
+    },
+    {
+      "name":"crucifix_1",
+      "location": [-20, 30, -22]
+    },
+    {
+      "name":"slay_vampire_rect",
+      "location": [-22, 60, -15]
+    },
+    {
+      "name":"slay_vampire_tri",
+      "location": [-18, 60, -15]
+    },
+    {
+      "name":"path_2",
+      "location": [-20, 70, -20]
+    },
+    {
+      "name":"stake_heart",
+      "location": [-80, 70, -30]
+    },
+    {
+      "name":"ping_1",
+      "location": [-80, 70, -35]
+    },
+    {
+      "name":"drop_garlic",
+      "location": [-40, 110, -15]
+    },
+    {
+      "name":"garlic_3",
+      "location": [-35, 110, -12]
+    },
+    {
+      "name":"expose_to_sunlight",
+      "location": [-90, 130, -6]
+    },
+    {
+      "name":"ping_2",
+      "location": [-90, 130, -15]
+    },
+    {
+      "name":"crucifix_2",
+      "location": [-80, 125, -15]
+    }
+  ],
+  "landmarks_B": [
+    {
+      "name":"start",
+      "location": [0,0,0]
+    },
+    {
+      "name":"gate",
+      "location": [15, 30, 0]
+    },
+    {
+      "name":"garlic_1",
+      "location": [20, 35, -12]
+    },
+    {
+      "name":"path_1",
+      "location": [15, 35, -20]
+    },
+    {
+      "name":"crucifix_1",
+      "location": [10, 30, -22]
+    },
+    {
+      "name":"slay_vampire_rect",
+      "location": [20, 65, -15]
+    },
+    {
+      "name":"slay_vampire_tri",
+      "location": [25, 60, -15]
+    },
+    {
+      "name":"path_2",
+      "location": [27, 75, -25]
+    },
+    {
+      "name":"stake_heart",
+      "location": [85, 70, -30]
+    },
+    {
+      "name":"ping_1",
+      "location": [80, 70, -35]
+    },
+    {
+      "name":"drop_garlic",
+      "location": [40, 105, -15]
+    },
+    {
+      "name":"garlic_3",
+      "location": [35, 100, -12]
+    },
+    {
+      "name":"expose_to_sunlight",
+      "location": [90, 130, -6]
+    },
+    {
+      "name":"ping_2",
+      "location": [90, 130, -15]
+    },
+    {
+      "name":"crucifix_2",
+      "location": [80, 125, -15]
+    }
+  ]
+}

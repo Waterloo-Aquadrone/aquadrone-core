@@ -3,7 +3,6 @@ import rospy
 
 import numpy as np
 import sympy as sp
-
 from sensor_msgs.msg import Imu, FluidPressure
 from aquadrone_msgs.msg import WorldObjectState, WorldState
 
@@ -11,6 +10,9 @@ from state_estimation.ekf_indices import Idx
 from aquadrone_math_utils.quaternion import Quaternion
 from aquadrone_math_utils.ros_utils import ros_time, vector_to_np, quaternion_to_np, make_vector, make_quaternion
 from scipy.linalg import block_diag
+
+import rospkg
+import json
 
 
 class BaseSensorListener(ABC):
@@ -198,7 +200,10 @@ class IMUSensorListener(BaseSensorListener):
 
 class VisionSensorManager:
     # TODO: expand to support non-point objects
-    WORLD_OBJECTS = ['red_pole', 'green_pole', 'blue_pole', 'white_pole']
+    rospack = rospkg.RosPack()
+    with open(rospack.get_path('state_estimation') + "/config/landmarks.json") as lm_file:
+        landmarks = json.load(lm_file)
+        WORLD_OBJECTS = [lm["name"] for lm in landmarks["landmarks_A"]]
 
     def __init__(self, parent_ekf, world_objects=None):
         if world_objects is None:
@@ -243,6 +248,7 @@ class PointObjectListener(BaseSensorListener):
         self.state_slice = state_slice
         self.pose = np.zeros(3)
         self.covariance = 0.1 * np.identity(3)
+        self.matrix = []
 
     def vision_cb(self, pose_with_covariance):
         self.pose = vector_to_np(pose_with_covariance.pose.position)
@@ -266,6 +272,9 @@ class PointObjectListener(BaseSensorListener):
     def get_timeout_sec(self):
         return 0.1
 
+    def is_valid(self):
+        return True
+
     def get_p(self):
         return 3
 
@@ -279,7 +288,7 @@ class PointObjectListener(BaseSensorListener):
         # combine submarine's state and absolute position of the target to compute the relative position of the target
         sub_pos = x[Idx.x:Idx.z + 1]
         sub_quat = Quaternion.from_array(x[Idx.Ow:Idx.Oz + 1])
-        absolute_target_pos = x[self.state_slice]
 
+        absolute_target_pos = x[self.state_slice]
         relative_target_pos = sub_quat.unrotate(absolute_target_pos - sub_pos)
         return relative_target_pos
