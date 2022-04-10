@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import rospy
+import cv2
 
 import numpy as np
 import sympy as sp
@@ -283,3 +284,47 @@ class PointObjectListener(BaseSensorListener):
 
         relative_target_pos = sub_quat.unrotate(absolute_target_pos - sub_pos)
         return relative_target_pos
+
+
+class OpticalFlowSensorListener(BaseSensorListener):
+    FREQUENCY = 1  # number of times the frame is updated per second
+
+    def __init__(self, parent_ekf):
+        super(OpticalFlowSensorListener, self).__init__(parent_ekf)
+        rospy.Subscriber("aquadrone/sensors/opticflow", OpticImage, self.next_frame)
+
+        self.prev_frame = None
+        self.frame = None
+
+    def get_timeout_sec(self):
+        return 0.1
+
+    def get_p(self):
+        return 2
+
+    def get_measurement_z(self):
+        self.update_frame()
+        if self.frame is not None and self.prev_frame is not None:
+            # grayscale images of the frames
+            prvs = cv2.cvtColor(self.prev_frame, cv2.COLOR_BGR2GRAY)
+            next = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+
+            # calculating velocity
+            flow = cv2.calcOpticalFlowFarneback(prvs, next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+            x_vel = np.average(flow[..., 0]) * self.FREQUENCY
+            y_vel = np.average(flow[..., 1]) * self.FREQUENCY
+
+            return x_vel, y_vel
+
+    def get_R(self):
+        # not implemented yet
+        return 0
+
+    def state_to_measurement_h(self, x, u):
+        # not implemented yet (conversion from pixels/s to m/s)
+        return self.get_measurement_z()
+
+    def update_frame(self):
+        # updates the frames depending on the subscribed channel
+        self.prev_frame = self.frame
+        self.frame = self.next_frame
